@@ -1,0 +1,29 @@
+import discord
+from discord.ext import commands
+from . import utils
+
+class DebugTools(commands.Cog, name="Debug"):
+	def __init__(self, bot):
+		self.bot = bot
+
+	@commands.command(
+		name="exit",
+		help="Terminates the bot, for debugging and maintenance purposes.",
+		hidden=True,
+		aliases=("terminate","quit","kill","murder","x")
+	)
+	@utils.is_admin()
+	async def terminate(self,ctx):
+		await ctx.send(f"Terminating **{self.bot.user.mention}**...")
+		await self.bot.close()
+		
+	@commands.command(name="reload",help="Reloads all extensions.",hidden=True,aliases=("rr",))
+	@utils.is_admin()
+	async def reload_cogs(self,ctx):
+		extensions = [cog for cog in self.bot.extensions]
+		for cog in extensions:
+			self.bot.reload_extension(cog)
+		print("Extensions reloaded!")
+		
+def setup(bot):
+	bot.add_cog(DebugTools(bot))
