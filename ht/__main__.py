@@ -10,7 +10,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 
 bot = commands.Bot(command_prefix="!")
 bot.help_command = help.NvHelpCommand()
-cogs = ["modtools","debug"]
+cogs = ["modtools","debug","heraldry"]
 
 @bot.event
 async def on_ready():

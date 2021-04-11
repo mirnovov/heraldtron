@@ -5,7 +5,6 @@ from . import utils
 class DebugTools(commands.Cog, name="Debug", command_attrs=dict(hidden=True)):
 	def __init__(self, bot):
 		self.bot = bot
-		print(bot.idb)
 
 	@commands.command(
 		name="exit",
