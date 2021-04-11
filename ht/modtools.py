@@ -16,12 +16,7 @@ class ModerationTools(commands.Cog, name="Moderation"):
 	async def mod_message(self,ctx,channel : typing.Optional[discord.TextChannel] = None,*,message_content):
 		channel = channel or ctx.channel
 	
-		embed=discord.Embed(title=message_content, color=0xff5d01)
-		embed.set_author(
-			name="Official moderator message",
-			icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/OOjs_UI_icon_notice-warning.svg/"\
-			"240px-OOjs_UI_icon_notice-warning.svg.png"
-		)
+		embed = utils.nv_embed(message_content,None,kind=1)
 		embed.set_footer(
 			text=f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
 			icon_url=ctx.author.avatar_url_as(size=256)

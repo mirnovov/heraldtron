@@ -1,17 +1,13 @@
 import discord, itertools
 from discord.ext import commands
+from . import utils
 
 class NvHelpCommand(commands.DefaultHelpCommand):
 	def __init__(self,**options):
 		super().__init__(**options)
 		
 		self.no_category = "Help"
-		self.embed = discord.Embed(color=0x3365ca, description="")
-		self.embed.set_author(
-			name="Command help",
-			icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/OOjs_UI_icon_info-progressive.svg/"\
-			"240px-OOjs_UI_icon_info-progressive.svg.png"
-		)
+		self.embed = utils.nv_embed("","\u200b",kind=2)
 	
 	async def send_pages(self):
 		destination = self.get_destination()
