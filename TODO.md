@@ -12,3 +12,5 @@
 	- Add resources lookup
 
 - Add blazon generators (in #resources)
+- Memoise utility functions
+- Automate contest posts
