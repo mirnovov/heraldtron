@@ -15,7 +15,7 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 
 To connect to your bot account, initialise a `.env` file containing your `DISCORD_TOKEN` in the `ht` directory.
 
-Then using the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install): 
+Then use the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install): 
 
 ```
 cd path/to/heraldtron

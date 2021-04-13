@@ -1,3 +1,4 @@
 .env
+.nova/
 __pycache__
 nvpriv
