@@ -16,7 +16,7 @@ class ModerationTools(commands.Cog, name="Moderation"):
 	async def mod_message(self,ctx,channel : typing.Optional[discord.TextChannel] = None,*,message_content):
 		channel = channel or ctx.channel
 	
-		embed = utils.nv_embed(message_content,None,kind=1)
+		embed = utils.nv_embed(message_content,"",kind=1)
 		embed.set_footer(
 			text=f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
 			icon_url=ctx.author.avatar_url_as(size=256)

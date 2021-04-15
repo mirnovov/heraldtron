@@ -1,7 +1,6 @@
 - Replicate remaining vexy (Herald 3.0) functionality
 	- Improve motto generator
 	- Maybe cut some of the flag stuff
-	- Fix mod formatting (possibly mention channel to resolve)
 
 - Implement DB (using SQLite)
 	- Add hello/goodbye messages (and allow mods to set their channel)
