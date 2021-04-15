@@ -9,6 +9,7 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * Python 3.7+
 * [discord.py](https://pypi.org/project/discord.py/)
 * [python-dotenv](https://pypi.org/project/python-dotenv/)
+* [google-api-python-client](https://pypi.org/project/google-api-python-client/)
 * A bot account in the Discord Developer Portal ([see here for a basic how to](https://realpython.com/how-to-make-a-discord-bot-python/))
 * For image search functionality, a [Google Cloud Platform](https://cloud.google.com) API key supporting Google Custom Search
 

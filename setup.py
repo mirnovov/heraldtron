@@ -18,6 +18,7 @@ setuptools.setup(
 	python_requires = ">=3.6",
 	install_requires = [
 		"discord.py>=1.1.0",
-		"python_dotenv"
+		"python-dotenv",
+		"googleapi-python-client"
 	]
 )
