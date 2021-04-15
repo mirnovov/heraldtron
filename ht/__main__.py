@@ -1,5 +1,5 @@
 # bot.py
-import os, discord, logging, traceback
+import os, discord, logging, traceback, sys
 from discord.ext import commands
 from dotenv import load_dotenv
 from . import utils, help
@@ -37,9 +37,10 @@ async def on_command_error(ctx, error):
 			f"The command you entered must be formatted differently. Check that it is entered correctly and try again."
 		))
 	else:
-		trace = "".join(traceback.format_tb(error.__traceback__))
+		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original
+		trace = "".join(traceback.format_tb(cause.__traceback__))
 		maintainer = await bot.fetch_user(668627671306993703)
-		dm = await maintainer.create_dm()
+		dm = await maintainer.create_dm()	
 		
 		await ctx.send(embed=utils.nv_embed(
 			"Unknown error",
@@ -47,7 +48,8 @@ async def on_command_error(ctx, error):
 		))
 		await dm.send(embed=utils.nv_embed(
 			"Unknown error",
-			f"Heraldtron has encountered an unforseen difficulty due to a [command]({ctx.message.jump_url}).\n"\
+			f"Heraldtron has encountered an unforseen difficulty due to a [command]({ctx.message.jump_url}).\n\n"\
+			f"**Error Info**:\n```python\n{type(cause).__name__}: {str(cause)}\n```\n"
 			f"**Stack Trace**:\n```python\n{trace}\n```"
 		))
 
