@@ -1,5 +1,5 @@
 # bot.py
-import os, discord, logging
+import os, discord, logging, traceback
 from discord.ext import commands
 from dotenv import load_dotenv
 from . import utils, help
@@ -36,10 +36,22 @@ async def on_command_error(ctx, error):
 	elif isinstance(error, commands.MissingRequiredArgument):
 		await ctx.send(embed=utils.nv_embed(
 			"Command formatted incorrectly",
-			"The command you entered must be formatted differently. Check that it is entered correctly and try again."
+			f"The command you entered must be formatted differently. Check that it is entered correctly and try again."
 		))
-	else:	
-		raise error
+	else:
+		trace = "".join(traceback.format_tb(error.__traceback__))
+		maintainer = await bot.fetch_user(668627671306993703)
+		dm = await maintainer.create_dm()
+		
+		await ctx.send(embed=utils.nv_embed(
+			"Unknown error",
+			f"Heraldtron has encountered an unforseen difficulty. An error report has been sent."
+		))
+		await dm.send(embed=utils.nv_embed(
+			"Unknown error",
+			f"Heraldtron has encountered an unforseen difficulty due to a [command]({ctx.message.jump_url}).\n"\
+			f"**Stack Trace**:\n```python\n{trace}\n```"
+		))
 
 if __name__ == "__main__":
 	for cog in cogs:

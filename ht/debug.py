@@ -23,6 +23,11 @@ class DebugTools(commands.Cog, name="Debug", command_attrs=dict(hidden=True)):
 		for cog in extensions:
 			self.bot.reload_extension(cog)
 		print("Extensions reloaded!")
+	
+	@commands.command(name="error",help="Creates an error.",aliases=("err",))
+	@utils.is_admin()
+	async def raise_error(self,ctx):
+		raise commands.CommandError("Test Error")
 		
 def setup(bot):
 	bot.add_cog(DebugTools(bot))

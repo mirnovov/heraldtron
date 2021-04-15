@@ -10,9 +10,8 @@
 	- Add roll channel autocategorisation/archiving
 	- Make functionality currently unusable in DMs available where possible
 	- Add resources lookup
+	- Add proper mod authorisation
 
 - Add blazon generators (in #resources)
-- Memoise utility functions
 - Automate contest posts
 - Competition distribution functions?
-- Print out unsupported errors
