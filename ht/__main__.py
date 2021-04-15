@@ -6,11 +6,9 @@ from . import utils, help
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
 
-bot = commands.Bot(command_prefix="!")
-bot.help_command = help.NvHelpCommand()
-cogs = ["modtools","debug","heraldry"]
+bot = commands.Bot(command_prefix="!",help_command=help.NvHelpCommand())
+cogs = ["modtools","debug","heraldry","vexillology"]
 
 @bot.event
 async def on_ready():
@@ -58,4 +56,4 @@ if __name__ == "__main__":
 		bot.load_extension(f"ht.{cog}")
 		print(f"Cog {cog} loaded sucessfully")
 	
-	bot.run(TOKEN)
+	bot.run(os.environ["DISCORD_TOKEN"])

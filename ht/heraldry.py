@@ -1,10 +1,18 @@
-import discord, urllib
+import discord
 from discord.ext import commands
-from . import utils
+from . import utils, services
 
 class HeraldicStuff(commands.Cog, name="Heraldry"):
 	def __init__(self, bot):
 		self.bot = bot
+		
+	@commands.command(
+		help="Searches Google Images for `coat of arms <whatever you wrote>` and returns the first result.",
+		aliases=("as",)
+	)
+	async def armssearch(self, ctx, *, query):
+		embed = services.gis("coat of arms " + query)
+		await ctx.send(embed=embed)	
 		
 	@commands.command(
 		name="catalog",
@@ -13,7 +21,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("charge","cat")
 	)
 	async def ds_catalog(self, ctx, *, charge):			
-		url = find_in_catalog(charge)
+		url = services.ds_catalog(charge)
 		
 		if url == None:
 			await ctx.send(embed=utils.nv_embed(
@@ -58,33 +66,20 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		name="drawshield",
 		help="Illustrates arms using DrawShield.\nNote that DrawShield does not support"\
 		" all possible blazons. Code © Karl Wilcox",
 		aliases=("ds",)
 	)
-	async def ds_draw(self, ctx, *, blazon : str):			
-		embed = ds_backend(blazon,"Shield")
+	async def drawshield(self, ctx, *, blazon : str):			
+		embed = services.ds(blazon,"Shield")
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		name="drawflag",
-		help="Illustrates flags using DrawShield.\nNote that DrawShield does not support"\
-		" all possible flags, and the vexillological functionality is still in early"\
-		" development. Code © Karl Wilcox",
-		aliases=("df",)
-	)
-	async def ds_drawflag(self, ctx, *, blazon : str):
-		embed = ds_backend(blazon+" in flag shape","Flag")
-		await ctx.send(embed=embed)
-		
-	@commands.command(
-		name="lookup",
 		help="Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\
 		" Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
 		aliases=("lu","define","def")
 	)
-	async def ds_lookup(self, ctx, *, term : str):
+	async def lookup(self, ctx, *, term : str):
 		results = utils.get_json(f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		
 		if "error" in results:
@@ -101,33 +96,10 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		)
 		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
 		
-		thumb = find_in_catalog(term)
+		thumb = services.ds_catalog(term)
 		if thumb: embed.set_thumbnail(url=thumb)
 		
 		await ctx.send(embed=embed)
 		
-def ds_backend(blazon,drawn_kind):
-	blazon_out = urllib.parse.quote(blazon)
-	results = utils.get_json(f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
-	
-	embed = utils.nv_embed("",blazon,kind=4,custom_name=f"{drawn_kind} drawn!")		
-	embed.set_image(url=f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=png&dummy=shield.png")
-	embed.set_footer(text=f"Drawn using DrawShield; © Karl Wilcox. ")
-	
-	for message in results["messages"]:
-		if message["category"] != "blazon": continue
-		elif "linerange" in message:
-			embed.add_field(name=f"Error {message['linerange']}",value=message["content"],inline=False)
-		elif "context" in message:
-			embed.add_field(name="Error",value=f"{message['content']} {message['context']}",inline=False)
-			
-	return embed
-	
-def find_in_catalog(charge):
-	catalog = utils.get_json(f"https://drawshield.net/api/catalog/{urllib.parse.quote(charge)}")
-	
-	if not catalog.startswith("http"): return None
-	return catalog
-
 def setup(bot):
 	bot.add_cog(HeraldicStuff(bot))
