@@ -1,7 +1,6 @@
 import discord, urllib.request, json, functools
 from discord.ext import commands
 
-@functools.cache
 def nv_embed(e_summary,e_description,kind=0,custom_name=None):
 	embed=discord.Embed(title=e_summary,description=e_description)
 	
