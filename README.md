@@ -10,16 +10,26 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * [discord.py](https://pypi.org/project/discord.py/)
 * [python-dotenv](https://pypi.org/project/python-dotenv/)
 * [google-api-python-client](https://pypi.org/project/google-api-python-client/)
-* A bot account in the Discord Developer Portal ([see here for a basic how to](https://realpython.com/how-to-make-a-discord-bot-python/))
-* For image search functionality, a [Google Cloud Platform](https://cloud.google.com) API key supporting Google Custom Search
+* Developer credentials (see below)
+
+## Setup
+
+As one may expect, this bot requires a *bot account* to run. Create one in the Discord Developer Portal ([see here for a basic how to](https://realpython.com/how-to-make-a-discord-bot-python/)). 
+
+For image search functionality, a [Google Cloud Platform](https://cloud.google.com) account, with the Custom Search API enabled, is required. You must also create a [Programmable Search](https://programmablesearchengine.google.com/about/) engine that Custom Search uses, since Google has discontinued general search APIs. This must have image search enabled, and it is strongly recommended that you enable the "Search the entire web" setting.
+
+Before running, the bot requires an `.env` file containing credentials that it needs to run:
+* `DISCORD_TOKEN`: The Discord Developer API token.
+* `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search must be enabled for this key.
+* `GCS_CX`: The Programmable Search engine identifier.
 
 ## Usage
 
-To connect to your bot account, initialise a `.env` file containing your `DISCORD_TOKEN` and `GCS_TOKEN` in the `ht` directory.
-
-Then use the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install): 
+Once your bot is set up, use the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install): 
 
 ```
 cd path/to/heraldtron
 python -m ht
 ```
+
+Run the `!help` command for information about the bot's functionality.
