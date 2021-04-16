@@ -10,6 +10,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		help="Searches Google Images for `coat of arms <whatever you wrote>` and returns the first result.",
 		aliases=("as",)
 	)
+	@commands.before_invoke(utils.typing)
 	async def armssearch(self, ctx, *, query):
 		embed = await services.gis("coat of arms " + query)
 		await ctx.send(embed=embed)	
@@ -20,6 +21,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		" Wilcox",
 		aliases=("charge","cat")
 	)
+	@commands.before_invoke(utils.typing)
 	async def ds_catalog(self, ctx, *, charge):			
 		url = await services.ds_catalog(charge)
 		
@@ -49,6 +51,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		" can be selected via *coadb*, *public*, and *wikimedia* respectively).",
 		aliases=("random","cl")
 	)
+	@commands.before_invoke(utils.typing)
 	async def ds_challenge(self, ctx, source="all"):			
 		url = await utils.get_json(f"https://drawshield.net/api/challenge/{source}")
 		
@@ -70,6 +73,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		" all possible blazons. Code © Karl Wilcox",
 		aliases=("ds",)
 	)
+	@commands.before_invoke(utils.typing)
 	async def drawshield(self, ctx, *, blazon : str):			
 		embed = await services.ds(blazon,"Shield")
 		await ctx.send(embed=embed)
@@ -79,6 +83,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		" Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
 		aliases=("lu","define","def")
 	)
+	@commands.before_invoke(utils.typing)
 	async def lookup(self, ctx, *, term : str):
 		results = await utils.get_json(f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		

@@ -10,6 +10,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		help="Searches Google Images for `flag <whatever you wrote>` and returns the first result.",
 		aliases=("fs",)
 	)
+	@commands.before_invoke(utils.typing)
 	async def flagsearch(self, ctx, *, query):
 		embed = await services.gis("flag " + query)
 		await ctx.send(embed=embed)	
@@ -20,6 +21,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		" development. Code © Karl Wilcox",
 		aliases=("df",)
 	)
+	@commands.before_invoke(utils.typing)
 	async def drawflag(self, ctx, *, blazon : str):
 		embed = await services.ds(blazon+" in flag shape","Flag")
 		await ctx.send(embed=embed)

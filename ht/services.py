@@ -42,7 +42,7 @@ async def ds(blazon,drawn_kind):
 	blazon_out = urllib.parse.quote(blazon)
 	results = await utils.get_json(f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
 	
-	embed = utils.nv_embed("",blazon,kind=4,custom_name=f"{drawn_kind} drawn!")		
+	embed = utils.nv_embed("",f"*{blazon}*",kind=4,custom_name=f"{drawn_kind} drawn!")		
 	embed.set_image(url=f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=png&dummy=shield.png")
 	embed.set_footer(text=f"Drawn using DrawShield; © Karl Wilcox. ")
 	

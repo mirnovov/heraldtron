@@ -38,8 +38,9 @@ async def on_command_error(ctx, error):
 		))
 	elif isinstance(error, commands.MissingRequiredArgument):
 		await ctx.send(embed=utils.nv_embed(
-			"Command formatted incorrectly",
-			f"The command you entered must be formatted differently. Check that it is entered correctly and try again."
+			"Command is missing argument",
+			f"The command you entered requires the *{error.param.name}* argument."\
+			" Check that it is entered correctly and try again."
 		))
 	else:
 		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original

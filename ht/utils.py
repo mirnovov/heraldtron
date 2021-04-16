@@ -53,6 +53,9 @@ def is_admin(item="Herald"):
 
 	return commands.core.check(predicate)
 	
+async def typing(self,ctx):
+	await ctx.trigger_typing()
+	
 async def get_json(url):
 	async with aiohttp.ClientSession() as session:
 		async with session.get(url) as source:
