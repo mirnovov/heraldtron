@@ -17,6 +17,11 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.CommandNotFound):
+		phrase = ctx.message.content
+		
+		if(phrase.startswith("!!") or phrase.startswith("!?")):
+			return #ignore "!!!" etc
+		
 		await ctx.send(embed=utils.nv_embed(
 			"Command not found",
 			"The command you entered does not exist. Check your spelling and try again."
