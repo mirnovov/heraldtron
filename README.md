@@ -8,9 +8,11 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 
 * Python 3.7+
 * [discord.py](https://pypi.org/project/discord.py/)
+* [aiohttp](https://pypi.org/project/aiohttp/) (comes installed with discord.py)
 * [python-dotenv](https://pypi.org/project/python-dotenv/)
-* [google-api-python-client](https://pypi.org/project/google-api-python-client/)
 * Developer credentials (see below)
+
+[cchardet](https://pypi.org/project/cchardet/) and [aiodns](https://pypi.org/project/aiodns/) are also recommended to improve performance. 
 
 ## Setup
 

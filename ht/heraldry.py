@@ -1,4 +1,4 @@
-import discord
+import discord, urllib
 from discord.ext import commands
 from . import utils, services
 
@@ -11,7 +11,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("as",)
 	)
 	async def armssearch(self, ctx, *, query):
-		embed = services.gis("coat of arms " + query)
+		embed = await services.gis("coat of arms " + query)
 		await ctx.send(embed=embed)	
 		
 	@commands.command(
@@ -21,7 +21,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("charge","cat")
 	)
 	async def ds_catalog(self, ctx, *, charge):			
-		url = services.ds_catalog(charge)
+		url = await services.ds_catalog(charge)
 		
 		if url == None:
 			await ctx.send(embed=utils.nv_embed(
@@ -50,7 +50,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("random","cl")
 	)
 	async def ds_challenge(self, ctx, source="all"):			
-		url = utils.get_json(f"https://drawshield.net/api/challenge/{source}")
+		url = await utils.get_json(f"https://drawshield.net/api/challenge/{source}")
 		
 		if isinstance(url, dict) and "error" in url:
 			await ctx.send(embed=utils.nv_embed(
@@ -71,7 +71,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("ds",)
 	)
 	async def drawshield(self, ctx, *, blazon : str):			
-		embed = services.ds(blazon,"Shield")
+		embed = await services.ds(blazon,"Shield")
 		await ctx.send(embed=embed)
 		
 	@commands.command(
@@ -80,7 +80,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("lu","define","def")
 	)
 	async def lookup(self, ctx, *, term : str):
-		results = utils.get_json(f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
+		results = await utils.get_json(f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		
 		if "error" in results:
 			await ctx.send(embed=utils.nv_embed(
@@ -96,7 +96,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		)
 		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
 		
-		thumb = services.ds_catalog(term)
+		thumb = await services.ds_catalog(term)
 		if thumb: embed.set_thumbnail(url=thumb)
 		
 		await ctx.send(embed=embed)

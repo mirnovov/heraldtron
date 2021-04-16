@@ -15,10 +15,13 @@ setuptools.setup(
 	author_email = "anon185441@gmail.com",
 	packages = ["ht"],
 	license = "MIT",
-	python_requires = ">=3.6",
+	python_requires = ">=3.7",
 	install_requires = [
 		"discord.py>=1.1.0",
 		"python-dotenv",
 		"googleapi-python-client"
-	]
+	],
+	extras_require = {
+		"fast": ["cchardet","aiodnns"]
+	}
 )

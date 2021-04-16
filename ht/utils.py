@@ -1,4 +1,4 @@
-import discord, urllib.request, json, functools
+import discord, aiohttp, json, functools, urllib
 from discord.ext import commands
 
 def nv_embed(e_summary,e_description,kind=0,custom_name=None):
@@ -53,7 +53,8 @@ def is_admin(item="Herald"):
 
 	return commands.core.check(predicate)
 	
-def get_json(url):
-	with urllib.request.urlopen(url) as url:
-		return json.loads(url.read().decode())
-	return None
+async def get_json(url):
+	async with aiohttp.ClientSession() as session:
+		async with session.get(url) as source:
+			if not source.ok: return None
+			return await source.json()

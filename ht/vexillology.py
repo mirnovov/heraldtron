@@ -11,7 +11,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		aliases=("fs",)
 	)
 	async def flagsearch(self, ctx, *, query):
-		embed = services.gis("flag " + query)
+		embed = await services.gis("flag " + query)
 		await ctx.send(embed=embed)	
 		
 	@commands.command(
@@ -21,7 +21,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		aliases=("df",)
 	)
 	async def drawflag(self, ctx, *, blazon : str):
-		embed = services.ds(blazon+" in flag shape","Flag")
+		embed = await services.ds(blazon+" in flag shape","Flag")
 		await ctx.send(embed=embed)
 
 
