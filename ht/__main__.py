@@ -7,8 +7,11 @@ from . import utils, help
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
-bot = commands.Bot(command_prefix="!",help_command=help.NvHelpCommand())
-cogs = ["modtools","debug","heraldry","vexillology"]
+bot = commands.Bot(
+	command_prefix="!",
+	description="A heraldry-related bot designed for the Heraldry Community."
+)
+cogs = ["modtools","debug","heraldry","vexillology","help"]
 
 @bot.event
 async def on_ready():

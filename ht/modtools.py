@@ -9,7 +9,8 @@ class ModerationTools(commands.Cog, name="Moderation"):
 
 	@commands.command(
 		name="modmessage",
-		help="Displays a moderator message in a certain channel specified beforehand.",
+		help="Displays a moderator message in a channel.\n By default, this is"\
+		" the channel the command is invoked in, but it can be specified beforehand.",
 		aliases=("m",)
 	)
 	@utils.is_admin()

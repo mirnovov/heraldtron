@@ -7,7 +7,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		self.bot = bot
 		
 	@commands.command(
-		help="Searches Google Images for `coat of arms <whatever you wrote>` and returns the first result.",
+		help="Finds the first result of `coat of arms [query]` using Google Images.",
 		aliases=("as",)
 	)
 	@commands.before_invoke(utils.typing)

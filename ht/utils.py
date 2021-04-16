@@ -30,6 +30,11 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None):
 		name="Results" 
 		icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/VisualEditor_icon_reference-rtl-invert.svg/"\
 		"240px-VisualEditor_icon_reference-invert.svg.png"
+	elif kind == 5: #about
+		color=0x02af89
+		name="About Heraldtron" 
+		icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Echo_gratitude.svg/"\
+		"240px-Echo_gratitude.svg.png"
 		
 	embed.color=color
 	embed.set_author(name=custom_name or name,icon_url=icon_url)

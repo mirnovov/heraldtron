@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from . import utils
 
-class DebugTools(commands.Cog, name="Debug", command_attrs=dict(hidden=True)):
+class DebugTools(commands.Cog, name="Debug"):
 	def __init__(self, bot):
 		self.bot = bot
 

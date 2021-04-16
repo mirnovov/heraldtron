@@ -10,7 +10,7 @@
 	- Add roll channel autocategorisation/archiving
 	- Make functionality currently unusable in DMs available where possible
 	- Add resources lookup
-	- Add proper mod authorisation
+	- Add proper mod authorisation and hide mod commands
 
 - Add blazon generators (in #resources)
 - Automate contest posts

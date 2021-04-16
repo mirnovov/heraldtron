@@ -7,7 +7,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		self.bot = bot
 		
 	@commands.command(
-		help="Searches Google Images for `flag <whatever you wrote>` and returns the first result.",
+		help="Finds the first result of `flag [query]` using Google Images.",
 		aliases=("fs",)
 	)
 	@commands.before_invoke(utils.typing)
