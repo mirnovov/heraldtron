@@ -9,13 +9,10 @@ load_dotenv()
 
 bot = commands.Bot(
 	command_prefix="!",
-	description="A heraldry-related bot designed for the Heraldry Community."
+	description="A heraldry-related bot designed for the Heraldry Community.",
+	activity=discord.Game("a !challenge")
 )
 cogs = ["modtools","debug","heraldry","vexillology","help"]
-
-@bot.event
-async def on_ready():
-	print(f"{bot.user} has connected to Discord!")
 	
 @bot.event
 async def on_command_error(ctx, error):
