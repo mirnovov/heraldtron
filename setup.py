@@ -14,6 +14,9 @@ setuptools.setup(
 	author = "novov",
 	author_email = "anon185441@gmail.com",
 	packages = ["ht"],
+	package_data = {
+		"ht": ["data/*"],
+	},
 	license = "MIT",
 	python_requires = ">=3.7",
 	install_requires = [
