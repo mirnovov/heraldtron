@@ -75,8 +75,8 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def drawshield(self, ctx, *, blazon : str):			
-		embed = await services.ds(blazon,"Shield")
-		await ctx.send(embed=embed)
+		embed, file = await services.ds(blazon,"Shield")
+		await ctx.send(embed=embed,file=file)
 		
 	@commands.command(
 		help="Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\

@@ -1,4 +1,4 @@
-import urllib, os
+import discord, urllib, os, io, base64
 from dotenv import load_dotenv
 from . import utils
 
@@ -41,9 +41,10 @@ async def gis(query):
 async def ds(blazon,drawn_kind):
 	blazon_out = urllib.parse.quote(blazon)
 	results = await utils.get_json(f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
+	image = discord.File(io.BytesIO(base64.b64decode(results["image"])),filename="ds.png")
 	
-	embed = utils.nv_embed("",f"*{blazon}*",kind=4,custom_name=f"{drawn_kind} drawn!")		
-	embed.set_image(url=f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=png&dummy=shield.png")
+	embed = utils.nv_embed("",f"*{blazon}*",kind=4,custom_name=f"{drawn_kind} drawn!")	
+	embed.set_image(url="attachment://ds.png")	
 	embed.set_footer(text=f"Drawn using DrawShield; © Karl Wilcox. ")
 	
 	for message in results["messages"]:
@@ -53,7 +54,7 @@ async def ds(blazon,drawn_kind):
 		elif "context" in message:
 			embed.add_field(name="Error",value=f"{message['content']} {message['context']}",inline=False)
 			
-	return embed
+	return embed, image
 	
 async def ds_catalog(charge):
 	catalog = await utils.get_json(f"https://drawshield.net/api/catalog/{urllib.parse.quote(charge)}")

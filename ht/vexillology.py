@@ -24,8 +24,8 @@ class VexStuff(commands.Cog, name="Vexillology"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def drawflag(self, ctx, *, blazon : str):
-		embed = await services.ds(blazon+" in flag shape","Flag")
-		await ctx.send(embed=embed)
+		embed, file = await services.ds(blazon+" in flag shape","Flag")
+		await ctx.send(embed=embed,file=file)
 		
 	@commands.command(
 		help="Displays a random flag fact from a list of 38 facts.\n"\
