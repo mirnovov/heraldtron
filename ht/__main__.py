@@ -42,6 +42,12 @@ async def on_command_error(ctx, error):
 			f"The command you entered requires the *{error.param.name}* argument."\
 			" Check that it is entered correctly and try again."
 		))
+	elif isinstance(error, commands.UserNotFound):
+		await ctx.send(embed=utils.nv_embed(
+			"Command could not locate user",
+			f"The command you entered requires a valid user."\
+			" Check that their name is mentioned correctly and try again."
+		))
 	else:
 		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original
 		trace = "".join(traceback.format_tb(cause.__traceback__))
