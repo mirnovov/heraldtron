@@ -1,6 +1,6 @@
 import discord, urllib, csv, json, random, re
 from discord.ext import commands
-from . import utils, services
+from .. import utils, services
 
 class HeraldicStuff(commands.Cog, name="Heraldry"):
 	def __init__(self, bot):

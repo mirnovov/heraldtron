@@ -38,7 +38,7 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 		"240px-Echo_gratitude.svg.png"
 		
 	embed.color=color
-	embed.set_author(name=custom_name or name,icon_url=icon_url or custom_icon)
+	embed.set_author(name=custom_name or name,icon_url=custom_icon or icon_url)
 	
 	return embed
 

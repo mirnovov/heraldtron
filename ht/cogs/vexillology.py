@@ -1,7 +1,7 @@
 import discord, csv, random, asyncio
 from discord.ext import commands
-from .ext import OnlineSeych
-from . import utils, services
+from ..ext import OnlineSeych
+from .. import utils, services
 
 class VexStuff(commands.Cog, name="Vexillology"):
 	def __init__(self, bot):

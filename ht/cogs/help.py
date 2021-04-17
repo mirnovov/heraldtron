@@ -1,6 +1,6 @@
 import discord, itertools, sys, platform
 from discord.ext import commands
-from . import utils, version
+from .. import utils, version
 
 class MetaTools(commands.Cog, name="Meta"):
 	def __init__(self, bot):

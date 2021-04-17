@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from . import utils
+from .. import utils
 
 class DebugTools(commands.Cog, name="Debug"):
 	def __init__(self, bot):

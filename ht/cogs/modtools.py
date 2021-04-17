@@ -1,7 +1,7 @@
 import discord, typing
 from discord.ext import commands
 from datetime import datetime
-from . import utils
+from .. import utils
 
 class ModerationTools(commands.Cog, name="Moderation"):
 	def __init__(self, bot):

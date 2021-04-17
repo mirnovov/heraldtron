@@ -2,7 +2,7 @@
 import os, discord, logging, traceback, sys
 from discord.ext import commands
 from dotenv import load_dotenv
-from . import utils, help
+from . import utils
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
@@ -61,7 +61,7 @@ async def on_command_error(ctx, error):
 
 if __name__ == "__main__":
 	for cog in cogs:
-		bot.load_extension(f"ht.{cog}")
+		bot.load_extension(f"ht.cogs.{cog}")
 		print(f"Cog {cog} loaded sucessfully")
 	
 	bot.run(os.environ["DISCORD_TOKEN"])
