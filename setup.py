@@ -13,7 +13,7 @@ setuptools.setup(
 	version = getVersion(),
 	author = "novov",
 	author_email = "anon185441@gmail.com",
-	packages = ["ht"],
+	packages = ["ht","ext"],
 	package_data = {
 		"ht": ["data/*"],
 	},
@@ -22,7 +22,8 @@ setuptools.setup(
 	install_requires = [
 		"discord.py>=1.1.0",
 		"python-dotenv>=0.17.0",
-		"aiohttp>=3.7.4"
+		"aiohttp>=3.7.4",
+		"Pillow>=8.0"
 	],
 	extras_require = {
 		"fast": ["cchardet>=2.1.7","aiodns>=2.0.0"]

@@ -1,7 +1,8 @@
 import discord, aiohttp, json, functools, urllib
 from discord.ext import commands
+from io import BytesIO
 
-def nv_embed(e_summary,e_description,kind=0,custom_name=None):
+def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 	embed=discord.Embed(title=e_summary,description=e_description)
 	
 	#0, default, error
@@ -37,7 +38,7 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None):
 		"240px-Echo_gratitude.svg.png"
 		
 	embed.color=color
-	embed.set_author(name=custom_name or name,icon_url=icon_url)
+	embed.set_author(name=custom_name or name,icon_url=icon_url or custom_icon)
 	
 	return embed
 
@@ -66,3 +67,14 @@ async def get_json(url):
 		async with session.get(url) as source:
 			if not source.ok: return None
 			return await source.json()
+			
+async def get_image(url):
+	async with aiohttp.ClientSession() as session:
+		async with session.get(url) as source:
+			if not source.ok: return None
+			try:
+				image = await source.read()
+			except aiohttp.ClientResponseError:
+				return None
+			return BytesIO(image)
+			

@@ -1,4 +1,7 @@
-This project is hereby placed under the MIT License, excluding graphical content.
+This project is hereby placed under the MIT License, as written below, amended to exclude
+the following:
+- Graphical content
+- Included external software which is placed under its own license
 
 Copyright (c) 2021 novov
 
