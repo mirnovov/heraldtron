@@ -51,7 +51,7 @@ async def on_command_error(ctx, error):
 	else:
 		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original
 		trace = "".join(traceback.format_tb(cause.__traceback__))
-		maintainer = await bot.fetch_user(668627671306993703)
+		maintainer = await bot.fetch_user(int(os.environ["MAINTAINER"]))
 		dm = await maintainer.create_dm()	
 		
 		await ctx.send(embed=utils.nv_embed(

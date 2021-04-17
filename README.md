@@ -25,6 +25,7 @@ Before running, the bot requires an `.env` file containing credentials that it n
 * `DISCORD_TOKEN`: The Discord Developer API token.
 * `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search must be enabled for this key.
 * `GCS_CX`: The Programmable Search engine identifier.
+* `MAINTAINER`: The user that is messaged when errors occur.
 
 ## Usage
 
