@@ -12,7 +12,7 @@ bot = commands.Bot(
 	description="A heraldry-related bot designed for the Heraldry Community.",
 	activity=discord.Game("a !challenge")
 )
-cogs = ["modtools","debug","heraldry","vexillology","meta"]
+cogs = ["modtools","debug","heraldry","misc","vexillology","meta"]
 	
 @bot.event
 async def on_command_error(ctx, error):
