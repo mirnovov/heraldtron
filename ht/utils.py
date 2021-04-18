@@ -1,6 +1,8 @@
-import discord, aiohttp, json, functools, urllib
+import discord, aiohttp, json, functools, urllib, os
 from discord.ext import commands
 from io import BytesIO
+from xml.etree import ElementTree
+from .ext import get_slow_client_session
 
 def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 	embed=discord.Embed(title=e_summary,description=e_description)
@@ -62,8 +64,10 @@ def is_admin(item="Herald"):
 async def typing(self,ctx):
 	await ctx.trigger_typing()
 	
-async def get_json(url):
-	async with aiohttp.ClientSession() as session:
+async def get_json(url, slow_mode = False):
+	cs = aiohttp.ClientSession() if not slow_mode else get_slow_client_session() 
+	
+	async with cs as session:
 		async with session.get(url) as source:
 			if not source.ok: return None
 			return await source.json()
@@ -78,3 +82,8 @@ async def get_image(url):
 				return None
 			return BytesIO(image)
 			
+async def get_text(url):
+	async with aiohttp.ClientSession()  as session:
+		async with session.get(url) as source:
+			if not source.ok: return None
+			return await source.text()			

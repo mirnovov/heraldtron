@@ -1,10 +1,43 @@
 import discord, urllib, csv, json, random, re
 from discord.ext import commands
 from .. import utils, services
+from ..artifacts import source_list, source_string
 
 class HeraldicStuff(commands.Cog, name="Heraldry"):
 	def __init__(self, bot):
 		self.bot = bot
+		
+	@commands.command(
+		help="Displays a random historical heraldic artifact.\n"\
+			"This can be narrowed down to an individual source:\n\n"\
+			f"{source_string()}",
+		aliases=("ar","relic")
+	)
+	@commands.before_invoke(utils.typing)
+	async def artifact(self, ctx, source="all"):
+		if source == "all":
+			museum = random.choice(list(source_list.values()))
+		elif source not in source_list:
+			await ctx.send(embed=utils.nv_embed(
+				"Invalid artifact source",
+				"Check your spelling and try again."
+			))
+			return
+		else:
+			museum = source_list[source]
+			
+		artifact = await museum[0]()
+		footer = f"{artifact[4]} via {museum[1]}" if artifact[4] else museum[1]
+		
+		embed = utils.nv_embed(artifact[1],artifact[2],kind=3,custom_name="Random artifact")
+		embed.url = artifact[0]	
+			
+		if artifact[3]:
+			embed.set_image(url=artifact[3])
+		
+		embed.set_footer(text=footer)
+		
+		await ctx.send(embed=embed)	
 		
 	@commands.command(
 		help="Finds the first result of `coat of arms [query]` using Google Images.",

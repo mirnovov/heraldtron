@@ -1,7 +1,12 @@
-This project is hereby placed under the MIT License, as written below, amended to exclude
-the following:
-- Graphical content
-- Included external software which is placed under its own license
+**This project is hereby placed under the MIT License, as written below, amended to exclude
+the following**:
+* Graphical content
+* Included external software which is placed under its own license:
+
+	* Content in `ht/ext/seychelles` from [Seychelles Flag Generator](https://github.com/akshaychitale/seychelles), included under the Unlicense.
+	* Portions of `ht/ext.py` from [aiohttp](https://pypi.org/project/aiohttp/), included under the Apache License 2.0.
+	
+***
 
 Copyright (c) 2021 novov
 

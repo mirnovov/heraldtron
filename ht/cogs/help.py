@@ -115,7 +115,7 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 		if signature:
 			self.embed.description += f"\u0060{signature}\u0060"
 		if command.help:
-			self.embed.description += "\n" + command.help.rstrip("\u0060")
+			self.embed.description += "\n\n" + command.help.rstrip("\u0060")
 		
 	async def send_cog_help(self, cog):
 		if cog.description:
