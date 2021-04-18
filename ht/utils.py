@@ -24,12 +24,12 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 		icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/OOjs_UI_icon_info-progressive.svg/"\
 		"240px-OOjs_UI_icon_info-progressive.svg.png"
 	elif kind == 3: #search
-		color=0xfafafa
+		color=0x444850
 		name="Lookup results" 
 		icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/OOjs_UI_icon_search-ltr-invert.svg/"\
 		"240px-OOjs_UI_icon_search-ltr-invert.svg.png"
 	elif kind == 4: #generic
-		color=0xfafafa
+		color=0x444850
 		name="Results" 
 		icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/VisualEditor_icon_reference-rtl-invert.svg/"\
 		"240px-VisualEditor_icon_reference-invert.svg.png"
