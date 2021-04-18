@@ -94,7 +94,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 			return
 		
 		image_url = message.attachments[0].url
-		image = await utils.get_image(image_url)
+		image = await utils.get_bytes(image_url)
 
 		seych = OnlineSeych(image_url,image)
 		seych.seychelles()

@@ -64,15 +64,7 @@ def is_admin(item="Herald"):
 async def typing(self,ctx):
 	await ctx.trigger_typing()
 	
-async def get_json(url, slow_mode = False):
-	cs = aiohttp.ClientSession() if not slow_mode else get_slow_client_session() 
-	
-	async with cs as session:
-		async with session.get(url) as source:
-			if not source.ok: return None
-			return await source.json()
-			
-async def get_image(url):
+async def get_bytes(url):
 	async with aiohttp.ClientSession() as session:
 		async with session.get(url) as source:
 			if not source.ok: return None
@@ -81,6 +73,14 @@ async def get_image(url):
 			except aiohttp.ClientResponseError:
 				return None
 			return BytesIO(image)
+	
+async def get_json(url, slow_mode = False):
+	cs = aiohttp.ClientSession() if not slow_mode else get_slow_client_session() 
+	
+	async with cs as session:
+		async with session.get(url) as source:
+			if not source.ok: return None
+			return await source.json()
 			
 async def get_text(url):
 	async with aiohttp.ClientSession()  as session:
