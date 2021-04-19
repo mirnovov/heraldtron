@@ -1,4 +1,3 @@
 discord.py >= 1.1.0
-python-dotenv >= 0.17.0
 aiohttp >= 3.7.0
 Pillow >= 8.0

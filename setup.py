@@ -21,7 +21,6 @@ setuptools.setup(
 	python_requires = ">=3.7",
 	install_requires = [
 		"discord.py>=1.1.0",
-		"python-dotenv>=0.17.0",
 		"aiohttp>=3.7.4",
 		"Pillow>=8.0"
 	],
