@@ -36,7 +36,6 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 		headers = {"api-key": ctx.bot.conf["DEEP_AI"].strip()}
 			
 		async with aiohttp.ClientSession() as session:
-			#load_dotenv()
 			async with session.post(url,data=data,headers=headers) as source:
 				if not source.ok:
 					await ctx.send(embed=utils.nv_embed(

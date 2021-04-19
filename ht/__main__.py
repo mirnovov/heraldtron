@@ -1,7 +1,6 @@
 # bot.py
 import os, discord, logging, traceback, sys
 from discord.ext import commands
-from dotenv import load_dotenv
 from . import utils
 
 logging.basicConfig(level=logging.INFO)
