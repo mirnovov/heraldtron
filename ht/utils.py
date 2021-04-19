@@ -86,4 +86,7 @@ async def get_text(url):
 	async with aiohttp.ClientSession()  as session:
 		async with session.get(url) as source:
 			if not source.ok: return None
-			return await source.text()			
+			return await source.text()	
+			
+def parse_xml(text_string,root):
+	return ElementTree.fromstring(text_string).find(root)	

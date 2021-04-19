@@ -34,6 +34,7 @@ Additionally, the `!artifact` command requires a number of museum and institutio
 * `AR_EURO`: The key for the [Europeana Pro API](https://pro.europeana.eu/page/apis).
 * `AR_DGTNZ`: The key for the [Digital NZ API](https://digitalnz.org/developers).
 * `AR_SMTHS`: The key for the [Smithsonian API](http://edan.si.edu/openaccess/apidocs/), provided by data.gov.
+* `AR_DDBTK`: The key for the German Digital Library/[Deutsche Digitale Bibliothek API](https://labs.deutsche-digitale-bibliothek.de/app/ddbapi/)
 
 ## Usage
 
