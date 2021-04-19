@@ -25,7 +25,6 @@ Before running, the bot requires an `config.json` file in the root directory con
 * `DISCORD_TOKEN`: The Discord Developer API token.
 * `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search must be enabled for this key.
 * `GCS_CX`: The Programmable Search engine identifier.
-* `MAINTAINER`: The internal Discord user integer (*not* the tag plus 4-digit unique number) that is messaged when errors occur.
 
 Additionally, the `!artifact` command requires a number of museum and institutional API keys, which are specified below:
 
@@ -35,9 +34,11 @@ Additionally, the `!artifact` command requires a number of museum and institutio
 * `AR_SMTHS`: The key for the [Smithsonian API](http://edan.si.edu/openaccess/apidocs/), provided by data.gov.
 * `AR_DDBTK`: The key for the German Digital Library/[Deutsche Digitale Bibliothek API](https://labs.deutsche-digitale-bibliothek.de/app/ddbapi/)
 
-A few other services require keys as well:
+A few other things require keys as well:
 
 * `DEEP_AI`: The key for `!textgen`, from [DeepAI](https://deepai.org/).
+
+Optionally, one can also include `USE_JISHAKU`. If `true`, the [jishaku](https://github.com/Gorialis/jishaku) debugger is loaded.
 
 ## Usage
 
@@ -45,6 +46,7 @@ Once your bot is set up, use the standard Python package initialisation method (
 
 ```
 cd path/to/heraldtron
+pip install -r requirements/main.txt
 python -m ht
 ```
 

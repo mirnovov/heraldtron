@@ -21,54 +21,60 @@ async def on_command_error(ctx, error):
 		if(phrase.startswith("!!") or phrase.startswith("!?")):
 			return #ignore "!!!" etc
 		
-		await ctx.send(embed=utils.nv_embed(
-			"Command not found",
-			"The command you entered does not exist. Check your spelling and try again."
-		))
+		title = "Command not found"
+		message = "The command you entered does not exist. Check your spelling and try again."
+		
 	elif isinstance(error, commands.NoPrivateMessage):
-		await ctx.send(embed=utils.nv_embed(
-			"Command must be public",
-			"The command you entered cannot be used during direct messaging."
-		))
+		title = "Command must be public"
+		message = "The command you entered cannot be used during direct messaging."
+		
 	elif isinstance(error, commands.MissingRole):
-		await ctx.send(embed=utils.nv_embed(
-			"Command requires elevated privileges",
-			"The command you entered requires a role that you do not possess."
-		))
+		title = "Command requires elevated privileges"
+		message = "The command you entered requires a role that you do not possess."
+		
 	elif isinstance(error, commands.MissingRequiredArgument):
-		await ctx.send(embed=utils.nv_embed(
-			"Command is missing argument",
-			f"The command you entered requires the *{error.param.name}* argument."\
-			" Check that it is entered correctly and try again."
-		))
+		title = "Command is missing argument"
+		message = f"The command you entered requires the *{error.param.name}* argument."\
+				  " Check that it is entered correctly and try again."
+		
 	elif isinstance(error, commands.UserNotFound):
-		await ctx.send(embed=utils.nv_embed(
-			"Command could not locate user",
-			f"The command you entered requires a valid user."\
-			" Check that their name is mentioned correctly and try again."
-		))
+		title = "Command could not locate user",
+		message = f"The command you entered requires a valid user."\
+				  " Check that their name is mentioned correctly and try again."
+		
+	#elif isinstance(error, commands.TooManyArguments):
+	#	title = "Command given too many arguments",
+	#	message = f"The command you entered does not accept this many arguments."\
+	#			  " Check that you are using it correctly and try again."
+	#	
 	else:
 		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original
 		trace = "".join(traceback.format_tb(cause.__traceback__))
-		maintainer = await bot.fetch_user(bot.conf["MAINTAINER"])
-		dm = await maintainer.create_dm()	
+		app_info = await bot.application_info()
+		dm = await app_info.owner.create_dm()	
 		
-		await ctx.send(embed=utils.nv_embed(
-			"Unknown error",
-			f"Heraldtron has encountered an unforseen difficulty. An error report has been sent."
-		))
+		if not isinstance(ctx.channel, discord.abc.GuildChannel) and not bot.is_owner(ctx.author):
+			title = "Unknown error"
+			message = f"Heraldtron has encountered an unforseen difficulty. An error report has been sent."
+		
 		await dm.send(embed=utils.nv_embed(
 			"Unknown error",
 			f"Heraldtron has encountered an unforseen difficulty due to a [command]({ctx.message.jump_url}).\n\n"\
 			f"**Error Info**:\n```python\n{type(cause).__name__}: {str(cause)}\n```\n"
 			f"**Stack Trace**:\n```python\n{trace}\n```"
 		))
+	
+	await ctx.send(embed=utils.nv_embed(title,message))
 
 if __name__ == "__main__":
-	cogs = ["modtools","debug","heraldry","misc","vexillology","meta"]
+	cogs = ["modtools","heraldry","misc","vexillology","meta"]
 	
 	for cog in cogs:
 		bot.load_extension(f"ht.cogs.{cog}")
 		print(f"Cog {cog} loaded sucessfully")
+		
+	if bot.conf.get("USE_JISHAKU"):
+		os.environ["JISHAKU_HIDE"] = "1" 
+		bot.load_extension("jishaku")
 	
 	bot.run(bot.conf["DISCORD_TOKEN"])

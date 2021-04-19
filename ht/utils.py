@@ -97,9 +97,8 @@ def load_conf():
 		except: raise FileNotFoundError("Cannot load JSON file.")
 		
 	requisites = [
-		"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "MAINTAINER",
-		"AR_RIJKS", "AR_EURO", "AR_DGTNZ", "AR_SMTHS",
-		"AR_DDBTK", "DEEP_AI"
+		"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "AR_RIJKS", 
+		"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI"
 	]
 	
 	for r in requisites:
