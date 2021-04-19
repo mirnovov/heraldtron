@@ -9,7 +9,6 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * Python 3.7+
 * [discord.py](https://pypi.org/project/discord.py/)
 * [aiohttp](https://pypi.org/project/aiohttp/) (comes installed with discord.py)
-* [python-dotenv](https://pypi.org/project/python-dotenv/)
 * [Pillow](https://pypi.org/project/Pillow/)
 * Developer credentials (see below)
 
@@ -21,7 +20,7 @@ As one may expect, this bot requires a *bot account* to run. Create one in the D
 
 For image search functionality, a [Google Cloud Platform](https://cloud.google.com) account, with the Custom Search API enabled, is required. You must also create a [Programmable Search](https://programmablesearchengine.google.com/about/) engine that Custom Search uses, since Google has discontinued general search APIs. This must have image search enabled, and it is strongly recommended that you enable the "Search the entire web" setting.
 
-Before running, the bot requires an `.env` file containing credentials that it needs to run:
+Before running, the bot requires an `config.json` file in the root directory containing credentials that it needs to run:
 
 * `DISCORD_TOKEN`: The Discord Developer API token.
 * `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search must be enabled for this key.

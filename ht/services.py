@@ -1,14 +1,11 @@
 import discord, urllib, os, io, base64
-from dotenv import load_dotenv
 from . import utils
 
-async def gis(query):
-	load_dotenv()
-	
+async def gis(conf,query):
 	params = urllib.parse.urlencode({
-		"key": os.environ["GCS_TOKEN"],
+		"key": conf["GCS_TOKEN"],
 		"q": query,
-		"cx": os.environ["GCS_CX"],
+		"cx": conf["GCS_CX"],
 		"searchType": "image",
 		"safe": "off",
 		"num": 1

@@ -44,8 +44,7 @@ class MetaTools(commands.Cog, name="Meta"):
 		embed.add_field(
 			name="With the help of", 
 			value=" - [discord.py](https://pypi.org/project/discord.py/)\n"\
-				  " - [aiohttp](https://pypi.org/project/aiohttp/)\n"\
-				  " - [python-dotenv](https://pypi.org/project/python-dotenv/)", 
+				  " - [aiohttp](https://pypi.org/project/aiohttp/)", 
 			inline=False
 		)
 		embed.add_field(

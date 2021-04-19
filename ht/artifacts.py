@@ -1,11 +1,8 @@
 import json, random, os, functools, re, asyncio
-from dotenv import load_dotenv
 from . import utils
 
-load_dotenv()
-
-async def rijksmuseum():
-	api_key = os.environ["AR_RIJKS"]
+async def rijksmuseum(conf):
+	api_key = conf["AR_RIJKS"]
 	collection = await utils.get_json(
 		f"https://www.rijksmuseum.nl/api/en/collection?key={api_key}&q=heraldry&ps=100&imgonly=True"
 	)
@@ -19,7 +16,7 @@ async def rijksmuseum():
 		None
 	)
 	
-async def victoria_and_albert():
+async def victoria_and_albert(conf):
 	collection = await utils.get_json(
 		f"https://api.vam.ac.uk/v2/objects/search?q=%22coat%20of%20arms%22&page_size=100&year_made_to=1900&images_exist=1"
 	)
@@ -33,8 +30,8 @@ async def victoria_and_albert():
 		None
 	)
 	
-async def europeana():
-	api_key = os.environ["AR_EURO"]
+async def europeana(conf):
+	api_key = conf["AR_EURO"]
 	collection = await utils.get_json(
 		f"https://api.europeana.eu/record/v2/search.json?query=coat%20of%20arms&media=true&rows=100&wskey={api_key}"
 	)
@@ -47,8 +44,8 @@ async def europeana():
 		result["dataProvider"][0]
 	)
 	
-async def digital_nz():
-	api_key = os.environ["AR_DGTNZ"]
+async def digital_nz(conf):
+	api_key = conf["AR_DGTNZ"]
 	collection = await utils.get_json(
 		f"https://api.digitalnz.org/v3/records.json?api_key={api_key}&per_page=100&text=heraldry&and[category][]=Images"
 	)
@@ -67,7 +64,7 @@ async def digital_nz():
 		result["display_content_partner"]
 	)
 
-async def met_museum():
+async def met_museum(conf):
 	collection = await utils.get_json(
 		"https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=%22coat%20of%20arms%22",
 		slow_mode = True
@@ -86,7 +83,7 @@ async def met_museum():
 		None
 	)
 	
-async def art_institute_chicago():
+async def art_institute_chicago(conf):
 	collection = await utils.get_json(
 		"https://api.artic.edu/api/v1/artworks/search?q=coat%20of%20arms&limit=100&fields=id,title,image_id,artist_title"
 	)
@@ -100,8 +97,8 @@ async def art_institute_chicago():
 		None
 	)
 	
-async def smithsonian():
-	api_key = os.environ["AR_SMTHS"]
+async def smithsonian(conf):
+	api_key = conf["AR_SMTHS"]
 	collection = await utils.get_json(
 		f"https://api.si.edu/openaccess/api/v1.0/search?q=coat%20of%20arms&rows=400&api_key={api_key}"
 	)
@@ -119,7 +116,7 @@ async def smithsonian():
 	
 	return (url, result["title"], "", image_url, None)
 	
-async def wikimedia_commons():
+async def wikimedia_commons(conf):
 	collection = await utils.get_json(
 		"https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&cmtype=file&cmtitle=Category:Paintings_of_coats_of_arms&format=json&cmlimit=500"
 	)
@@ -137,8 +134,8 @@ async def wikimedia_commons():
 		None
 	)
 	
-async def deutsche_digitale():
-	api_key = os.environ["AR_DDBTK"]
+async def deutsche_digitale(conf):
+	api_key = conf["AR_DDBTK"]
 	collection = await utils.get_json(
 		f"https://api.deutsche-digitale-bibliothek.de/search?query=Heraldik&facet=objecttype_fct&rows=1000&objecttype_fct=Buchmalerei&type_fct=002&oauth_consumer_key={api_key}"
 	)

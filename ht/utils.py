@@ -89,4 +89,21 @@ async def get_text(url):
 			return await source.text()	
 			
 def parse_xml(text_string,root):
-	return ElementTree.fromstring(text_string).find(root)	
+	return ElementTree.fromstring(text_string).find(root)
+	
+def load_conf():
+	with open("config.json") as file:
+		try: conf = json.load(file)
+		except: raise FileNotFoundError("Cannot load JSON file.")
+		
+	requisites = [
+		"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "MAINTAINER",
+		"AR_RIJKS", "AR_EURO", "AR_DGTNZ", "AR_SMTHS",
+		"AR_DDBTK", "DEEP_AI"
+	]
+	
+	for r in requisites:
+		if r not in conf:
+			raise NameError("JSON file does not have required values.")
+			
+	return conf

@@ -1,4 +1,6 @@
 .env
+/config.json
 .nova/
 __pycache__
 nvpriv
+.DS_Store

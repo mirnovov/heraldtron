@@ -5,14 +5,13 @@ from dotenv import load_dotenv
 from . import utils
 
 logging.basicConfig(level=logging.INFO)
-load_dotenv()
 
 bot = commands.Bot(
 	command_prefix="!",
 	description="A heraldry-related bot designed for the Heraldry Community.",
 	activity=discord.Game("a !challenge")
 )
-cogs = ["modtools","debug","heraldry","misc","vexillology","meta"]
+bot.conf = utils.load_conf()
 	
 @bot.event
 async def on_command_error(ctx, error):
@@ -51,7 +50,7 @@ async def on_command_error(ctx, error):
 	else:
 		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original
 		trace = "".join(traceback.format_tb(cause.__traceback__))
-		maintainer = await bot.fetch_user(int(os.environ["MAINTAINER"]))
+		maintainer = await bot.fetch_user(bot.conf["MAINTAINER"])
 		dm = await maintainer.create_dm()	
 		
 		await ctx.send(embed=utils.nv_embed(
@@ -66,8 +65,10 @@ async def on_command_error(ctx, error):
 		))
 
 if __name__ == "__main__":
+	cogs = ["modtools","debug","heraldry","misc","vexillology","meta"]
+	
 	for cog in cogs:
 		bot.load_extension(f"ht.cogs.{cog}")
 		print(f"Cog {cog} loaded sucessfully")
 	
-	bot.run(os.environ["DISCORD_TOKEN"])
+	bot.run(bot.conf["DISCORD_TOKEN"])

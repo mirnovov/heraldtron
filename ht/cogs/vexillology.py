@@ -13,7 +13,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def flagsearch(self, ctx, *, query):
-		embed = await services.gis("flag " + query)
+		embed = await services.gis(ctx.bot.conf, "flag " + query)
 		await ctx.send(embed=embed)	
 		
 	@commands.command(

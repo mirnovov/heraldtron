@@ -26,7 +26,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		else:
 			museum = source_list[source]
 			
-		artifact = await museum[0]()
+		artifact = await museum[0](ctx.bot.conf)
 		footer = f"{artifact[4]} via {museum[1]}" if artifact[4] else museum[1]
 		
 		embed = utils.nv_embed(artifact[1],artifact[2],kind=3,custom_name="Random artifact")
@@ -45,7 +45,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def armssearch(self, ctx, *, query):
-		embed = await services.gis("coat of arms " + query)
+		embed = await services.gis(ctx.bot.conf, "coat of arms " + query)
 		await ctx.send(embed=embed)	
 		
 	@commands.command(
