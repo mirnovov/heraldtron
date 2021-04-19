@@ -38,15 +38,15 @@ async def on_command_error(ctx, error):
 				  " Check that it is entered correctly and try again."
 		
 	elif isinstance(error, commands.UserNotFound):
-		title = "Command could not locate user",
+		title = "Command could not locate user"
 		message = f"The command you entered requires a valid user."\
 				  " Check that their name is mentioned correctly and try again."
 		
-	#elif isinstance(error, commands.TooManyArguments):
-	#	title = "Command given too many arguments",
-	#	message = f"The command you entered does not accept this many arguments."\
-	#			  " Check that you are using it correctly and try again."
-	#	
+	elif isinstance(error, commands.TooManyArguments):
+		title = "Command given too many arguments"
+		message = f"The command you entered does not accept this many arguments."\
+				  " Check that you are using it correctly and try again."
+		
 	else:
 		cause = error if not isinstance(error, commands.CommandInvokeError) else error.original
 		trace = "".join(traceback.format_tb(cause.__traceback__))
@@ -64,7 +64,8 @@ async def on_command_error(ctx, error):
 			f"**Stack Trace**:\n```python\n{trace}\n```"
 		))
 	
-	await ctx.send(embed=utils.nv_embed(title,message))
+	if title and message:
+		await ctx.send(embed=utils.nv_embed(title,message))
 
 if __name__ == "__main__":
 	cogs = ["modtools","heraldry","misc","vexillology","meta"]
