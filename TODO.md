@@ -1,5 +1,7 @@
 - Implement DB (using SQLite)
-	- Add hello/goodbye messages (and allow mods to set their channel)
+	- Requires channel to be stored:
+		- Add hello/goodbye messages (and allow mods to set their channel)
+		- Log warnings
 	- Add auto blazon registration/GreiiN stuff
 		- Create user profile thingies on main server that are linked
 		- Maybe add auto roll channel setup (might be helpful, as mods often get the perms slightly wrong)

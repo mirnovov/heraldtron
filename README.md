@@ -36,6 +36,10 @@ Additionally, the `!artifact` command requires a number of museum and institutio
 * `AR_SMTHS`: The key for the [Smithsonian API](http://edan.si.edu/openaccess/apidocs/), provided by data.gov.
 * `AR_DDBTK`: The key for the German Digital Library/[Deutsche Digitale Bibliothek API](https://labs.deutsche-digitale-bibliothek.de/app/ddbapi/)
 
+A few other services require keys as well:
+
+* `DEEP_AI`: The key for `!textgen`, from [DeepAI](https://deepai.org/).
+
 ## Usage
 
 Once your bot is set up, use the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install): 
