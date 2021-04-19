@@ -5,6 +5,11 @@ from typing import Optional
 from aiohttp.helpers import BaseTimerContext
 from aiohttp.http_parser import HttpResponseParserPy
 
+def compute_seychelles(image_url,image):
+	seych = OnlineSeych(image_url,image)
+	seych.seychelles()
+	return seych.save_bytes()
+
 class OnlineSeych(seychelles.Seychelles):
 	def __init__(self, url_in, data_in):
 		self.name_in = None

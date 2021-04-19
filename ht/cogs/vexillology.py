@@ -1,6 +1,6 @@
 import discord, csv, random, asyncio
 from discord.ext import commands
-from ..ext import OnlineSeych
+from ..ext import compute_seychelles
 from .. import utils, services
 
 class VexStuff(commands.Cog, name="Vexillology"):
@@ -70,7 +70,8 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		help="Seychelles-izes a flag.\n"\
 			 "Uses Akshay Chitale's Seychelles Flag Generator script.",
 		aliases=("sy",)
-	)	
+	)
+	@commands.before_invoke(utils.typing)	
 	async def seychelles(self,ctx):
 		await ctx.send(
 			"What image would you like me to seychelles-ize?\n"\
@@ -94,12 +95,8 @@ class VexStuff(commands.Cog, name="Vexillology"):
 			return
 		
 		image_url = message.attachments[0].url
-		image = await utils.get_bytes(image_url)
-
-		seych = OnlineSeych(image_url,image)
-		seych.seychelles()
-		image = seych.save_bytes()
-		
+		image_content = await utils.get_bytes(image_url)
+		image = await self.bot.loop.run_in_executor(None, compute_seychelles, image_url, image_content)
 		file = discord.File(image,filename="seychelles.png")
 		
 		embed = utils.nv_embed("Result","",kind=4,custom_name="Seychelles-izer")
