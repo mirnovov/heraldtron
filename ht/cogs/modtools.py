@@ -6,6 +6,20 @@ from .. import utils
 class ModerationTools(commands.Cog, name="Moderation"):
 	def __init__(self, bot):
 		self.bot = bot
+		
+	#right now, just a bodge of has_role, but expand this so it works in dm, by checking all valid servers under that circumstance
+	async def cog_check(self,ctx):
+		item = "Herald"
+		if not isinstance(ctx.channel, discord.abc.GuildChannel):
+			raise commands.NoPrivateMessage()
+
+		if isinstance(item, int):
+			role = discord.utils.get(ctx.author.roles, id=item)
+		else:
+			role = discord.utils.get(ctx.author.roles, name=item)
+		if role is None:
+			raise commands.MissingRole(item)
+		return True
 	
 	@commands.command(
 		name="modmessage",
@@ -13,7 +27,6 @@ class ModerationTools(commands.Cog, name="Moderation"):
 		" the channel the command is invoked in, but it can be specified beforehand.",
 		aliases=("m",)
 	)
-	@utils.is_admin()
 	async def mod_message(self,ctx,channel : typing.Optional[discord.TextChannel] = None,*,message_content):
 		channel = channel or ctx.channel
 	
@@ -26,7 +39,6 @@ class ModerationTools(commands.Cog, name="Moderation"):
 		await channel.send(embed=embed)
 	
 	@commands.command(help="Locks a channel, disabling the ability to send messages from it.",aliases=("l",))	
-	@utils.is_admin()
 	async def lock(self, ctx, channel : typing.Optional[discord.TextChannel] = None):
 		channel = channel or ctx.channel
 		
@@ -34,7 +46,6 @@ class ModerationTools(commands.Cog, name="Moderation"):
 		await ctx.send(f":lock: | **{ctx.channel.mention} has been locked.**")
 		
 	@commands.command(help="Unlocks a channel, restoring the ability to send messages from it.",aliases=("ul",))	
-	@utils.is_admin()
 	async def unlock(self, ctx, channel : discord.TextChannel = None):
 		channel = channel or ctx.channel
 		
@@ -42,7 +53,6 @@ class ModerationTools(commands.Cog, name="Moderation"):
 		await ctx.send(f":unlock: | **{ctx.channel.mention} has been unlocked.**")
 		
 	@commands.command(help="Sends a warning message to a user.",aliases=("w",))	
-	@utils.is_admin()
 	async def warn(self, ctx, user : discord.User, *, message_content):
 		dm = await user.create_dm()
 		

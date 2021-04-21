@@ -43,23 +43,6 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 	embed.set_author(name=custom_name or name,icon_url=custom_icon or icon_url)
 	
 	return embed
-
-#right now, just a duplicate of has_role, but expand this so it works in dm, by checking all valid servers under that circumstance
-@functools.cache
-def is_admin(item="Herald"):
-	def predicate(ctx):
-		if not isinstance(ctx.channel, discord.abc.GuildChannel):
-			raise commands.NoPrivateMessage()
-
-		if isinstance(item, int):
-			role = discord.utils.get(ctx.author.roles, id=item)
-		else:
-			role = discord.utils.get(ctx.author.roles, name=item)
-		if role is None:
-			raise commands.MissingRole(item)
-		return True
-
-	return commands.core.check(predicate)
 	
 async def typing(self,ctx):
 	await ctx.trigger_typing()
