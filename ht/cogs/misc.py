@@ -10,9 +10,9 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def advice(self, ctx):			
-		result = await utils.get_json(f"https://api.adviceslip.com/advice")
+		result = await utils.get_json(f"https://api.adviceslip.com/advice",content_type="text/html")
 		
-		embed = utils.nv_embed(result["advice"],"",kind=4,custom_name="Random advice")		
+		embed = utils.nv_embed(result["slip"]["advice"],"",kind=4,custom_name="Random advice")		
 		embed.set_footer(text=f"Retrieved using adviceslip.com")
 		await ctx.send(embed=embed)
 		

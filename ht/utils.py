@@ -57,13 +57,13 @@ async def get_bytes(url):
 				return None
 			return BytesIO(image)
 	
-async def get_json(url, slow_mode = False):
+async def get_json(url, slow_mode = False, **kwargs):
 	cs = aiohttp.ClientSession() if not slow_mode else get_slow_client_session() 
 	
 	async with cs as session:
 		async with session.get(url) as source:
 			if not source.ok: return None
-			return await source.json()
+			return await source.json(**kwargs)
 			
 async def get_text(url):
 	async with aiohttp.ClientSession()  as session:
