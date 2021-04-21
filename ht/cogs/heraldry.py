@@ -45,8 +45,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def armssearch(self, ctx, *, query):
-		embed = await services.gis(ctx.bot.conf, "coat of arms " + query)
-		await ctx.send(embed=embed)	
+		await services.gis(ctx, "coat of arms " + query)
 		
 	@commands.command(
 		name="catalog",

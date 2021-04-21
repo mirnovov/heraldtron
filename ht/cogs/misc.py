@@ -19,8 +19,7 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 	@commands.command(help="Conducts a search using Google Images.", aliases=("img","gi"))
 	@commands.before_invoke(utils.typing)
 	async def imgsearch(self, ctx, *, query):
-		embed = await services.gis(ctx.bot.conf,"" + query)
-		await ctx.send(embed=embed)	
+		await services.gis(ctx,"" + query)
 
 	@commands.command(
 		help="Chooses a random number.\n"\

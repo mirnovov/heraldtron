@@ -14,6 +14,8 @@ bot.conf = utils.load_conf()
 	
 @bot.event
 async def on_command_error(ctx, error):
+	title = message = ""
+	
 	if isinstance(error, commands.CommandNotFound):
 		phrase = ctx.message.content
 		

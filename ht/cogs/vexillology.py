@@ -13,8 +13,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def flagsearch(self, ctx, *, query):
-		embed = await services.gis(ctx.bot.conf, "flag " + query)
-		await ctx.send(embed=embed)	
+		await services.gis(ctx, "flag " + query)
 		
 	@commands.command(
 		help="Illustrates flags using DrawShield.\nNote that DrawShield does not support"\
