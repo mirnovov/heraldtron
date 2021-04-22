@@ -106,15 +106,16 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 		answers.insert(correct,result["correct_answer"])
 		
 		for num, answer in enumerate(answers):
-			embed.description += f"- {emojis[num]}: {html.unescape(answer)}\n\n"
+			embed.description += f"- {emojis[num]} {html.unescape(answer)}\n\n"
 			
 		embed.description += f"React to respond. The correct answer will appear in **one minute.**"
 		
 		embed.set_footer(text=f"Courtesy of the Open Trivia Database.")
 		message = await ctx.send(embed=embed)
+		await asyncio.gather(*[message.add_reaction(r) for r in emojis])
 		await asyncio.sleep(60)
 		
-		embed.description = f"{info}The correct answer is: {emojis[correct]}:"\
+		embed.description = f"{info}The correct answer is: {emojis[correct]}"\
 		 					f" **{html.unescape(answers[correct])}**"
 		updated = await message.channel.fetch_message(message.id)
 		
@@ -125,15 +126,18 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 			embed.description += "\n\n**Responses:**\n\u0020"
 		
 		for react in updated.reactions:
-			if react.emoji not in emojis: continue
+			if react.emoji not in emojis or react.count == 1: continue
 			
+			num = emojis.index(react.emoji)
 			user_str = " "
 			emoji_str = str(react.emoji)
 			
 			async for user in react.users():
+				if user == ctx.bot.user: continue
 				user_str += f"{user.mention},"
 				
-			embed.description += f"\n{emoji_str}: {user_str.rstrip(',')} (**{react.count}**)\n\u200b"
+			embed.description += f"\n- {emoji_str} {answers[num]}: "\
+								 f"{user_str.rstrip(',')} (**{react.count - 1}**)\n\u200b"
 		
 		await message.edit(embed=embed)
 			
