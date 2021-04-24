@@ -81,7 +81,8 @@ def load_conf():
 		
 	requisites = [
 		"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "AR_RIJKS", 
-		"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI"
+		"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI",
+		"DB_PATH"
 	]
 	
 	for r in requisites:

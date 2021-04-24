@@ -1,5 +1,5 @@
 # bot.py
-import os, discord, logging, traceback, sys
+import os, discord, logging, traceback, sys, aiosqlite
 from discord.ext import commands
 from . import utils
 
@@ -78,5 +78,7 @@ if __name__ == "__main__":
 	if bot.conf.get("USE_JISHAKU"):
 		os.environ["JISHAKU_HIDE"] = "1" 
 		bot.load_extension("jishaku")
+		
+	bot.dbc = bot.loop.run_until_complete(aiosqlite.connect(bot.conf["DB_PATH"]))
 	
 	bot.run(bot.conf["DISCORD_TOKEN"])

@@ -22,7 +22,8 @@ setuptools.setup(
 	install_requires = [
 		"discord.py>=1.1.0",
 		"aiohttp>=3.7.4",
-		"Pillow>=8.0"
+		"Pillow>=8.0",
+		"aiosqlite>=0.17.0",
 	],
 	extras_require = {
 		"fast": ["cchardet>=2.1.7","aiodns>=2.0.0"]

@@ -1,9 +1,10 @@
-- Implement DB (using SQLite)
+- Implement DB stuff
 	- Requires channel to be stored:
 		- Add hello/goodbye messages (and allow mods to set their channel)
 		- Log warnings
 	- Add auto blazon registration/GreiiN stuff
-		- Create user profile thingies on main server that are linked
+		- Download and extract the document using docx2python
+		- Create user profile thingies on command that are linked
 		- Maybe add auto roll channel setup (might be helpful, as mods often get the perms slightly wrong)
 	- Add roll channel autocategorisation/archiving
 	- Make functionality currently unusable in DMs available where possible
