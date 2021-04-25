@@ -1,6 +1,6 @@
 CREATE TABLE "armigers" (
-	"discord_id" INTEGER PRIMARY KEY,
-	"greii_n" INTEGER NOT NULL UNIQUE,
+	"greii_n" INTEGER NOT NULL PRIMARY KEY,
+	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
 	"blazon" TEXT UNIQUE,
