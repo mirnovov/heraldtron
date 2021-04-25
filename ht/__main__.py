@@ -5,15 +5,23 @@ from . import utils
 class NvBot(commands.Bot):
 	def __init__(self, *args, **kwargs):
 		super().__init__(
-			command_prefix="!",
-			description="A heraldry-related bot designed for the Heraldry Community.",
-			activity=discord.Game("a !challenge"),
+			command_prefix = "!",
+			description = "A heraldry-related bot designed for the Heraldry Community.",
+			activity = discord.Game("a !challenge"),
+			intents = self.get_default_intents(),
+			max_messages = 2000,
 			*args, 
 			**kwargs
 		)
 		
 		self.conf = self.load_conf()
 		self.dbc = self.loop.run_until_complete(aiosqlite.connect(self.conf["DB_PATH"]))
+		
+	def get_default_intents(self):
+		intents = discord.Intents.default()
+		intents.typing = False
+		intents.members = True
+		return intents
 		
 	def load_conf(self):
 		with open("config.json") as file:
