@@ -41,7 +41,7 @@ class NvBot(commands.Bot):
 		return conf
 		
 	def load_default_cogs(self, custom_list = None):
-		coglist = custom_list or ["modtools", "heraldry", "misc", "vexillology", "meta"]
+		coglist = custom_list or ["events", "modtools", "heraldry", "misc", "vexillology", "meta"]
 		
 		for cog in coglist:
 			self.load_extension(f"ht.cogs.{cog}")
@@ -92,6 +92,10 @@ class NvBot(commands.Bot):
 			title = "Command given too many arguments"
 			message = f"The command you entered does not accept this many arguments."\
 					  " Check that you are using it correctly and try again."
+					  
+		elif isinstance(error, commands.NotOwner):
+			title = "Command requires elevated privileges"
+			message = f"The command you entered is solely permitted to be used by the bot owner."
 			
 		else:
 			cause = error if not isinstance(error, commands.CommandInvokeError) else error.original

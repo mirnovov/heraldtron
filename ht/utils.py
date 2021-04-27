@@ -71,7 +71,12 @@ async def get_text(url):
 			if not source.ok: return None
 			return await source.text()	
 			
+async def get_guild_row(bot, guild_id):
+	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))
+	return await cursor.fetchone()
+			
 def parse_xml(text_string,root):
 	return ElementTree.fromstring(text_string).find(root)
 	
-
+def qualify_name(member):
+	return f"{member.name}#{member.discriminator}"

@@ -1,6 +1,5 @@
 - Implement DB stuff
 	- Requires channel to be stored:
-		- Add hello/goodbye messages (and allow mods to set their channel)
 		- Log warnings
 	- Add auto blazon registration/GreiiN stuff
 		- Download and extract the document using docx2python

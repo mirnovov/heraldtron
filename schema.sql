@@ -12,8 +12,18 @@ CREATE TABLE "guilds" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"name" TEXT NOT NULL,
 	"type" INTEGER DEFAULT 0 NOT NULL,
-	"welcome_channel" INTEGER UNIQUE,
-	"warning_channel" INTEGER UNIQUE
+	"warning_channel" INTEGER UNIQUE,
+	"welcome_users" INTEGER,
+	"welcome_text" TEXT,
+	"leave_text" TEXT
+);
+
+
+CREATE TABLE "roles" (
+	"discord_id" INTEGER PRIMARY KEY,
+	"name" TEXT NOT NULL,
+	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
+	"is_admin" INTEGER DEFAULT 'true'
 );
 
 
@@ -22,8 +32,8 @@ CREATE TABLE "roll_channels" (
 	"user_id" INTEGER REFERENCES "armigers"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
 	"type" INTEGER DEFAULT 2 NOT NULL,
 	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
-	"archived" BOOLEAN NOT NULL DEFAULT 'false',
-	"never_archive" BOOLEAN NOT NULL DEFAULT 'false'
+	"archived" INTEGER NOT NULL DEFAULT 'false',
+	"never_archive" INTEGER NOT NULL DEFAULT 'false'
 );
 
 
