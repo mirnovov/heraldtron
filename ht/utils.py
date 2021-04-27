@@ -74,3 +74,9 @@ def parse_xml(text_string,root):
 	
 def qualify_name(member):
 	return f"{member.name}#{member.discriminator}"
+	
+async def check_is_owner(ctx):
+	if not await ctx.bot.is_owner(ctx.author):
+		raise commands.NotOwner("Owner-only mode is enabled")
+		return False
+	return True

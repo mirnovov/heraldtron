@@ -18,6 +18,9 @@ class NvBot(commands.Bot):
 		self.dbc = self.loop.run_until_complete(aiosqlite.connect(self.conf["DB_PATH"]))
 		self.session = aiohttp.ClientSession(loop=self.loop)
 		
+		if self.conf["OWNER_ONLY"]:
+			self.add_check(utils.check_is_owner)
+		
 	def get_default_intents(self):
 		intents = discord.Intents.default()
 		intents.typing = False

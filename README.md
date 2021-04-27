@@ -32,6 +32,7 @@ Before running, the bot requires an `config.json` file in the root directory con
 * `GCS_CX`: The Programmable Search engine identifier.
 * `DB_PATH`: The path for the SQLite file to use.
 * `USE_JISHAKU`: **Optional**. If `true`, load the [jishaku](https://github.com/Gorialis/jishaku) debugger (must be installed separately). 
+* `OWNER_ONLY`: **Optional**. If `true`, disable usage of the bot for members that are not the owner. 
 
 Additionally, some commands requires a number of service and institutional API keys, which are specified below:
 
