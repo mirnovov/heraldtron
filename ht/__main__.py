@@ -9,7 +9,7 @@ class NvBot(commands.Bot):
 			description = "A heraldry-related bot designed for the Heraldry Community.",
 			activity = discord.Game("a !challenge"),
 			intents = self.get_default_intents(),
-			max_messages = 2000,
+			max_messages = 12000,
 			*args, 
 			**kwargs
 		)
@@ -21,7 +21,11 @@ class NvBot(commands.Bot):
 	def get_default_intents(self):
 		intents = discord.Intents.default()
 		intents.typing = False
+		intents.webhooks = False
+		intents.integrations = False
+		intents.invites = False
 		intents.members = True
+
 		return intents
 		
 	def load_conf(self):
