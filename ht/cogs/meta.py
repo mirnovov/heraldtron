@@ -1,4 +1,4 @@
-import discord, itertools, sys, platform
+import discord, itertools, sys, platform, aiohttp
 from discord.ext import commands
 from .. import utils, version
 
@@ -29,27 +29,27 @@ class MetaTools(commands.Cog, name="Meta"):
 		embed.set_thumbnail(url=str(self.bot.user.avatar_url_as(size=512)))
 		
 		embed.add_field(
-			name="Made using", 
+			name="Developed using", 
 			value=f"**Python {platform.python_version()}**\n"\
 				  f"`{platform.python_implementation()} ({platform.python_build()[0]}"\
 				  f" {platform.python_build()[1]})`",  
 			inline=True
 		)
 		embed.add_field(
-			name="Running on", 
-			value=f"**{platform.uname().system} {platform.uname().release}**\n"\
+			name = "Running on", 
+			value = f"**{platform.uname().system} {platform.uname().release}**\n"\
 				  f"`{platform.platform()}`", 
-			inline=True
+			inline = True
 		)
 		embed.add_field(
-			name="With the help of", 
-			value=" - [discord.py](https://pypi.org/project/discord.py/)\n"\
-				  " - [aiohttp](https://pypi.org/project/aiohttp/)", 
-			inline=False
+			name = "Made with the help of", 
+			value = f" - [discord.py](https://pypi.org/project/discord.py/) {discord.__version__}\n"\
+				    f" - [aiohttp](https://pypi.org/project/aiohttp/) {aiohttp.__version__}", 
+			inline = False
 		)
 		embed.add_field(
 			name="And special thanks to", 
-			value="Will\nEnsix\nGreiiEquites",
+			value=" - Will\n - Ensix\n - GreiiEquites",
 			inline=False
 		)
 		embed.set_footer(text="© novov 2021. This is an open source project available under the MIT license.")
