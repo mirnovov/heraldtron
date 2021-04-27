@@ -1,7 +1,7 @@
 import discord, urllib, os, io, base64, random, asyncio
 from . import utils
 
-async def gis(ctx,query):
+async def gis(ctx, query):
 	IMAGE_NUM = 10
 	params = urllib.parse.urlencode({
 		"key": ctx.bot.conf["GCS_TOKEN"],
@@ -12,7 +12,7 @@ async def gis(ctx,query):
 		"num": IMAGE_NUM
 	})
 	
-	search = await utils.get_json(f"https://www.googleapis.com/customsearch/v1?{params}")
+	search = await utils.get_json(ctx.bot.session, f"https://www.googleapis.com/customsearch/v1?{params}")
 	
 	if search == None:
 		return utils.nv_embed(
@@ -69,9 +69,9 @@ async def gis(ctx,query):
 			await message.clear_reactions()		
 			return
 
-async def ds(blazon,drawn_kind):
+async def ds(session, blazon, drawn_kind):
 	blazon_out = urllib.parse.quote(blazon)
-	results = await utils.get_json(f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
+	results = await utils.get_json(session, f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
 	image = discord.File(io.BytesIO(base64.b64decode(results["image"])),filename="ds.png")
 	
 	embed = utils.nv_embed("",f"*{blazon}*",kind=4,custom_name=f"{drawn_kind} drawn!")	
@@ -87,8 +87,8 @@ async def ds(blazon,drawn_kind):
 			
 	return embed, image
 	
-async def ds_catalog(charge):
-	catalog = await utils.get_json(f"https://drawshield.net/api/catalog/{urllib.parse.quote(charge)}")
+async def ds_catalog(session, charge):
+	catalog = await utils.get_json(session, f"https://drawshield.net/api/catalog/{urllib.parse.quote(charge)}")
 	
 	if not catalog.startswith("http"): return None
 	return catalog

@@ -1,4 +1,4 @@
-import discord, aiosqlite, logging, json, os, traceback
+import discord, aiosqlite, aiohttp, logging, json, os, traceback
 from discord.ext import commands
 from . import utils
 
@@ -16,6 +16,7 @@ class NvBot(commands.Bot):
 		
 		self.conf = self.load_conf()
 		self.dbc = self.loop.run_until_complete(aiosqlite.connect(self.conf["DB_PATH"]))
+		self.session = aiohttp.ClientSession(loop=self.loop)
 		
 	def get_default_intents(self):
 		intents = discord.Intents.default()
@@ -56,6 +57,7 @@ class NvBot(commands.Bot):
 		
 	async def close(self):
 		await self.dbc.close()
+		await self.session.close()
 		await super().close()
 		
 	async def on_command_error(self, ctx, error):

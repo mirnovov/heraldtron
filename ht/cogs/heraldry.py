@@ -26,7 +26,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		else:
 			museum = source_list[source]
 			
-		artifact = await museum[0](ctx.bot.conf)
+		artifact = await museum[0](ctx.bot)
 		footer = f"{artifact[4]} via {museum[1]}" if artifact[4] else museum[1]
 		
 		embed = utils.nv_embed(artifact[1],artifact[2],kind=3,custom_name="Random artifact")
@@ -55,7 +55,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def ds_catalog(self, ctx, *, charge):			
-		url = await services.ds_catalog(charge)
+		url = await services.ds_catalog(self.bot.session, charge)
 		
 		if url == None:
 			await ctx.send(embed=utils.nv_embed(
@@ -85,7 +85,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def ds_challenge(self, ctx, source="all"):			
-		url = await utils.get_json(f"https://drawshield.net/api/challenge/{source}")
+		url = await utils.get_json(self.bot.session, f"https://drawshield.net/api/challenge/{source}")
 		
 		if isinstance(url, dict) and "error" in url:
 			await ctx.send(embed=utils.nv_embed(
@@ -107,7 +107,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def drawshield(self, ctx, *, blazon : str):			
-		embed, file = await services.ds(blazon,"Shield")
+		embed, file = await services.ds(self.bot.session, blazon, "Shield")
 		await ctx.send(embed=embed,file=file)
 		
 	@commands.command(
@@ -117,7 +117,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def lookup(self, ctx, *, term : str):
-		results = await utils.get_json(f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
+		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		
 		if "error" in results:
 			await ctx.send(embed=utils.nv_embed(
@@ -133,7 +133,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		)
 		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
 		
-		thumb = await services.ds_catalog(term)
+		thumb = await services.ds_catalog(self.bot.session, term)
 		if thumb: embed.set_thumbnail(url=thumb)
 		
 		await ctx.send(embed=embed)

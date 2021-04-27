@@ -10,7 +10,7 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def advice(self, ctx):			
-		result = await utils.get_json(f"https://api.adviceslip.com/advice",content_type="text/html")
+		result = await utils.get_json(self.bot.session,f"https://api.adviceslip.com/advice",content_type="text/html")
 		
 		embed = utils.nv_embed(result["slip"]["advice"],"",kind=4,custom_name="Random advice")		
 		embed.set_footer(text=f"Retrieved using adviceslip.com")
@@ -56,15 +56,14 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 		data = {"text": text.strip()}
 		headers = {"api-key": ctx.bot.conf["DEEP_AI"].strip()}
 			
-		async with aiohttp.ClientSession() as session:
-			async with session.post(url,data=data,headers=headers) as source:
-				if not source.ok:
-					await ctx.send(embed=utils.nv_embed(
-						"Invalid HTTP request",
-						f"Please try again. If problems persist, contact the bot's maintainer."
-					))
-					return
-				result_json = await source.json()
+		async with ctx.bot.session.post(url,data=data,headers=headers) as source:
+			if not source.ok:
+				await ctx.send(embed=utils.nv_embed(
+					"Invalid HTTP request",
+					f"Please try again. If problems persist, contact the bot's maintainer."
+				))
+				return
+			result_json = await source.json()
 		
 		result = result_json["output"]	
 		newtext = result[result.index(text) + len(text):]
@@ -82,7 +81,7 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 	async def trivia(self, ctx, category : typing.Optional[int] = -1):
 		catstring = "" if category == -1 else f"&category={category}"
 		json = f"https://opentdb.com/api.php?amount=1{catstring}"
-		result = await utils.get_json(json)
+		result = await utils.get_json(self.bot.session, json)
 		
 		if result["response_code"] == 1:
 			await ctx.send(embed=utils.nv_embed(
@@ -143,7 +142,7 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 			
 	@trivia.command(help="Lists all categories.")
 	async def categories(self, ctx):
-		result = await utils.get_json(f"https://opentdb.com/api_category.php") 
+		result = await utils.get_json(self.bot.session, f"https://opentdb.com/api_category.php") 
 		embed = utils.nv_embed(
 			"Trivia categories","To choose a category, specify its numeric ID.",kind=4,custom_name="Trivia"
 		)

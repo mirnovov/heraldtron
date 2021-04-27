@@ -23,7 +23,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 	)
 	@commands.before_invoke(utils.typing)
 	async def drawflag(self, ctx, *, blazon : str):
-		embed, file = await services.ds(blazon+" in flag shape","Flag")
+		embed, file = await services.ds(self.bot.session, blazon+" in flag shape", "Flag")
 		await ctx.send(embed=embed,file=file)
 		
 	@commands.command(
@@ -94,7 +94,7 @@ class VexStuff(commands.Cog, name="Vexillology"):
 			return
 		
 		image_url = message.attachments[0].url
-		image_content = await utils.get_bytes(image_url)
+		image_content = await utils.get_bytes(ctx.bot.session, image_url)
 		image = await self.bot.loop.run_in_executor(None, compute_seychelles, image_url, image_content)
 		file = discord.File(image,filename="seychelles.png")
 		

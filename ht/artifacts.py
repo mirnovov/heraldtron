@@ -1,9 +1,11 @@
 import json, random, os, functools, re, asyncio
 from . import utils
+from .ext import get_slow_client_session
 
-async def rijksmuseum(conf):
-	api_key = conf["AR_RIJKS"]
+async def rijksmuseum(bot):
+	api_key = bot.conf["AR_RIJKS"]
 	collection = await utils.get_json(
+		bot.session,
 		f"https://www.rijksmuseum.nl/api/en/collection?key={api_key}&q=heraldry&ps=100&imgonly=True"
 	)
 	result = random.choice(collection["artObjects"])
@@ -16,8 +18,9 @@ async def rijksmuseum(conf):
 		None
 	)
 	
-async def victoria_and_albert(conf):
+async def victoria_and_albert(bot):
 	collection = await utils.get_json(
+		bot.session,
 		f"https://api.vam.ac.uk/v2/objects/search?q=%22coat%20of%20arms%22&page_size=100&year_made_to=1900&images_exist=1"
 	)
 	result = random.choice(collection["records"])
@@ -30,9 +33,10 @@ async def victoria_and_albert(conf):
 		None
 	)
 	
-async def europeana(conf):
-	api_key = conf["AR_EURO"]
+async def europeana(bot):
+	api_key = bot.conf["AR_EURO"]
 	collection = await utils.get_json(
+		bot.session,
 		f"https://api.europeana.eu/record/v2/search.json?query=coat%20of%20arms&media=true&rows=100&wskey={api_key}"
 	)
 	result = random.choice(collection["items"])
@@ -44,9 +48,10 @@ async def europeana(conf):
 		result["dataProvider"][0]
 	)
 	
-async def digital_nz(conf):
+async def digital_nz(bot):
 	api_key = conf["AR_DGTNZ"]
 	collection = await utils.get_json(
+		bot.session,
 		f"https://api.digitalnz.org/v3/records.json?api_key={api_key}&per_page=100&text=heraldry&and[category][]=Images"
 	)
 	results = collection["search"]["results"]
@@ -64,17 +69,18 @@ async def digital_nz(conf):
 		result["display_content_partner"]
 	)
 
-async def met_museum(conf):
-	collection = await utils.get_json(
-		"https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=%22coat%20of%20arms%22",
-		slow_mode = True
-	)
-	resultid = random.choice(collection["objectIDs"])
-	result = await utils.get_json(
-		f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{resultid}",
-		slow_mode = True
-	)
-		
+async def met_museum(bot):
+	async with get_slow_client_session() as slow_session:
+		collection = await utils.get_json(
+			slow_session,
+			"https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=%22coat%20of%20arms%22"
+		)
+		resultid = random.choice(collection["objectIDs"])
+		result = await utils.get_json(
+			slow_session,
+			f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{resultid}"
+		)
+	
 	return (
 		result["objectURL"], 
 		result["title"], 
@@ -83,8 +89,9 @@ async def met_museum(conf):
 		None
 	)
 	
-async def art_institute_chicago(conf):
+async def art_institute_chicago(bot):
 	collection = await utils.get_json(
+		bot.session,
 		"https://api.artic.edu/api/v1/artworks/search?q=coat%20of%20arms&limit=100&fields=id,title,image_id,artist_title"
 	)
 	result = random.choice(collection["data"])
@@ -97,9 +104,10 @@ async def art_institute_chicago(conf):
 		None
 	)
 	
-async def smithsonian(conf):
-	api_key = conf["AR_SMTHS"]
+async def smithsonian(bot):
+	api_key = bot.conf["AR_SMTHS"]
 	collection = await utils.get_json(
+		bot.session,
 		f"https://api.si.edu/openaccess/api/v1.0/search?q=coat%20of%20arms&rows=400&api_key={api_key}"
 	)
 	results = collection["response"]["rows"]
@@ -111,17 +119,19 @@ async def smithsonian(conf):
 	url = f"https://www.si.edu/object/{result['url']}/"
 	
 	#the image isn't provided by the api, so scrape the html :(
-	html = await utils.get_text(url)
+	html = await utils.get_text(bot.session,url)
 	image_url = re.search("\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>", html)[1]
 	
 	return (url, result["title"], "", image_url, None)
 	
-async def wikimedia_commons(conf):
+async def wikimedia_commons(bot):
 	collection = await utils.get_json(
+		bot.session,
 		"https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&cmtype=file&cmtitle=Category:Paintings_of_coats_of_arms&format=json&cmlimit=500"
 	)
 	resultid = random.choice(collection["query"]["categorymembers"])["title"].replace("File:","")
 	result_text = await utils.get_text(
+		bot.session,
 		f"https://magnus-toolserver.toolforge.org/commonsapi.php?image={resultid}&thumbwidth=600&thumbheight=600&meta"
 	)
 	result = await asyncio.get_running_loop().run_in_executor(None, utils.parse_xml,result_text,"file")
@@ -134,9 +144,10 @@ async def wikimedia_commons(conf):
 		None
 	)
 	
-async def deutsche_digitale(conf):
-	api_key = conf["AR_DDBTK"]
+async def deutsche_digitale(bot):
+	api_key = bot.conf["AR_DDBTK"]
 	collection = await utils.get_json(
+		bot.session,
 		f"https://api.deutsche-digitale-bibliothek.de/search?query=Heraldik&facet=objecttype_fct&rows=1000&objecttype_fct=Buchmalerei&type_fct=002&oauth_consumer_key={api_key}"
 	)
 	result = random.choice(collection["results"][0]["docs"])

@@ -2,7 +2,6 @@ import discord, aiohttp, json, functools, urllib, os
 from discord.ext import commands
 from io import BytesIO
 from xml.etree import ElementTree
-from .ext import get_slow_client_session
 
 def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 	embed=discord.Embed(title=e_summary,description=e_description)
@@ -47,29 +46,24 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 async def typing(self,ctx):
 	await ctx.trigger_typing()
 	
-async def get_bytes(url):
-	async with aiohttp.ClientSession() as session:
-		async with session.get(url) as source:
-			if not source.ok: return None
-			try:
-				image = await source.read()
-			except aiohttp.ClientResponseError:
-				return None
-			return BytesIO(image)
+async def get_bytes(session, url):
+	async with session.get(url) as source:
+		if not source.ok: return None
+		try:
+			image = await source.read()
+		except aiohttp.ClientResponseError:
+			return None
+		return BytesIO(image)
 	
-async def get_json(url, slow_mode = False, **kwargs):
-	cs = aiohttp.ClientSession() if not slow_mode else get_slow_client_session() 
-	
-	async with cs as session:
-		async with session.get(url) as source:
-			if not source.ok: return None
-			return await source.json(**kwargs)
+async def get_json(session, url, **kwargs):
+	async with session.get(url) as source:
+		if not source.ok: return None
+		return await source.json(**kwargs)
 			
-async def get_text(url):
-	async with aiohttp.ClientSession()  as session:
-		async with session.get(url) as source:
-			if not source.ok: return None
-			return await source.text()	
+async def get_text(session, url):
+	async with session.get(url) as source:
+		if not source.ok: return None
+		return await source.text()	
 			
 async def get_guild_row(bot, guild_id):
 	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))
