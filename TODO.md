@@ -5,7 +5,6 @@
 		- Maybe add auto roll channel setup (might be helpful, as mods often get the perms slightly wrong)
 	- Add roll channel autocategorisation/archiving
 	- Make functionality currently unusable in DMs available where possible
-	- Add resources lookup
 	- Add proper mod authorisation and hide mod commands
 
 - Add blazon generators (in #resources)

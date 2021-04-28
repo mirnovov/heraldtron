@@ -60,10 +60,10 @@ async def get_json(session, url, **kwargs):
 		if not source.ok: return None
 		return await source.json(**kwargs)
 			
-async def get_text(session, url):
+async def get_text(session, url, encoding = None):
 	async with session.get(url) as source:
 		if not source.ok: return None
-		return await source.text()	
+		return await source.text(encoding = encoding)	
 			
 async def get_guild_row(bot, guild_id):
 	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))

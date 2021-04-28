@@ -14,7 +14,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		aliases=("ar","relic")
 	)
 	@commands.before_invoke(utils.typing)
-	async def artifact(self, ctx, source="all"):
+	async def artifact(self, ctx, source = "all"):
 		if source == "all":
 			museum = random.choice(list(source_list.values()))
 		elif source not in source_list:
@@ -90,7 +90,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		if isinstance(url, dict) and "error" in url:
 			await ctx.send(embed=utils.nv_embed(
 				"Invalid challenge category",
-				"Type !help challenge to see the available categories."
+				"Type `!help challenge` to see the available categories."
 			))
 			return
 		
@@ -206,5 +206,59 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 					
 		await ctx.send(embed=embed)
 		
+	@commands.command(
+		help="Provides links to a number of heraldic resources.\n"\
+			 "Retrieves information from Novov's Heraldic Resources. If no resource name is given,"\
+			 " lists available resources.",
+		aliases=("re","source","resources","r")
+	)
+	@commands.before_invoke(utils.typing)
+	async def resource(self, ctx, source = None):
+		html = await utils.get_text(
+			ctx.bot.session, 
+			"https://novov.me/linkroll/resources.html?bot",
+			encoding = "UTF-8"
+		)
+		resources = await self.bot.loop.run_in_executor(
+			None, re.findall, 
+			"(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>",
+			html
+		)
+		
+		def resource_result(resource):
+			embed = utils.nv_embed(
+				re.sub("<i>|</i>","*",resource[2]),
+				re.sub("<[^<]+?>", "", resource[3]),
+				kind = 4,
+				custom_name = "Resource"
+			)
+			embed.url = resource[1]
+			return embed
+		
+		if not source:
+			embed = utils.nv_embed(
+				"", f"- `random`: Choose a random resource.\n", 
+				kind = 4, custom_name = "Resources list"
+			)
+			for resource in resources:
+				embed.description += f" - `{resource[0]}`: {re.sub('<i>|</i>','*',resource[2])}\n"
+		elif source == "random":
+			embed = resource_result(random.choice(resources))
+		else:
+			for resource in resources:
+				#Muy terrible, but no better options
+				if resource[0] == source: 
+					embed = resource_result(resource)
+					break
+			else:
+				await ctx.send(embed=utils.nv_embed(
+					"Nonexistent resource",
+					"Type `!resources` to see a list of resources."
+				))
+				return
+		
+		embed.set_footer(text=f"Retrieved from Novov's Heraldic Resources.")		
+		await ctx.send(embed=embed)
+
 def setup(bot):
 	bot.add_cog(HeraldicStuff(bot))
