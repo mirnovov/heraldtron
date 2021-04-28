@@ -45,7 +45,7 @@ async def gis(ctx, query):
 		
 	buttons = ("\U000023EE","\U00002B05","\U0001F500","\U000027A1","\U000023ED")
 	index = 0
-	await asyncio.gather(*[message.add_reaction(r) for r in buttons])
+	await utils.add_multiple_reactions(message, buttons)
 	
 	def check_react(reaction, user):
 		if ctx.author != user: return False

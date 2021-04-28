@@ -66,34 +66,25 @@ class VexStuff(commands.Cog, name="Vexillology"):
 		await ctx.send(embed=embed)
 	
 	@commands.command(
-		help="Seychelles-izes a flag.\n"\
-			 "Uses Akshay Chitale's Seychelles Flag Generator script.",
-		aliases=("sy",)
+		help="Seychelles-izes a flag.\nUses Akshay Chitale's Seychelles Flag Generator script.",
+		aliases=("sy","seych")
 	)
 	@commands.before_invoke(utils.typing)	
 	async def seychelles(self,ctx):
-		await ctx.send(
+		result = await utils.respond_or_react(
+			ctx,
 			"What image would you like me to seychelles-ize?\n"\
-			"Respond with `cancel` to cancel the command. The command will automatically be cancelled in 30 seconds."
+			"Respond with your image below, or react with :x: to cancel.\n",
+			("\U0000274C",)
 		)
 		
-		def check(message):
-			if message.author != ctx.author: return False
-			elif message.content == "cancel": return True
-				
-			return len(message.attachments) > 0 and message.attachments[0].content_type.startswith("image")
-		
-		try:
-			message = await self.bot.wait_for("message", check=check, timeout=30)
-		except asyncio.TimeoutError:
-			await ctx.send("`seychelles` command timed out.")
+		if not result: 
 			return
-			
-		if message.content == "cancel": 
-			await ctx.send("`seychelles` command cancelled.")
+		elif isinstance(result, tuple):
+			await ctx.send(":x: | Command cancelled.")
 			return
 		
-		image_url = message.attachments[0].url
+		image_url = result.attachments[0].url
 		image_content = await utils.get_bytes(ctx.bot.session, image_url)
 		image = await self.bot.loop.run_in_executor(None, compute_seychelles, image_url, image_content)
 		file = discord.File(image,filename="seychelles.png")

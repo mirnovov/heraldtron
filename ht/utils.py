@@ -1,4 +1,4 @@
-import discord, aiohttp, json, functools, urllib, os
+import discord, aiohttp, asyncio, json, functools, urllib, os
 from discord.ext import commands
 from io import BytesIO
 from xml.etree import ElementTree
@@ -43,7 +43,7 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 	
 	return embed
 	
-async def typing(self,ctx):
+async def typing(self, ctx):
 	await ctx.trigger_typing()
 	
 async def get_bytes(session, url):
@@ -69,7 +69,7 @@ async def get_guild_row(bot, guild_id):
 	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))
 	return await cursor.fetchone()
 			
-def parse_xml(text_string,root):
+def parse_xml(text_string, root):
 	return ElementTree.fromstring(text_string).find(root)
 	
 def qualify_name(member):
@@ -80,3 +80,39 @@ async def check_is_owner(ctx):
 		raise commands.NotOwner("Owner-only mode is enabled")
 		return False
 	return True
+	
+async def respond_or_react(ctx, message, reactions, timeout = 360, requires_image = False):
+	def check_react(reaction, user):
+		if ctx.author != user: return False
+		return reaction.message == message and reaction.emoji in reactions 
+	
+	def check_message(message):
+		if ctx.author != message.author:
+			return False
+		elif requires_image:
+			is_image = message.attachments[0].content_type.startswith("image")
+			return len(message.attachments) > 0 and is_image
+		return True
+	
+	message = await ctx.send(message)
+	await add_multiple_reactions(message, reactions)
+	
+	done, pending = await asyncio.wait(
+		[ctx.bot.wait_for("reaction_add", check = check_react, timeout = timeout),
+		 ctx.bot.wait_for("message", check = check_message, timeout = timeout)], 
+		return_when = asyncio.FIRST_COMPLETED
+	)
+	
+	try:
+		result = done.pop().result()
+	except asyncio.TimeoutError:
+		await ctx.send(":x: | Command timed out.")
+		return None
+		
+	for future in pending: future.cancel()	#ignore anything else
+	for future in done: future.exception() #retrieve and ignore any other completed future's exception
+	
+	return result
+	
+async def add_multiple_reactions(message, reactions):
+	return await asyncio.gather(*[message.add_reaction(r) for r in reactions])
