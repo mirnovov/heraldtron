@@ -14,9 +14,9 @@ class NvBot(commands.Bot):
 			**kwargs
 		)
 		
+		self.loop.run_until_complete(self.start_session())
 		self.conf = self.load_conf()
 		self.dbc = self.loop.run_until_complete(aiosqlite.connect(self.conf["DB_PATH"]))
-		self.session = aiohttp.ClientSession(loop=self.loop)
 		
 		if self.conf.get("OWNER_ONLY"):
 			self.add_check(utils.check_is_owner)
@@ -61,6 +61,9 @@ class NvBot(commands.Bot):
 			coglist.append("jishaku")
 			
 		return coglist
+		
+	async def start_session(self):
+		self.session = aiohttp.ClientSession(loop=self.loop)
 		
 	async def close(self):
 		await self.dbc.close()
