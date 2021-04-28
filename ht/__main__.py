@@ -112,7 +112,7 @@ class NvBot(commands.Bot):
 			app_info = await self.application_info()
 			dm = await app_info.owner.create_dm()	
 			
-			if not isinstance(ctx.channel, discord.abc.GuildChannel) and not self.is_owner(ctx.author):
+			if not isinstance(ctx.channel, discord.abc.GuildChannel) and not await self.is_owner(ctx.author):
 				title = "Unknown error"
 				message = f"Heraldtron has encountered an unforseen difficulty. An error report has been sent."
 			

@@ -1,4 +1,4 @@
-import discord, itertools, sys, platform, aiohttp
+import discord, aiohttp, aiosqlite, itertools, sys, platform
 from discord.ext import commands
 from .. import utils, version
 
@@ -43,8 +43,10 @@ class MetaTools(commands.Cog, name="Meta"):
 		)
 		embed.add_field(
 			name = "Made with the help of", 
-			value = f" - [discord.py](https://pypi.org/project/discord.py/) {discord.__version__}\n"\
-				    f" - [aiohttp](https://pypi.org/project/aiohttp/) {aiohttp.__version__}", 
+			value = f" - [discord.py](https://pypi.org/project/discord.py/) `{discord.__version__}`\n"\
+				    f" - [aiohttp](https://pypi.org/project/aiohttp/) `{aiohttp.__version__}`\n"
+					f" - [aiosqlite](https://pypi.org/project/aiosqlite/) `{aiosqlite.__version__}`"\
+					" and the [SQLite](https://www.sqlite.org/) library", 
 			inline = False
 		)
 		embed.add_field(

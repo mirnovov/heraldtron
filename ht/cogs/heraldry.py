@@ -40,7 +40,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=embed)	
 		
 	@commands.command(
-		help="Finds the first result of `coat of arms [query]` using Google Images.",
+		help="Finds the results of `coat of arms [query]` using Google Images.",
 		aliases=("as",)
 	)
 	@commands.before_invoke(utils.typing)
@@ -164,7 +164,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 			url="http://heraldica.narc.fi/img/hero/thumb/{uri.replace('http://www.yso.fi/onto/hero/p','')}.png"
 		)
 		embed.set_footer(text=f"Term retrieved using Finto HERO.")
-		await ctx.send(embed=embed,file=file)
+		await ctx.send(embed=embed)
 		
 	@commands.command(
 		help="Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\
