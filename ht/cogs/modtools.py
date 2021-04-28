@@ -69,26 +69,6 @@ class ModerationTools(commands.Cog, name="Moderation"):
 		await channel.set_permissions(ctx.guild.default_role, send_messages=True)
 		await ctx.send(f":unlock: | **{ctx.channel.mention} has been unlocked.**")
 		
-	@commands.command(help="Sends a warning message to a user.",aliases=("w",))	
-	async def warn(self, ctx, user : discord.User, *, message_content):
-		dm = await user.create_dm()
-		
-		if ctx.author == user:
-			await ctx.send(utils.nv_embed(
-				"Cannot warn oneself",
-				"The warning could not be conducted, as warning oneself is prohibited."
-			))
-			return
-		
-		embed = utils.nv_embed(message_content,"",kind=1,custom_name="Moderator warning")
-		embed.set_footer(
-			text=f"From {ctx.guild.name} on {(datetime.now()).strftime('%d %B %Y')}",
-			icon_url=ctx.guild.icon_url_as(size=256)
-		) #needs to be ascertained from dms once admin messages can be sent from there. 
-		
-		await ctx.send("Warning sent.")
-		await dm.send(embed=embed)
-		
 	async def set_message(self, ctx, leave):
 		enabled = await self.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
 		

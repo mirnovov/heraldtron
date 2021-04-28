@@ -1,6 +1,4 @@
 - Implement DB stuff
-	- Requires channel to be stored:
-		- Log warnings
 	- Add auto blazon registration/GreiiN stuff
 		- Download and extract the document using docx2python
 		- Create user profile thingies on command that are linked

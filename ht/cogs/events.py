@@ -9,8 +9,8 @@ class BotEvents(commands.Cog, name = "Bot Events"):
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
 		await self.bot.dbc.execute(
-			"INSERT INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?);",
-			(guild.id, guild.name, 0, None, 1, None, None)
+			"INSERT INTO guilds VALUES (?, ?, ?, ?, ?, ?);",
+			(guild.id, guild.name, 0, 1, None, None)
 		)
 		await self.bot.dbc.commit()
 		
@@ -30,12 +30,12 @@ class BotEvents(commands.Cog, name = "Bot Events"):
 	async def post_welcome_message(self, member, leave):
 		guild_db = await utils.get_guild_row(self.bot, member.guild.id)
 		
-		if not guild_db or not guild_db[4]: 
+		if not guild_db or not guild_db[3]: 
 			#if guild not in db (shouldn't happen) or if disabled
 			return
 			
-		if leave: message, emoji = guild_db[6], ":outbox_tray:"
-		else: message, emoji = guild_db[5], ":inbox_tray:"
+		if leave: message, emoji = guild_db[5], ":outbox_tray:"
+		else: message, emoji = guild_db[4], ":inbox_tray:"
 			
 		formatted = self.welcome_fmt(member, message or f"We're sorry to see you leaving, **MEMBER_NAME**.")
 		

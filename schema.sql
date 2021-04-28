@@ -12,7 +12,6 @@ CREATE TABLE "guilds" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"name" TEXT NOT NULL,
 	"type" INTEGER DEFAULT 0 NOT NULL,
-	"warning_channel" INTEGER UNIQUE,
 	"welcome_users" INTEGER,
 	"welcome_text" TEXT,
 	"leave_text" TEXT
