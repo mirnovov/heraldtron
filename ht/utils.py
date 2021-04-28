@@ -46,11 +46,11 @@ def nv_embed(e_summary,e_description,kind=0,custom_name=None,custom_icon=None):
 async def typing(self, ctx):
 	await ctx.trigger_typing()
 	
-async def get_bytes(session, url):
+async def get_bytes(session, url, **kwargs):
 	async with session.get(url) as source:
 		if not source.ok: return None
 		try:
-			image = await source.read()
+			image = await source.read(**kwargs)
 		except aiohttp.ClientResponseError:
 			return None
 		return BytesIO(image)

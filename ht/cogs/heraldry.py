@@ -1,4 +1,4 @@
-import discord, urllib, csv, json, random, re
+import discord, urllib, csv, json, random, re, ssl
 from discord.ext import commands
 from .. import utils, services
 from ..artifacts import source_list, source_string
@@ -108,6 +108,62 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 	@commands.before_invoke(utils.typing)
 	async def drawshield(self, ctx, *, blazon : str):			
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
+		await ctx.send(embed=embed,file=file)
+		
+	@commands.command(
+		help="Looks up heraldic terms in the Finto HERO ontological database.\n",
+		aliases=("finto","luh","ontology","he")
+	)
+	@commands.before_invoke(utils.typing)
+	async def hero(self, ctx, *, term):
+		query = await utils.get_json(
+			self.bot.session,
+			f"http://api.finto.fi/rest/v1/search?vocab=hero&query={urllib.parse.quote(term)}&lang=en"
+		)
+		
+		if len(query["results"]) == 0:
+			await ctx.send(embed=utils.nv_embed(
+				"Invalid HERO term",
+				"The term could not be found. Check that it is entered correctly, or try other sources."
+			))
+			return
+		
+		uri = query["results"][0]["uri"]
+		
+		results = (await utils.get_json(
+			self.bot.session,
+			f"http://api.finto.fi/rest/v1/hero/data?format=application%2Fjson&uri={urllib.parse.quote(uri)}&lang=en"
+		))["graph"]
+		
+		embed = utils.nv_embed(
+			f"Results for \"{term}\"",
+			f"",
+			kind = 3,
+			custom_name = "HERO results"
+		)
+		
+		for result in results:
+			if result["uri"] == "http://www.yso.fi/onto/hero/": continue
+			elif result["uri"] == uri: result_type = "**Primary**:"
+			elif result.get("narrower"): result_type = "Broader:"
+			elif result.get("broader"): result_type = "Narrower:"
+			else: result_type = "Related:"
+			
+			result_name = "*Unknown*"
+			
+			if result.get("prefLabel"):
+				for lang_label in result.get("prefLabel"):
+					if lang_label["lang"] != "en": continue
+					result_name = lang_label["value"] 
+					break				
+			
+			en_uri = result["uri"].replace("http://www.yso.fi/onto/hero/","http://finto.fi/hero/en/page/")
+			embed.description += f"- {result_type} [{result_name}]({en_uri})\n"
+
+		embed.set_thumbnail(
+			url="http://heraldica.narc.fi/img/hero/thumb/{uri.replace('http://www.yso.fi/onto/hero/p','')}.png"
+		)
+		embed.set_footer(text=f"Term retrieved using Finto HERO.")
 		await ctx.send(embed=embed,file=file)
 		
 	@commands.command(
