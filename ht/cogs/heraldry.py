@@ -149,7 +149,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 			elif result.get("broader"): result_type = "Narrower:"
 			else: result_type = "Related:"
 			
-			result_name = "*Unknown*"
+			result_name = "(unknown)"
 			
 			if result.get("prefLabel"):
 				for lang_label in result.get("prefLabel"):
