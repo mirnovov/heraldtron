@@ -39,7 +39,12 @@ def get_slow_client_session(**kwargs):
 	#basically replaces HttpResponseParser with its Python fallback
 	return aiohttp.ClientSession(connector=_SlowTCPConnector(loop=asyncio.get_running_loop()),**kwargs)	
 
-#Following content licensed under the Apache License 2.0, see https://www.apache.org/licenses/LICENSE-2.0.html
+#---------------------------------------------------------------------------------------------------
+# [!]  Modified aiohttp code below.
+#	   The following content is a derivative work originally released under the Apache License 2.0,
+#      and included in accord with said license's provisions. See this project's LICENSE file, and
+#      https://www.apache.org/licenses/LICENSE-2.0.html for more information.
+#---------------------------------------------------------------------------------------------------
 
 class _SlowResponseHandler(aiohttp.client_proto.ResponseHandler):
 	def set_response_params(
