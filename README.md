@@ -31,17 +31,18 @@ Before running, the bot requires an `config.json` file in the root directory con
 * `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search must be enabled for this key.
 * `GCS_CX`: The Programmable Search engine identifier.
 * `DB_PATH`: The path for the SQLite file to use.
-* `USE_JISHAKU`: **Optional**. If `true`, load the [jishaku](https://github.com/Gorialis/jishaku) debugger (must be installed separately). 
-* `OWNER_ONLY`: **Optional**. If `true`, disable usage of the bot for members that are not the owner. 
-
-Additionally, some commands requires a number of service and institutional API keys, which are specified below:
-
 * `AR_RIJKS`: The key for the [Rijksmuseum API](https://data.rijksmuseum.nl/object-metadata/api/).
 * `AR_EURO`: The key for the [Europeana Pro API](https://pro.europeana.eu/page/apis).
 * `AR_DGTNZ`: The key for the [Digital NZ API](https://digitalnz.org/developers).
 * `AR_SMTHS`: The key for the [Smithsonian API](http://edan.si.edu/openaccess/apidocs/), provided by data.gov.
 * `AR_DDBTK`: The key for the German Digital Library/[Deutsche Digitale Bibliothek API](https://labs.deutsche-digitale-bibliothek.de/app/ddbapi/)
 * `DEEP_AI`: The key for `!textgen`, from [DeepAI](https://deepai.org/).
+
+Additionally, there are a number of optional settings can be specified:
+
+* `USE_JISHAKU`: If `true`, load the [jishaku](https://github.com/Gorialis/jishaku) debugger (must be installed separately). 
+* `OWNER_ONLY`: If `true`, disable usage of the bot for members that are not the owner. 
+* `LOG_LEVEL`: The numeric [logging level](https://docs.python.org/3/library/logging.html#levels) for the bot. Defaults to 20 (`INFO`).
 
 ## Usage
 

@@ -2,8 +2,11 @@ import discord, aiosqlite, aiohttp, logging, json, os, traceback
 from discord.ext import commands
 from . import utils
 
-class NvBot(commands.Bot):
+class Heraldtron(commands.Bot):
 	def __init__(self, *args, **kwargs):
+		self.conf = self.load_conf()
+		logging.basicConfig(level = self.conf.get("LOG_LEVEL") or 20)
+		
 		super().__init__(
 			command_prefix = "!",
 			description = "A heraldry-related bot designed for the Heraldry Community.",
@@ -14,22 +17,19 @@ class NvBot(commands.Bot):
 			**kwargs
 		)
 		
-		self.loop.run_until_complete(self.start_session())
-		self.conf = self.load_conf()
+		self.session = self.loop.run_until_complete(self.start_session())
 		self.dbc = self.loop.run_until_complete(aiosqlite.connect(self.conf["DB_PATH"]))
 		
 		if self.conf.get("OWNER_ONLY"):
 			self.add_check(utils.check_is_owner)
 		
 	def get_default_intents(self):
-		intents = discord.Intents.default()
-		intents.typing = False
-		intents.webhooks = False
-		intents.integrations = False
-		intents.invites = False
-		intents.members = True
-
-		return intents
+		return discord.Intents(
+			guilds = True,
+			members = True,
+			messages = True,
+			reactions = True
+		)
 		
 	def load_conf(self):
 		with open("config.json") as file:
@@ -42,9 +42,8 @@ class NvBot(commands.Bot):
 			"DB_PATH"
 		]
 		
-		for r in requisites:
-			if r not in conf:
-				raise NameError("JSON file does not have required values.")
+		if not all([r in conf for r in requisites]):
+			raise NameError("JSON file does not have required values.")
 				
 		return conf
 		
@@ -63,7 +62,7 @@ class NvBot(commands.Bot):
 		return coglist
 		
 	async def start_session(self):
-		self.session = aiohttp.ClientSession(loop=self.loop)
+		return aiohttp.ClientSession(loop=self.loop)
 		
 	async def close(self):
 		await self.dbc.close()
@@ -130,7 +129,6 @@ class NvBot(commands.Bot):
 			await ctx.send(embed = utils.nv_embed(title, message))
 
 if __name__ == "__main__":
-	logging.basicConfig(level=logging.INFO)
-	bot = NvBot()
+	bot = Heraldtron()
 	bot.load_default_cogs()
 	bot.run(bot.conf["DISCORD_TOKEN"])
