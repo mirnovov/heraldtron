@@ -1,4 +1,4 @@
-import discord, aiohttp, aiosqlite, itertools, sys, platform
+import discord, aiohttp, aiosqlite, itertools, platform, os, re
 from discord.ext import commands
 from .. import utils, version
 
@@ -32,15 +32,15 @@ class MetaTools(commands.Cog, name="Meta"):
 			name="Developed using", 
 			value=f"**Python {platform.python_version()}**\n"\
 				  f"`{platform.python_implementation()} ({platform.python_build()[0]}"\
-				  f" {platform.python_build()[1]})`",  
+				  f" {platform.python_build()[1].replace('  ',' ')})`",  
 			inline=True
 		)
 		embed.add_field(
 			name = "Running on", 
-			value = f"**{platform.uname().system} {platform.uname().release}**\n"\
-				  f"`{platform.platform()}`", 
+			value = f"**{self.get_os_name()}**\n`{self.get_os_details()}`", 
 			inline = True
 		)
+		
 		embed.add_field(
 			name = "Made with the help of", 
 			value = f" - [discord.py](https://pypi.org/project/discord.py/) `{discord.__version__}`\n"\
@@ -56,7 +56,20 @@ class MetaTools(commands.Cog, name="Meta"):
 		)
 		embed.set_footer(text="© novov 2021. This is an open source project available under the MIT license.")
 		
-		await ctx.send(embed=embed)		
+		await ctx.send(embed=embed)	
+		
+	def get_os_name(self):
+		if os.path.exists("/etc/os-release"):
+			os_release = open("/etc/os-release").read()
+			rname = re.findall("(?m)^(?:NAME|VERSION_ID)=(.+)",os_release)
+			return f"{rname[0]} {rname[1]}"
+		
+		return platform.platform(terse = True).replace("-"," ")	
+		
+	def get_os_details(self):
+		uname = platform.uname()
+		dedup = uname.release.removesuffix(f".{uname.machine}")
+		return f"{uname.system} {dedup} ({uname.machine})"
 
 class NvHelpCommand(commands.DefaultHelpCommand):
 	def __init__(self,**options):

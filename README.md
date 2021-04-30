@@ -38,7 +38,7 @@ Before running, the bot requires an `config.json` file in the root directory con
 * `AR_DDBTK`: The key for the German Digital Library/[Deutsche Digitale Bibliothek API](https://labs.deutsche-digitale-bibliothek.de/app/ddbapi/)
 * `DEEP_AI`: The key for `!textgen`, from [DeepAI](https://deepai.org/).
 
-Additionally, there are a number of optional settings can be specified:
+Additionally, there are a number of optional settings that can be specified:
 
 * `USE_JISHAKU`: If `true`, load the [jishaku](https://github.com/Gorialis/jishaku) debugger (must be installed separately). 
 * `OWNER_ONLY`: If `true`, disable usage of the bot for members that are not the owner. 
