@@ -48,22 +48,16 @@ async def typing(self, ctx):
 	
 async def get_bytes(session, url, **kwargs):
 	async with session.get(url) as source:
-		if not source.ok: return None
-		try:
-			image = await source.read(**kwargs)
-		except aiohttp.ClientResponseError:
-			return None
+		image = await source.read(**kwargs)
 		return BytesIO(image)
 	
 async def get_json(session, url, **kwargs):
 	async with session.get(url) as source:
-		if not source.ok: return None
 		return await source.json(**kwargs)
 			
-async def get_text(session, url, encoding = None):
+async def get_text(session, url, **kwargs):
 	async with session.get(url) as source:
-		if not source.ok: return None
-		return await source.text(encoding = encoding)	
+		return await source.text(**kwargs)	
 			
 async def get_guild_row(bot, guild_id):
 	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))
