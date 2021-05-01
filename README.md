@@ -6,7 +6,7 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 
 ## Requirements
 
-* Python 3.7+
+* Python 3.9+
 * [discord.py](https://pypi.org/project/discord.py/)
 * [aiohttp](https://pypi.org/project/aiohttp/) (comes installed with discord.py)
 * [Pillow](https://pypi.org/project/Pillow/)

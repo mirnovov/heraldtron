@@ -18,10 +18,10 @@ setuptools.setup(
 		"ht": ["data/*"],
 	},
 	license = "MIT",
-	python_requires = ">=3.7",
+	python_requires = ">=3.9",
 	install_requires = [
 		"discord.py>=1.1.0",
-		"aiohttp>=3.7.4",
+		"aiohttp>=3.7.0",
 		"Pillow>=8.0",
 		"aiosqlite>=0.17.0",
 	],
