@@ -65,7 +65,7 @@ async def gis(ctx, query):
 			await message.edit(embed=image_result(index))
 			await message.remove_reaction(reaction,ctx.author)
 		except asyncio.TimeoutError:
-			await message.edit(content="**The image search session has timed out.**")
+			await message.edit(content=":x: | The image search session has timed out.")
 			await message.clear_reactions()		
 			return
 

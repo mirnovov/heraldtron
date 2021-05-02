@@ -7,6 +7,5 @@
 	- Make functionality currently unusable in DMs available where possible
 	- Add proper mod authorisation and hide mod commands
 
-- Add blazon generators (in #resources)
 - Automate contest posts
 - Competition distribution functions?

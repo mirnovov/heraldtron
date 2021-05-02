@@ -80,21 +80,15 @@ class ModerationTools(commands.Cog, name="Moderation"):
 			))
 			return
 			
-		reactions = ("\U0000274C", "\U000021A9")
 		result = await utils.respond_or_react(
 			ctx,
 			"Either type your message below, react with :leftwards_arrow_with_hook:"\
 			" to revert to the default, or with :x: to cancel.\n"\
 			"To include details, use `GUILD_NAME`, `MENTION`, or `MEMBER_NAME`.",
-			reactions
+			["\U000021A9"]
 		)
 		
-		if not result: return
-		
-		elif isinstance(result, tuple) and result[0].emoji == reactions[0]:
-			await ctx.send(":x: | Command cancelled.")
-			
-		elif isinstance(result, discord.Message) or result[0].emoji == reactions[1]:
+		if isinstance(result, discord.Message) or result[0].emoji == "\U000021A9":
 			message_type = "welcome_text" if not leave else "leave_text"
 			new = None if isinstance(result, tuple) else result.content
 			

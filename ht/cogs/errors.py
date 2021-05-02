@@ -11,6 +11,9 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		ctx.handled = False
 		
 		if not isinstance(error, commands.CommandInvokeError):
+			if isinstance(error, utils.CommandCancelled):
+				return 
+				
 			if isinstance(error, commands.CommandNotFound):
 				phrase = ctx.message.content
 				
@@ -70,6 +73,12 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 					"The server has returned undecodable content. An error report has been sent."\
 					f" If the problem persists, contact {owner.mention}.", error
 				)
+			elif isinstance(error, utils.BadMessageResponse):
+				await self.warn(ctx, "Message response contains incorrect content",
+					"The bot message you are responding to does not accept this content."\
+					" Check that you have followed the instructions correctly and try again."
+				)	
+				
 			else:
 				await self.warn(ctx, "Unknown error",
 					"Heraldtron has encountered an unforseen difficulty. An error report has been sent.",

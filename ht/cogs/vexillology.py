@@ -75,15 +75,9 @@ class VexStuff(commands.Cog, name="Vexillology"):
 			ctx,
 			"What image would you like me to seychelles-ize?\n"\
 			"Respond with your image below, or react with :x: to cancel.\n",
-			("\U0000274C",)
+			added_check = lambda m: len(m.attachments) > 0 and m.attachments[0].content_type.startswith("image") 
 		)
-		
-		if not result: 
-			return
-		elif isinstance(result, tuple):
-			await ctx.send(":x: | Command cancelled.")
-			return
-		
+				
 		image_url = result.attachments[0].url
 		image_content = await utils.get_bytes(ctx.bot.session, image_url)
 		image = await self.bot.loop.run_in_executor(None, compute_seychelles, image_url, image_content)

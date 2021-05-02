@@ -1,4 +1,4 @@
-import discord, urllib, csv, json, random, re, ssl
+import discord, asyncio, urllib, csv, json, random, re, ssl
 from discord.ext import commands
 from .. import utils, services
 from ..artifacts import source_list, source_string
@@ -8,10 +8,10 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		self.bot = bot
 		
 	@commands.command(
-		help="Displays a random historical heraldic artifact.\n"\
+		help = "Displays a random historical heraldic artifact.\n"\
 			"This can be narrowed down to an individual source:\n\n"\
 			f"{source_string()}",
-		aliases=("ar","relic")
+		aliases = ("ar", "relic")
 	)
 	@commands.before_invoke(utils.typing)
 	async def artifact(self, ctx, source = "all"):
@@ -40,18 +40,17 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=embed)	
 		
 	@commands.command(
-		help="Finds the results of `coat of arms [query]` using Google Images.",
-		aliases=("as",)
+		help = "Finds the results of `coat of arms [query]` using Google Images.",
+		aliases = ("as",)
 	)
 	@commands.before_invoke(utils.typing)
 	async def armssearch(self, ctx, *, query):
 		await services.gis(ctx, "coat of arms " + query)
 		
 	@commands.command(
-		name="catalog",
-		help="Looks up a term in DrawShield's repository of charges.\nCode © Karl"\
-		" Wilcox",
-		aliases=("charge","cat")
+		name = "catalog",
+		help = "Looks up a term in DrawShield's repository of charges.\nCode © Karl Wilcox",
+		aliases = ("charge", "cat")
 	)
 	@commands.before_invoke(utils.typing)
 	async def ds_catalog(self, ctx, *, charge):			
@@ -76,8 +75,8 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		name="challenge",
-		help="Displays a random image using the DrawShield API.\nDesigned to serve as an"\
+		name = "challenge",
+		help = "Displays a random image using the DrawShield API.\nDesigned to serve as an"\
 		" emblazonment challenge using DrawShield. Code © Karl Wilcox; images © coadb,"\
 		" The Book of Public Arms, Wikimedia Commons contributors (individual sources"\
 		" can be selected via *coadb*, *public*, and *wikimedia* respectively).",
@@ -96,23 +95,103 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		
 		embed = utils.nv_embed("","Try emblazoning this using DrawShield!",kind=4,custom_name="Random Image")		
 		embed.set_image(url=url)
-		embed.set_footer(text=f"Retrieved using DrawShield; © Karl Wilcox. ")
+		embed.set_footer(text="Retrieved using DrawShield; © Karl Wilcox. ")
 		
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		help="Illustrates arms using DrawShield.\nNote that DrawShield does not support"\
+		help = "Illustrates arms using DrawShield.\nNote that DrawShield does not support"\
 		" all possible blazons. Code © Karl Wilcox",
-		aliases=("ds",)
+		aliases = ("ds",)
 	)
 	@commands.before_invoke(utils.typing)
 	async def drawshield(self, ctx, *, blazon : str):			
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
-		await ctx.send(embed=embed,file=file)
+		await ctx.send(embed = embed, file = file)
 		
 	@commands.command(
-		help="Looks up heraldic terms in the Finto HERO ontological database.\n",
-		aliases=("finto","luh","ontology","he")
+		help = "Generates a coat of arms.\n If using in a DM, it is based on your name and birthday;"\
+		" for privacy reasons, it is random otherwise. Based on a chart by Snak and James.",
+		aliases = ("gen", "g")
+	)
+	async def generate(self, ctx):	
+		with open("data/generator.json") as file: 
+			parts = json.load(file)
+		
+		results = {}
+		tinctures = ("colour", "metal")
+		result_tinctures = ("field", "background", "foreground")
+				
+		if isinstance(ctx.channel, discord.abc.GuildChannel):
+			for category in parts.keys():
+				if category in ("colour", "metal", "fur"): continue
+				results[category] = random.choice(list(parts[category].values()))
+			
+			if bool(random.getrandbits(1)): 
+				tinctures = tinctures[::-1]
+			
+			for i, result in enumerate(result_tinctures):
+				tincture = tinctures[0] if i % 2 else tinctures[1]
+				if tincture == "colour" and random.randrange(10) == 5: tincture = "fur"
+				
+				results[result] = random.choice(list(parts[tincture].values()))
+		else:
+			def get_letter_val(letter, category):
+				for letters, value in category.items():
+					if letter.upper() in letters: return value
+				raise utils.BadMessageResponse("Invalid value")
+			
+			message = await utils.respond_or_react(
+				ctx,
+				"This command generates a blazon from a few details. React with :x: to cancel.\n"\
+				"To start with, give me a short name of a **day**, then a **month**, like 8 Apr.",
+				added_check = lambda m: m.content in parts["charge"].keys()
+			)
+			results["charge"] = parts["charge"][message.content]
+			
+			await ctx.send("Okay. Now tell me the **first letter** of a **first name**.")
+			message = await utils.check_response(ctx, lambda m: len(m.content) == 1 and m.content.isalpha())
+			results["ordinary"] = get_letter_val(message.content, parts["ordinary"])
+				
+			await ctx.send("Great. Now tell me the **amount** of letters in that person's **last name**.")
+			message = await utils.check_response(ctx, lambda m: m.content.isnumeric())
+			
+			if int(message.content) % 2 == 0: 
+				tinctures = tinctures[::-1]
+				
+			await ctx.send("Thanks! Now, give me the **first three letters** of that **last name**.")
+			message = await utils.check_response(ctx, lambda m: len(m.content) == 3 and m.content.isalpha())
+			letters = message.content
+			
+			await ctx.send("And finally, give me the **last two letters** of the **first name**.")
+			message = await utils.check_response(ctx, lambda m: len(m.content) == 2 and m.content.isalpha())
+			letters += message.content
+			pos = -1
+			
+			for i, result in enumerate(result_tinctures):
+				pos = 4 if i == 2 else pos + 1
+				tincture = tinctures[0] if i % 2 else tinctures[1]
+				
+				if tincture == "colour":
+					adjacent = pos - 1 if pos == 4 else pos + 1
+					if letters[adjacent] == letters[pos]: 
+						tincture = "fur"
+						pos = adjacent 
+				
+				results[result] = get_letter_val(letters[pos], parts[tincture])
+			
+		embed = utils.nv_embed("", "", kind = 4, custom_name = "Generated blazon")		
+		embed.set_footer(text = "Generator based on a chart by Snak and James.")
+		
+		embed.title = f"*{results['field'].capitalize()}, on {utils.pronounise(results['ordinary'])}"\
+					  f" {results['background']} {utils.pronounise(results['charge'].lower())}"\
+					  f" {results['foreground']}*"
+		
+		await ctx.send(embed = embed)
+		
+	@commands.command(
+		help = "Looks up heraldic terms in the Finto HERO ontological database.",
+		aliases = ("finto", "luh", "ontology", "he")
 	)
 	@commands.before_invoke(utils.typing)
 	async def hero(self, ctx, *, term):
@@ -122,7 +201,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		)
 		
 		if len(query["results"]) == 0:
-			await ctx.send(embed=utils.nv_embed(
+			await ctx.send(embed = utils.nv_embed(
 				"Invalid HERO term",
 				"The term could not be found. Check that it is entered correctly, or try other sources."
 			))
@@ -130,16 +209,15 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		
 		uri = query["results"][0]["uri"]
 		
-		results = (await utils.get_json(
+		results = await utils.get_json(
 			self.bot.session,
 			f"http://api.finto.fi/rest/v1/hero/data?format=application%2Fjson&uri={urllib.parse.quote(uri)}&lang=en"
-		))["graph"]
+		)
+		results = results["graph"]
 		
 		embed = utils.nv_embed(
 			f"Results for \"{term}\"",
-			f"",
-			kind = 3,
-			custom_name = "HERO results"
+			f"", kind = 3, custom_name = "HERO results"
 		)
 		
 		for result in results:
@@ -160,16 +238,13 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 			en_uri = result["uri"].replace("http://www.yso.fi/onto/hero/","http://finto.fi/hero/en/page/")
 			embed.description += f"- {result_type} [{result_name}]({en_uri})\n"
 
-		embed.set_thumbnail(
-			url="http://heraldica.narc.fi/img/hero/thumb/{uri.replace('http://www.yso.fi/onto/hero/p','')}.png"
-		)
 		embed.set_footer(text=f"Term retrieved using Finto HERO.")
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		help="Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\
-		" Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
-		aliases=("lu","define","def")
+		help = "Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\
+		       " Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
+		aliases = ("lu", "define", "def")
 	)
 	@commands.before_invoke(utils.typing)
 	async def lookup(self, ctx, *, term : str):
@@ -195,10 +270,10 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		help="Generates a motto randomly.\n"\
-		"The included functionality has several advancements over previous"\
-		"motto generators.",
-		aliases=("mt","mot")
+		help = "Generates a motto randomly.\n"\
+			   "The included functionality has several advancements over previous"\
+		       "motto generators.",
+		aliases = ("mt", "mot")
 	)
 	@commands.before_invoke(utils.typing)
 	async def motto(self, ctx):
@@ -242,9 +317,9 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=utils.nv_embed(f"{motto}","",kind=4,custom_name="Motto generator"))
 		
 	@commands.command(
-		help="Randomly selects a motto from a list of over 400.\n"\
+		help = "Randomly selects a motto from a list of over 400.\n"\
 		"These include countries, heads of state, and universities",
-		aliases=("rmot","rm")
+		aliases = ("rmot", "rm")
 	)
 	async def randmotto(self, ctx):
 		with open("data/mottoes.csv") as file:
@@ -263,10 +338,10 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		await ctx.send(embed=embed)
 		
 	@commands.command(
-		help="Provides links to a number of heraldic resources.\n"\
-			 "Retrieves information from Novov's Heraldic Resources. If no resource name is given,"\
-			 " lists available resources.",
-		aliases=("re","source","resources","r")
+		help = "Provides links to a number of heraldic resources.\n"\
+			   "Retrieves information from Novov's Heraldic Resources."
+			   " If no resource name is given, lists available resources.",
+		aliases = ("re", "source", "resources", "r")
 	)
 	@commands.before_invoke(utils.typing)
 	async def resource(self, ctx, source = None):
@@ -283,7 +358,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		
 		def resource_result(resource):
 			embed = utils.nv_embed(
-				re.sub("<i>|</i>","*",resource[2]),
+				re.sub("<i>|</i>", "*", resource[2]),
 				re.sub("<[^<]+?>", "", resource[3]),
 				kind = 4,
 				custom_name = "Resource"
