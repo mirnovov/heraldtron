@@ -49,7 +49,7 @@ async def europeana(bot):
 	)
 	
 async def digital_nz(bot):
-	api_key = conf["AR_DGTNZ"]
+	api_key = bot.conf["AR_DGTNZ"]
 	collection = await utils.get_json(
 		bot.session,
 		f"https://api.digitalnz.org/v3/records.json?api_key={api_key}&per_page=100&text=heraldry&and[category][]=Images"
