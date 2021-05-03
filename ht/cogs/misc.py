@@ -6,7 +6,7 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 	def __init__(self, bot):
 		self.bot = bot
 		
-	@commands.command(help="Retrieves a random piece of advice.\nUses evilinsult.com",aliases=("ad",)
+	@commands.command(help="Retrieves a random piece of advice.\nUses adviceslip.com",aliases=("ad",)
 	)
 	@commands.before_invoke(utils.typing)
 	async def advice(self, ctx):			
@@ -15,6 +15,52 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 		embed = utils.nv_embed(result["slip"]["advice"],"",kind=4,custom_name="Random advice")		
 		embed.set_footer(text=f"Retrieved using adviceslip.com")
 		await ctx.send(embed=embed)
+		
+	@commands.command(
+		help = "Generates a competition distribution.\n If no number is specified, asks for a list of names.", 
+		aliases = ("dt","dist")
+	)
+	async def distribute(self, ctx, size : typing.Optional[int] = None):
+		if not size:
+			message = await utils.respond_or_react(
+				ctx,
+				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)"\
+				", or react with :x: to cancel.",
+				timeout = 1000
+			)
+			names = dict(enumerate(message.content.split("\n"), start = 1))
+			size = len(names)
+		else: names = None
+			
+		if not 3 < size < 50:
+			await ctx.send(embed=utils.nv_embed(
+				"Invalid distribution size",
+				"To ensure a proper response, the size must be between 3 and 50."
+			))
+			return
+					
+		def distribution(keysize):
+			vals = list(range(1, keysize))
+			candidates = {i: None for i in range(1, keysize)}
+			
+			for c in candidates:
+				same = c in vals
+				
+				if len(vals) == 1 and same: #try again, no valid option			
+					candidates = distribution(keysize)
+					break 	
+				elif same: vals.remove(c)
+				
+				candidates[c] = vals.pop(random.randrange(0, len(vals)))
+				if same: vals.append(c)
+				
+			return candidates
+		
+		dist = distribution(size + 1)
+		display = lambda e: f"**{e}**: {names[e]}" if names else f"**{e}**"
+		output = "".join(f"{display(k)} \U0001F86A {display(v)}\n" for k, v in dist.items())
+		
+		await ctx.send(output)
 		
 	@commands.command(help="Conducts a search using Google Images.", aliases=("img","gi"))
 	@commands.before_invoke(utils.typing)
@@ -27,7 +73,7 @@ class MiscStuff(commands.Cog, name="Miscellaneous"):
 		aliases=("dice","d")
 	)
 	async def roll(self, ctx, ceiling : typing.Optional[int] = 6):
-		if ceiling < 2 or ceiling > 9999:
+		if not 2 < ceiling < 9999:
 			await ctx.send(embed=utils.nv_embed(
 				"Incorrect roll ceiling",
 				"The value specified must be between 2 and 9999."

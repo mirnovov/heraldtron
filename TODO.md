@@ -8,4 +8,4 @@
 	- Add proper mod authorisation and hide mod commands
 
 - Automate contest posts
-- Competition distribution functions?
+- Fix help by paginating
