@@ -1,9 +1,9 @@
 import discord, asyncio, urllib, csv, json, random, re, ssl
 from discord.ext import commands
-from .. import utils, services
+from .. import utils, services, embeds
 from ..artifacts import source_list, source_string
 
-class HeraldicStuff(commands.Cog, name="Heraldry"):
+class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	def __init__(self, bot):
 		self.bot = bot
 		
@@ -18,7 +18,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		if source == "all":
 			museum = random.choice(list(source_list.values()))
 		elif source not in source_list:
-			await ctx.send(embed=utils.nv_embed(
+			await ctx.send(embed = embeds.ERROR.create(
 				"Invalid artifact source",
 				"Check your spelling and try again."
 			))
@@ -29,12 +29,10 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		artifact = await museum[0](ctx.bot)
 		footer = f"{artifact[4]} via {museum[1]}" if artifact[4] else museum[1]
 		
-		embed = utils.nv_embed(artifact[1],artifact[2],kind=3,custom_name="Random artifact")
+		embed = embeds.SEARCH_RESULT.create(artifact[1], artifact[2], heading = "Random artifact")
 		embed.url = artifact[0]	
-			
-		if artifact[3]:
-			embed.set_image(url=artifact[3])
 		
+		if artifact[3]: embed.set_image(url=artifact[3])
 		embed.set_footer(text=footer)
 		
 		await ctx.send(embed=embed)	
@@ -57,17 +55,15 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		url = await services.ds_catalog(self.bot.session, charge)
 		
 		if url == None:
-			await ctx.send(embed=utils.nv_embed(
+			await ctx.send(embed = embeds.ERROR.create(
 				"Invalid catalog item",
 				"Check your spelling and try again."
 			))
 			return
 		
-		embed = utils.nv_embed(
-			f"Catalog entry for \"{charge}\"",
-			"",
-			kind=3,
-			custom_name="DrawShield catalog"
+		embed = embeds.SEARCH_RESULT.create(
+			f"Catalog entry for \"{charge}\"", "",
+			heading = "DrawShield catalog"
 		)		
 		embed.set_image(url=url)
 		embed.set_footer(text=f"Retrieved using DrawShield; © Karl Wilcox. ")
@@ -87,17 +83,17 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		url = await utils.get_json(self.bot.session, f"https://drawshield.net/api/challenge/{source}")
 		
 		if isinstance(url, dict) and "error" in url:
-			await ctx.send(embed=utils.nv_embed(
+			await ctx.send(embed = embeds.ERROR.create(
 				"Invalid challenge category",
 				"Type `!help challenge` to see the available categories."
 			))
 			return
 		
-		embed = utils.nv_embed("","Try emblazoning this using DrawShield!",kind=4,custom_name="Random Image")		
-		embed.set_image(url=url)
-		embed.set_footer(text="Retrieved using DrawShield; © Karl Wilcox. ")
+		embed = embeds.GENERIC.create("","Try emblazoning this using DrawShield!", heading = "Random image")		
+		embed.set_image(url = url)
+		embed.set_footer(text = "Retrieved using DrawShield; © Karl Wilcox. ")
 		
-		await ctx.send(embed=embed)
+		await ctx.send(embed = embed)
 		
 	@commands.command(
 		help = "Illustrates arms using DrawShield.\nNote that DrawShield does not support"\
@@ -180,7 +176,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 				
 				results[result] = get_letter_val(letters[pos], parts[tincture])
 			
-		embed = utils.nv_embed("", "", kind = 4, custom_name = "Generated blazon")		
+		embed = embeds.GENERIC.create("", "", heading = "Generated blazon")		
 		embed.set_footer(text = "Generator based on a chart by Snak and James.")
 		
 		embed.title = f"*{results['field'].capitalize()}, on {utils.pronounise(results['ordinary'])}"\
@@ -201,7 +197,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		)
 		
 		if len(query["results"]) == 0:
-			await ctx.send(embed = utils.nv_embed(
+			await ctx.send(embed = embeds.ERROR.create(
 				"Invalid HERO term",
 				"The term could not be found. Check that it is entered correctly, or try other sources."
 			))
@@ -214,11 +210,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 			f"http://api.finto.fi/rest/v1/hero/data?format=application%2Fjson&uri={urllib.parse.quote(uri)}&lang=en"
 		)
 		results = results["graph"]
-		
-		embed = utils.nv_embed(
-			f"Results for \"{term}\"",
-			f"", kind = 3, custom_name = "HERO results"
-		)
+		embed = embeds.SEARCH_RESULT.create(f"Results for \"{term}\"", f"", heading = "HERO results")
 		
 		for result in results:
 			if result["uri"] == "http://www.yso.fi/onto/hero/": continue
@@ -238,8 +230,8 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 			en_uri = result["uri"].replace("http://www.yso.fi/onto/hero/","http://finto.fi/hero/en/page/")
 			embed.description += f"- {result_type} [{result_name}]({en_uri})\n"
 
-		embed.set_footer(text=f"Term retrieved using Finto HERO.")
-		await ctx.send(embed=embed)
+		embed.set_footer(text = f"Term retrieved using Finto HERO.")
+		await ctx.send(embed = embed)
 		
 	@commands.command(
 		help = "Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\
@@ -251,23 +243,22 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		
 		if "error" in results:
-			await ctx.send(embed=utils.nv_embed(
+			await ctx.send(embed = embeds.ERROR.create(
 				"Invalid DrawShield term",
 				"The term could not be found. Check that it is entered correctly, or try other sources."
 			))
 			return
 		
-		embed = utils.nv_embed(
+		embed = embeds.SEARCH_RESULT.create(
 			f"Results for \"{term}\"",
 			f"{results['content']}\n\u200b\n[View original entry]({results['URL']})",
-			kind=3
 		)
 		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
 		
 		thumb = await services.ds_catalog(self.bot.session, term)
-		if thumb: embed.set_thumbnail(url=thumb)
+		if thumb: embed.set_thumbnail(url = thumb)
 		
-		await ctx.send(embed=embed)
+		await ctx.send(embed = embed)
 		
 	@commands.command(
 		help = "Generates a motto randomly.\n"\
@@ -314,7 +305,7 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		template = random.choice(partlist)
 		motto = re.sub("([&|!]\\w\\w\\w)",chooseTerm,template).capitalize()		
 		
-		await ctx.send(embed=utils.nv_embed(f"{motto}","",kind=4,custom_name="Motto generator"))
+		await ctx.send(embed = embeds.GENERIC.create(f"{motto}", "", heading = "Motto generator"))
 		
 	@commands.command(
 		help = "Randomly selects a motto from a list of over 400.\n"\
@@ -325,11 +316,10 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		with open("data/mottoes.csv") as file:
 			row = random.choice(list(csv.reader(file, delimiter=";")))
 					
-		embed = utils.nv_embed(
+		embed = embeds.SEARCH_RESULT.create(
 			f"{row[1]}",
 			f"**{row[0]}**",
-			kind=3,
-			custom_name="Random motto"
+			heading = "Random motto"
 		)	
 		
 		if row[2].strip(" ") != "English":
@@ -357,19 +347,19 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 		)
 		
 		def resource_result(resource):
-			embed = utils.nv_embed(
+			embed = embeds.GENERIC.create(
 				re.sub("<i>|</i>", "*", resource[2]),
 				re.sub("<[^<]+?>", "", resource[3]),
-				kind = 4,
-				custom_name = "Resource"
+				heading = "Resource"
 			)
 			embed.url = resource[1]
 			return embed
 		
 		if not source:
-			embed = utils.nv_embed(
-				"", f"- `random`: Choose a random resource.\n", 
-				kind = 4, custom_name = "Resources list"
+			embed = embeds.GENERIC.create(
+				"", 
+				f"- `random`: Choose a random resource.\n", 
+				heading = "Resources list"
 			)
 			for resource in resources:
 				embed.description += f" - `{resource[0]}`: {re.sub('<i>|</i>','*',resource[2])}\n"
@@ -382,14 +372,14 @@ class HeraldicStuff(commands.Cog, name="Heraldry"):
 					embed = resource_result(resource)
 					break
 			else:
-				await ctx.send(embed=utils.nv_embed(
+				await ctx.send(embed = embeds.ERROR.create(
 					"Nonexistent resource",
 					"Type `!resources` to see a list of resources."
 				))
 				return
 		
-		embed.set_footer(text=f"Retrieved from Novov's Heraldic Resources.")		
-		await ctx.send(embed=embed)
+		embed.set_footer(text = f"Retrieved from Novov's Heraldic Resources.")		
+		await ctx.send(embed = embed)
 
 def setup(bot):
 	bot.add_cog(HeraldicStuff(bot))

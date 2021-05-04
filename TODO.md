@@ -8,4 +8,3 @@
 	- Add proper mod authorisation and hide mod commands
 
 - Automate contest posts
-- Fix help by paginating

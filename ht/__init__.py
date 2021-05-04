@@ -1,2 +1,1 @@
-#empty atm
-pass
+from .version import __version__

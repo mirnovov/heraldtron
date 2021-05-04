@@ -1,6 +1,6 @@
 import discord, aiohttp, traceback, logging, json, time
 from discord.ext import commands
-from .. import utils
+from .. import utils, embeds
 
 class BotErrors(commands.Cog, name = "Bot Errors"):
 	def __init__(self, bot):
@@ -86,7 +86,7 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 				)
 		
 	async def warn(self, ctx, title, message, error = None):
-		await ctx.send(embed = utils.nv_embed(title, message))
+		await ctx.send(embed = embeds.ERROR.create(title, message))
 		if error:
 			logging.getLogger("heraldtron").warning(
 				f"{type(error).__name__}: {str(error)}\n {''.join(traceback.format_tb(error.__traceback__))}"\
