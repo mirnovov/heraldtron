@@ -84,10 +84,10 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			"Either type your message below, react with :leftwards_arrow_with_hook:"\
 			" to revert to the default, or with :x: to cancel.\n"\
 			"To include details, use `GUILD_NAME`, `MENTION`, or `MEMBER_NAME`.",
-			["\U000021A9"]
+			["\U000021A9\U0000FE0F"]
 		)
 		
-		if isinstance(result, discord.Message) or result[0].emoji == "\U000021A9":
+		if isinstance(result, discord.Message) or result[0].emoji == "\U000021A9\U0000FE0F":
 			message_type = "welcome_text" if not leave else "leave_text"
 			new = None if isinstance(result, tuple) else result.content
 			

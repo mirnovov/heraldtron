@@ -35,7 +35,7 @@ FLAG_FACT = Theme.FLAG_FACT
 
 async def paginate(ctx, embed_function, embeds_size):
 	message = await ctx.send(embed = embed_function(0))		
-	buttons = ("\U000023EE", "\U00002B05", "\U0001F500", "\U000027A1", "\U000023ED")
+	buttons = ("\U000023EE\U0000FE0F", "\U00002B05\U0000FE0F", "\U0001F500", "\U000027A1\U0000FE0F", "\U000023ED\U0000FE0F")
 	index = 0
 	await utils.add_multiple_reactions(message, buttons)
 	
