@@ -1,10 +1,57 @@
-import sqlite3
-from discord.ext import commands
-from .. import utils
+import sqlite3, urllib, logging
+from discord.ext import commands, tasks
+from .. import utils, embeds
 
 class BotEvents(commands.Cog, name = "Bot Events"):
 	def __init__(self, bot):
 		self.bot = bot
+		self.get_reddit_posts.start()
+		
+	def cog_unload(self):
+		self.get_reddit_posts.stop()
+		
+	@tasks.loop(hours = 2)
+	async def get_reddit_posts(self):
+		bot = self.bot
+		feeds = await bot.dbc.execute("SELECT * FROM reddit_feeds")
+		
+		async for feed in feeds:
+			query = urllib.parse.quote(feed[4])
+			posts = await utils.get_json(
+				bot.session,
+				f"https://www.reddit.com/r/{feed[3]}/search.json?q={query}&restrict_sr=on&sort=new&limit=8"
+			)
+			
+			if posts.get("error"): 
+				logging.getLogger("heraldtron").warning(f"Cannot access Reddit:\n{posts}")
+				continue #necessary as reddit can be down
+			
+			posts = posts["data"]["children"]
+			channel = bot.get_channel(feed[2]) or await bot.fetch_channel(feed[2])
+			
+			if len(posts) == 0: continue
+			
+			for post in posts:
+				post = post["data"]
+				if post["name"] == feed[5]: break
+				
+				desc = "" if not post.get("selftext") else post["selftext"].split("\n#")[0]
+				
+				embed = embeds.FEED.create(post["title"], desc)
+				embed.url = f"https://old.reddit.com{post['permalink']}"
+				embed.set_footer(text = f"posted to r/{post['subreddit']} by u/{post['author']}")
+				
+				if post.get("preview"):
+					embed.set_thumbnail(url = post["preview"]["images"][0]["source"]["url"].replace("&amp;","&"))
+				
+				await channel.send(embed = embed)
+			
+			if posts[0]["data"]["name"] != feed[5]:	
+				await bot.dbc.execute(
+					"UPDATE reddit_feeds SET last_post = ? WHERE id = ?", 
+					(posts[0]["data"]["name"], feed[0])
+				)
+				await bot.dbc.commit()
 		
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):

@@ -141,10 +141,10 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		embed = embeds.GENERIC.create(html.unescape(result["question"]), info, heading = "Trivia")
 		
 		if result["type"] == "boolean":
-			emojis = ("\U0001f438", "\U0001f430")
+			emojis = ("\U0001F438", "\U0001F430")
 			correct = random.randrange(0,2)
 		else:
-			emojis = ("\U0001f431", "\U0001f436", "\U0001f434", "\U0001f43b")
+			emojis = ("\U0001F431", "\U0001F436", "\U0001F434", "\U0001F43B")
 			correct = random.randrange(0,4)
 			
 		answers = result["incorrect_answers"]
@@ -157,7 +157,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		
 		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
 		message = await ctx.send(embed = embed)
-		await asyncio.gather(*[message.add_reaction(r) for r in emojis])
+		await utils.add_multiple_reactions(message, emojis)
 		await asyncio.sleep(60)
 		
 		embed.description = f"{info}The correct answer is: {emojis[correct]}"\

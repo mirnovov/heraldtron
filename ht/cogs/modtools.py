@@ -1,13 +1,16 @@
-import discord, asyncio, typing
+import discord, asyncio, typing, re
 from discord.ext import commands
 from datetime import datetime
-from .. import utils
+from .. import utils, embeds
 
 class ModerationTools(commands.Cog, name = "Moderation"):
+	MAX_FEEDS = 3
+	
 	def __init__(self, bot):
 		self.bot = bot
 		
 	#right now, just a bodge of has_role, but expand this so it works in dm, by checking all valid servers under that circumstance
+	#also allow bot owner do access certain commands to prevent abuse
 	async def cog_check(self, ctx):
 		item = "Herald"
 		if not isinstance(ctx.channel, discord.abc.GuildChannel):
@@ -20,6 +23,79 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		if role is None:
 			raise commands.MissingRole(item)
 		return True
+		
+	@commands.command(
+		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"\
+			   " for instance, `flair:novov` gets posts flaired `novov`."\
+			   " Feeds get the newest 8 posts every 2 hours.", 
+		aliases = ("af", "feed")
+	)	
+	async def addfeed(self, ctx, subreddit : str, channel : discord.TextChannel, search_query : str):
+		query = await self.bot.dbc.execute("SELECT COUNT(*) FROM reddit_feeds")
+		rowcount = (await query.fetchone())[0]
+		
+		if rowcount > self.MAX_FEEDS:
+			await ctx.send(embeds.ERROR.create("Excessive feed count", f"A server cannot have more than 3 feeds."))
+			return
+		
+		subreddit = re.sub("(r\/|\/|r\/)+", "", subreddit)
+		validate = await utils.get_json(self.bot.session, f"https://www.reddit.com/r/{subreddit}/new.json?limit=1")
+		
+		if validate.get("error"):
+			await ctx.send(embed = embeds.ERROR.create(
+				"Invalid subreddit",
+				f"**r/{subreddit}** either does not exist or is inaccessible."
+			))
+			return
+		elif validate["data"]["dist"] > 0:
+			newest = validate["data"]["children"][0]["data"]["name"] #json can be a nightmare
+		else: newest = None
+		
+		await self.bot.dbc.execute(
+			"INSERT INTO reddit_feeds VALUES (?, ?, ?, ?, ?, ?);",
+			(None, ctx.guild.id, channel.id, subreddit, search_query, newest)
+		)
+		await self.bot.dbc.commit()
+		await ctx.send(":white_check_mark: | Subreddit feed created.")
+	
+	@commands.command(
+		help = "Shows current Reddit feeds and allows deleting them.", 
+		aliases = ("managefeed", "mf", "feeds")
+	)	
+	async def delfeed(self, ctx):
+		query = await self.bot.dbc.execute("SELECT * FROM reddit_feeds WHERE guild = ?", (ctx.guild.id,))
+		feeds = await query.fetchmany(size = self.MAX_FEEDS)
+		
+		embed = embeds.FEED.create("", "\n\u200B\n", heading = f"Feeds for {ctx.guild.name}")
+		emojis = ("\U0000274C","\U0001F98A", "\U0001F428", "\U0001fF42E")[:len(feeds) + 1]
+		
+		for i, feed in enumerate(feeds, start = 1):
+			channel = (self.bot.get_channel(feed[2]) or await self.bot.fetch_channel(feed[2])).mention or "**invalid**"
+			embed.description += f"- {emojis[i]} **r/{feed[3]}** to {channel} (query: *{feed[4]}*)\n"
+		
+		embed.description += "\nReact with an emoji to delete a feed, or :x: to cancel."
+		message = await ctx.send(embed = embed)
+		await utils.add_multiple_reactions(message, emojis)
+		
+		def check_react(reaction, user):
+			if ctx.author != user: return False
+			return reaction.message == message and reaction.emoji in emojis 
+		
+		try:
+			reaction, user = await ctx.bot.wait_for("reaction_add", timeout = 150, check = check_react)		
+		except asyncio.TimeoutError: 
+			raise await utils.CommandCancelled.create("Command timed out", ctx)
+		
+		if reaction.emoji == emojis[0]:
+			raise await utils.CommandCancelled.create("Command cancelled", ctx)
+		else:
+			await self.bot.dbc.execute(
+				"DELETE FROM reddit_feeds WHERE id = ?;", 
+				(feeds[emojis.index(reaction.emoji) - 1][0],)
+			)
+			
+			await self.bot.dbc.commit()
+			await ctx.send(":x: | Subreddit feed deleted.")
 	
 	@commands.command(
 		help = "Displays a moderator message in a channel.\n By default, this is"\
@@ -57,7 +133,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	async def setleave(self, ctx):
 		await self.set_message(ctx, True)
 		
-	@commands.command(help = "Sets the welcome message for this server.",aliases = ("sw", "setw"))	
+	@commands.command(help = "Sets the welcome message for this server.", aliases = ("sw", "setw"))	
 	async def setwelcome(self, ctx):
 		await self.set_message(ctx, False)
 		

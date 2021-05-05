@@ -6,5 +6,3 @@
 	- Add roll channel autocategorisation/archiving
 	- Make functionality currently unusable in DMs available where possible
 	- Add proper mod authorisation and hide mod commands
-
-- Automate contest posts

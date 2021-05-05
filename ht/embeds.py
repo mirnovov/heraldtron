@@ -11,6 +11,7 @@ class Theme(Enum):
 	GENERIC = (0x444850, "5/5e/VisualEditor_icon_reference-rtl-invert.svg/240px-VisualEditor_icon_reference-invert.svg.png", "Result")
 	ABOUT = (0x02af89, "4/4e/Echo_gratitude.svg/240px-Echo_gratitude.svg.png", "About Heraldtron")
 	FLAG_FACT = (0x444850, "1/14/OOjs_UI_icon_flag-ltr-invert.svg/200px-OOjs_UI_icon_flag-ltr-invert.svg.png", "Flag fact")
+	FEED = (0x444850, "2/21/OOjs_UI_icon_feedback-ltr-invert.svg/240px-OOjs_UI_icon_feedback-ltr-invert.svg.png", "Reddit post")
 	
 	def __init__(self, colour, icon_url, heading):
 		self.colour = colour
@@ -32,6 +33,7 @@ SEARCH_RESULT = Theme.SEARCH_RESULT
 GENERIC = Theme.GENERIC
 ABOUT = Theme.ABOUT
 FLAG_FACT = Theme.FLAG_FACT
+FEED = Theme.FEED
 
 async def paginate(ctx, embed_function, embeds_size):
 	message = await ctx.send(embed = embed_function(0))		

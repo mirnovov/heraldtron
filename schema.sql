@@ -17,12 +17,20 @@ CREATE TABLE "guilds" (
 	"leave_text" TEXT
 );
 
+CREATE TABLE "reddit_feeds" (
+	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
+	"channel_id" INTEGER NOT NULL,
+	"subreddit" TEXT NOT NULL,
+	"query" TEXT NOT NULL,
+	"last_post" TEXT DEFAULT null
+)
 
 CREATE TABLE "roles" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"name" TEXT NOT NULL,
 	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
-	"is_admin" INTEGER DEFAULT 'true'
+	"is_admin" INTEGER DEFAULT 1
 );
 
 
@@ -31,8 +39,8 @@ CREATE TABLE "roll_channels" (
 	"user_id" INTEGER REFERENCES "armigers"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
 	"type" INTEGER DEFAULT 2 NOT NULL,
 	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
-	"archived" INTEGER NOT NULL DEFAULT 'false',
-	"never_archive" INTEGER NOT NULL DEFAULT 'false'
+	"archived" INTEGER NOT NULL DEFAULT 0,
+	"never_archive" INTEGER NOT NULL DEFAULT 0
 );
 
 
