@@ -1,6 +1,5 @@
-import discord, aiohttp, asyncio, json
+import discord, aiohttp, asyncio, json, io
 from discord.ext import commands
-from io import BytesIO
 from xml.etree import ElementTree
 
 async def typing(self, ctx):
@@ -9,7 +8,7 @@ async def typing(self, ctx):
 async def get_bytes(session, url, **kwargs):
 	async with session.get(url) as source:
 		image = await source.read(**kwargs)
-		return BytesIO(image)
+		return io.BytesIO(image)
 	
 async def get_json(session, url, **kwargs):
 	async with session.get(url) as source:

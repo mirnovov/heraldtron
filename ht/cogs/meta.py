@@ -1,4 +1,4 @@
-import discord, aiohttp, aiosqlite, itertools, platform, os, re
+import discord, aiohttp, aiosqlite, platform, os, re
 from discord.ext import commands
 from .. import utils, embeds, version
 

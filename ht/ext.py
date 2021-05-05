@@ -1,7 +1,6 @@
-import aiohttp, functools, asyncio, ssl, io
+import aiohttp, asyncio, functools, io, typing
 from ext.seychelles import seychelles
 from PIL import Image
-from typing import Optional
 from aiohttp.helpers import BaseTimerContext
 from aiohttp.http_parser import HttpResponseParserPy
 
@@ -49,11 +48,11 @@ def get_slow_client_session(**kwargs):
 class _SlowResponseHandler(aiohttp.client_proto.ResponseHandler):
 	def set_response_params(
 		self, *,
-		timer: Optional[BaseTimerContext] = None,
+		timer: typing.Optional[BaseTimerContext] = None,
 		skip_payload: bool = False,
 		read_until_eof: bool = False,
 		auto_decompress: bool = True,
-		read_timeout: Optional[float] = None,
+		read_timeout: typing.Optional[float] = None,
 		read_bufsize: int = 2 ** 16,
 	) -> None:
 		self._skip_payload = skip_payload

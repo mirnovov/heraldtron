@@ -1,4 +1,4 @@
-import discord, asyncio, urllib, csv, json, random, re, ssl
+import discord, asyncio, urllib, csv, json, random, re
 from discord.ext import commands
 from .. import utils, services, embeds
 from ..artifacts import source_list, source_string

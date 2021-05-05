@@ -1,4 +1,4 @@
-import json, random, os, functools, re, asyncio
+import asyncio, json, random, functools, re
 from . import utils
 from .ext import get_slow_client_session
 

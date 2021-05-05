@@ -1,4 +1,4 @@
-import discord, urllib, os, io, base64, random, asyncio
+import discord, asyncio, urllib, io, base64
 from . import utils, embeds
 
 async def gis(ctx, query):
@@ -15,11 +15,11 @@ async def gis(ctx, query):
 	search = await utils.get_json(ctx.bot.session, f"https://www.googleapis.com/customsearch/v1?{params}")
 	
 	if search == None:
-		return embeds.ERROR.create(
+		ctx.send(embeds.ERROR.create(
 			"Invalid HTTP search request",
 			"The image search API returned an incorrect HTTP request."\
 			"This might be caused by the search amount exceeding the maximum quota."
-		)		
+		))		
 	elif "items" not in search:
 		ctx.send(embeds.ERROR.create(
 			"Search has no results",

@@ -1,4 +1,4 @@
-import discord, typing, asyncio, random, aiohttp, os, html
+import discord, asyncio, typing, random, os, html
 from discord.ext import commands
 from .. import utils, services, embeds
 

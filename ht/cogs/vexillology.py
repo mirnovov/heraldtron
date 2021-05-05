@@ -1,4 +1,4 @@
-import discord, csv, random, asyncio
+import discord, asyncio, csv, random 
 from discord.ext import commands
 from ..ext import compute_seychelles
 from .. import utils, services, embeds

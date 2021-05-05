@@ -1,4 +1,4 @@
-import discord, aiohttp, traceback, logging, json, time
+import discord, aiohttp, traceback, logging, json
 from discord.ext import commands
 from .. import utils, embeds
 
