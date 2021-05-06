@@ -56,7 +56,8 @@ class MetaTools(commands.Cog, name = "Meta"):
 		
 	def get_os_name(self):
 		if os.path.exists("/etc/os-release"):
-			os_release = open("/etc/os-release").read()
+			with open("/etc/os-release") as file:
+				os_release = file.read()
 			rname = re.findall("(?m)^(?:NAME|VERSION_ID)=(.+)",os_release)
 			return f"{rname[0]} {rname[1]}"
 		

@@ -52,6 +52,10 @@ class BotEvents(commands.Cog, name = "Bot Events"):
 					(posts[0]["data"]["name"], feed[0])
 				)
 				await bot.dbc.commit()
+				
+	@get_reddit_posts.before_loop
+	async def before_reddit_loop(self):
+		await self.bot.wait_until_ready()
 		
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):

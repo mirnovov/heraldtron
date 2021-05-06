@@ -1,6 +1,6 @@
 import asyncio, json, random, functools, re
 from . import utils
-from .ext import get_slow_client_session
+from .ext import SlowTCPConnector
 
 async def rijksmuseum(bot):
 	api_key = bot.conf["AR_RIJKS"]
@@ -70,7 +70,7 @@ async def digital_nz(bot):
 	)
 
 async def met_museum(bot):
-	async with get_slow_client_session() as slow_session:
+	async with SlowTCPConnector.get_slow_session() as slow_session:
 		collection = await utils.get_json(
 			slow_session,
 			"https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=%22coat%20of%20arms%22"

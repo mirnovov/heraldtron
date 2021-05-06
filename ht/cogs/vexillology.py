@@ -1,6 +1,6 @@
 import discord, asyncio, csv, random 
 from discord.ext import commands
-from ..ext import compute_seychelles
+from ..ext import OnlineSeych
 from .. import utils, services, embeds
 
 class VexStuff(commands.Cog, name = "Vexillology"):
@@ -72,7 +72,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 				
 		image_url = result.attachments[0].url
 		image_content = await utils.get_bytes(ctx.bot.session, image_url)
-		image = await self.bot.loop.run_in_executor(None, compute_seychelles, image_url, image_content)
+		image = await self.bot.loop.run_in_executor(None, OnlineSeych.generate, image_url, image_content)
 		file = discord.File(image, filename = "seychelles.png")
 		
 		embed = embeds.GENERIC.create("Result", "", heading = "Seychelles-izer")

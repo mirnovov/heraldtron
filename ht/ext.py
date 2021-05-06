@@ -4,19 +4,16 @@ from PIL import Image
 from aiohttp.helpers import BaseTimerContext
 from aiohttp.http_parser import HttpResponseParserPy
 
-def compute_seychelles(image_url,image):
-	seych = OnlineSeych(image_url,image)
-	seych.seychelles()
-	return seych.save_bytes()
-
 class OnlineSeych(seychelles.Seychelles):
 	def __init__(self, url_in, data_in):
 		self.name_in = None
 		self.ext_in = None 
-		self.img_raw = Image.open(data_in)
-		self.img_raw = self.img_raw.convert("RGB")
-		self.size_in = self.img_raw.size
-		self.img_in = self.img_raw.transpose(Image.FLIP_TOP_BOTTOM)
+		
+		with Image.open(data_in) as img:
+			self.img_raw = img.convert("RGB")
+			self.size_in = self.img_raw.size
+			self.img_in = self.img_raw.transpose(Image.FLIP_TOP_BOTTOM)
+		
 		self.name_out = "seych"
 		self.ext_out = "png"
 		self.size_out = self.size_in
@@ -28,15 +25,16 @@ class OnlineSeych(seychelles.Seychelles):
 		if self.img_print is None: raise Exception("No processing done yet")
 		outio = io.BytesIO()
 		
-		self.img_print.save(outio,format="PNG")
+		self.img_print.save(outio, format = "PNG")
 		outio.seek(0)
 		
 		return outio
-		
-def get_slow_client_session(**kwargs):
-	#a horrendous workaround to stop aiohttp breaking on a perfectly fine http request
-	#basically replaces HttpResponseParser with its Python fallback
-	return aiohttp.ClientSession(connector=_SlowTCPConnector(loop=asyncio.get_running_loop()),**kwargs)	
+	
+	@staticmethod	
+	def generate(image_url, image):
+		seych = OnlineSeych(image_url, image)
+		seych.seychelles()
+		return seych.save_bytes()
 
 #---------------------------------------------------------------------------------------------------
 # [!]  Modified aiohttp code below.
@@ -54,7 +52,7 @@ class _SlowResponseHandler(aiohttp.client_proto.ResponseHandler):
 		auto_decompress: bool = True,
 		read_timeout: typing.Optional[float] = None,
 		read_bufsize: int = 2 ** 16,
-	) -> None:
+	):
 		self._skip_payload = skip_payload
 		self._read_timeout = read_timeout
 		self._reschedule_timeout()
@@ -74,7 +72,13 @@ class _SlowResponseHandler(aiohttp.client_proto.ResponseHandler):
 			data, self._tail = self._tail, b""
 			self.data_received(data)
 			
-class _SlowTCPConnector(aiohttp.connector.TCPConnector):
-	def __init__(self,**kwargs):
+class SlowTCPConnector(aiohttp.connector.TCPConnector):
+	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		self._factory = functools.partial(_SlowResponseHandler, loop=kwargs["loop"])
+		self._factory = functools.partial(_SlowResponseHandler, loop = kwargs["loop"])
+		
+	@staticmethod		
+	def get_slow_session(**kwargs):
+		#a horrendous workaround to stop aiohttp breaking on a perfectly fine http request
+		#basically replaces HttpResponseParser with its Python fallback
+		return aiohttp.ClientSession(connector = SlowTCPConnector(loop = asyncio.get_running_loop()), **kwargs)
