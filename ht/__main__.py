@@ -3,6 +3,17 @@ from discord.ext import commands
 from . import utils
 
 class Heraldtron(commands.Bot):
+	DEFAULT_COGS = [
+		"errors", "events", "modtools", "heraldry", 
+		"misc", "tasks", "vexillology", "meta"
+	]
+	
+	REQUISITES = [
+		"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "AR_RIJKS", 
+		"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI",
+		"DB_PATH"
+	]
+	
 	def __init__(self, *args, **kwargs):
 		self.conf = self.load_conf()
 		logging.basicConfig(level = self.conf.get("LOG_LEVEL") or 20)
@@ -36,21 +47,13 @@ class Heraldtron(commands.Bot):
 			try: conf = json.load(file)
 			except: raise FileNotFoundError("Cannot load JSON file.")
 			
-		requisites = [
-			"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "AR_RIJKS", 
-			"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI",
-			"DB_PATH"
-		]
-		
-		if not all([r in conf for r in requisites]):
+		if not all(r in conf for r in self.REQUISITES):
 			raise NameError("JSON file does not have required values.")
 				
 		return conf
 		
 	def load_default_cogs(self, custom_list = None):
-		coglist = custom_list or [
-			"errors", "events", "modtools", "heraldry", "misc", "vexillology", "meta"
-		]
+		coglist = custom_list or self.DEFAULT_COGS
 		
 		for cog in coglist:
 			self.load_extension(f"ht.cogs.{cog}")

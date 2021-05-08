@@ -17,10 +17,18 @@ async def get_json(session, url, **kwargs):
 async def get_text(session, url, **kwargs):
 	async with session.get(url) as source:
 		return await source.text(**kwargs)	
+		
+async def get_channel(bot, channel):
+	return bot.get_channel(channel) or await bot.fetch_channel(channel)
 			
 async def get_guild_row(bot, guild_id):
 	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))
 	return await cursor.fetchone()
+	
+async def unqualify_name(bot, name, discriminator):
+	return discord.utils.find(
+		lambda m: m.name == name and m.discriminator == discriminator, bot.users
+	)
 			
 def parse_xml(text_string, root):
 	return ElementTree.fromstring(text_string).find(root)

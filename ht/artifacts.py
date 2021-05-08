@@ -1,4 +1,4 @@
-import asyncio, json, random, functools, re
+import json, random, functools, re
 from . import utils
 from .ext import SlowTCPConnector
 
@@ -136,7 +136,7 @@ async def wikimedia_commons(bot):
 		bot.session,
 		f"https://magnus-toolserver.toolforge.org/commonsapi.php?image={resultid}&thumbwidth=600&thumbheight=600&meta"
 	)
-	result = await asyncio.get_running_loop().run_in_executor(None, utils.parse_xml,result_text,"file")
+	result = await bot.loop.run_in_executor(None, utils.parse_xml,result_text,"file")
 	
 	return (
 		result.find("urls").find("description").text, 

@@ -1,12 +1,10 @@
 import re, os, setuptools
 
-def getVersion():
-	path = os.path.join(os.path.dirname(__file__),"ht","version.py")
-	with open(path, "r", encoding="utf-8") as file:
-		version = re.search("__version__ = ['\"]((\d|\w|\.)+)[\"']",file.read())
-		
-		if version: return version[1]
-		else: return None
+def get_version():
+	path = os.path.join(os.path.dirname(__file__), "ht", "version.py")
+	with open(path, "r", encoding = "utf-8") as file:
+		version = re.search("__version__ = ['\"]((\d|\w|\.)+)[\"']", file.read())
+		return version[1] if version else None
 
 setuptools.setup(
 	name = "heraldtron",
@@ -24,6 +22,7 @@ setuptools.setup(
 		"aiohttp>=3.7.0",
 		"Pillow>=8.0",
 		"aiosqlite>=0.17.0",
+		"docx2python>=1.27.0"
 	],
 	extras_require = {
 		"fast": ["cchardet>=2.1.7","aiodns>=2.0.0"]

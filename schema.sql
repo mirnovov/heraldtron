@@ -3,9 +3,14 @@ CREATE TABLE "armigers" (
 	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
-	"blazon" TEXT UNIQUE,
-	"emblazon_url" TEXT UNIQUE
+	"blazon" TEXT,
 );
+
+CREATE TABLE "emblazons" (
+	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	"greii_n" INTEGER REFERENCES "armigers"("greii_n"),
+	"url" TEXT
+)
 
 
 CREATE TABLE "guilds" (
@@ -41,13 +46,4 @@ CREATE TABLE "roll_channels" (
 	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
 	"archived" INTEGER NOT NULL DEFAULT 0,
 	"never_archive" INTEGER NOT NULL DEFAULT 0
-);
-
-
-CREATE TABLE "warnings" (
-	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
-	"issuer_id" INTEGER NOT NULL,
-	"target_id" INTEGER NOT NULL,
-	"reason" TEXT NOT NULL,
-	"time" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

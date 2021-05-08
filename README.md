@@ -11,6 +11,7 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * [aiohttp](https://pypi.org/project/aiohttp/) (comes installed with discord.py)
 * [Pillow](https://pypi.org/project/Pillow/)
 * [aiosqlite](https://pypi.org/project/aiosqlite/)
+* [docx2python](https://pypi.org/project/docx2python/)
 * Developer credentials (see below)
 
 [cchardet](https://pypi.org/project/cchardet/) and [aiodns](https://pypi.org/project/aiodns/) are also recommended to improve performance.
@@ -21,14 +22,14 @@ For convienience, these can all be installed with `pip install -r requirements/m
 
 As one may expect, this bot requires a *bot account* to run. Create one in the Discord Developer Portal ([see here for a basic how to](https://realpython.com/how-to-make-a-discord-bot-python/)). 
 
-For image search functionality, a [Google Cloud Platform](https://cloud.google.com) account, with the Custom Search API enabled, is required. You must also create a [Programmable Search](https://programmablesearchengine.google.com/about/) engine that Custom Search uses, since Google has discontinued general search APIs. This must have image search enabled, and it is strongly recommended that you enable the "Search the entire web" setting.
+For some functionality, a [Google Cloud Platform](https://cloud.google.com) account is required, with the Custom Search and Google Drive APIs enabled. For custom search functionality to work, you must also create a [Programmable Search](https://programmablesearchengine.google.com/about/) engine, since Google has discontinued general search APIs. This must have image search enabled, and it is strongly recommended that you enable the "Search the entire web" setting.
 
 To store information, a database file must be generated with `schema.sql`, and stored on the machine where the bot is run.
 
 Before running, the bot requires an `config.json` file in the root directory containing data that it needs to run:
 
 * `DISCORD_TOKEN`: The Discord Developer API token.
-* `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search must be enabled for this key.
+* `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search and Google Drive must be enabled for this key.
 * `GCS_CX`: The Programmable Search engine identifier.
 * `DB_PATH`: The path for the SQLite file to use.
 * `AR_RIJKS`: The key for the [Rijksmuseum API](https://data.rijksmuseum.nl/object-metadata/api/).
