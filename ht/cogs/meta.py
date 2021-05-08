@@ -3,6 +3,8 @@ from discord.ext import commands
 from .. import utils, embeds, version
 
 class MetaTools(commands.Cog, name = "Meta"):
+	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=(.+)")
+	
 	def __init__(self, bot):
 		self.bot = bot
 		bot.help_command = NvHelpCommand()
@@ -58,10 +60,10 @@ class MetaTools(commands.Cog, name = "Meta"):
 		if os.path.exists("/etc/os-release"):
 			with open("/etc/os-release") as file:
 				os_release = file.read()
-			rname = re.findall("(?m)^(?:NAME|VERSION_ID)=(.+)",os_release)
+			rname = re.findall(self.RNAMES, os_release)
 			return f"{rname[0]} {rname[1]}"
 		
-		return platform.platform(terse = True).replace("-"," ")	
+		return platform.platform(terse = True).replace("-", " ")	
 		
 	def get_os_details(self):
 		uname = platform.uname()

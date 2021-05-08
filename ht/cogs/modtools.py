@@ -5,6 +5,7 @@ from .. import utils, embeds
 
 class ModerationTools(commands.Cog, name = "Moderation"):
 	MAX_FEEDS = 3
+	SR_VAL = re.compile("(r\/|\/|r\/)+")
 	
 	def __init__(self, bot):
 		self.bot = bot
@@ -38,7 +39,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			await ctx.send(embeds.ERROR.create("Excessive feed count", f"A server cannot have more than 3 feeds."))
 			return
 		
-		subreddit = re.sub("(r\/|\/|r\/)+", "", subreddit)
+		subreddit = re.sub(self.SR_VAL, "", subreddit)
 		validate = await utils.get_json(self.bot.session, f"https://www.reddit.com/r/{subreddit}/new.json?limit=1")
 		
 		if validate.get("error"):

@@ -4,6 +4,11 @@ from .. import utils, services, embeds
 from ..artifacts import source_list, source_string
 
 class HeraldicStuff(commands.Cog, name = "Heraldry"):
+	MOTTO_PARTS = re.compile("([&|!]\\w\\w\\w)")
+	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
+	RES_SUB_A = re.compile("<i>|</i>")
+	RES_SUB_B = re.compile("<[^<]+?>")
+	
 	def __init__(self, bot):
 		self.bot = bot
 		
@@ -303,7 +308,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			return term_list.pop(result)
 						
 		template = random.choice(partlist)
-		motto = re.sub("([&|!]\\w\\w\\w)",chooseTerm,template).capitalize()		
+		motto = re.sub(self.MOTTO_PARTS, chooseTerm, template).capitalize()		
 		
 		await ctx.send(embed = embeds.GENERIC.create(f"{motto}", "", heading = "Motto generator"))
 		
@@ -340,16 +345,13 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			"https://novov.me/linkroll/resources.html?bot",
 			encoding = "UTF-8"
 		)
-		resources = await self.bot.loop.run_in_executor(
-			None, re.findall, 
-			"(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>",
-			html
-		)
+		results = await self.bot.loop.run_in_executor(None, re.findall, self.RESOURCE, html)
+		resources = { r[0]: r for r in results }
 		
 		def resource_result(resource):
 			embed = embeds.GENERIC.create(
-				re.sub("<i>|</i>", "*", resource[2]),
-				re.sub("<[^<]+?>", "", resource[3]),
+				re.sub(self.RES_SUB_A, "*", resource[2]),
+				re.sub(self.RES_SUB_B, "", resource[3]),
 				heading = "Resource"
 			)
 			embed.url = resource[1]
@@ -361,22 +363,19 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 				f"- `random`: Choose a random resource.\n", 
 				heading = "Resources list"
 			)
-			for resource in resources:
-				embed.description += f" - `{resource[0]}`: {re.sub('<i>|</i>','*',resource[2])}\n"
+			for name, resource in resources.items():
+				embed.description += f" - `{name}`: {re.sub(self.RES_SUB_A, '*', resource[2])}\n"
 		elif source == "random":
 			embed = resource_result(random.choice(resources))
 		else:
-			for resource in resources:
-				#Muy terrible, but no better options
-				if resource[0] == source: 
-					embed = resource_result(resource)
-					break
-			else:
+			if source not in resources:
 				await ctx.send(embed = embeds.ERROR.create(
 					"Nonexistent resource",
 					"Type `!resources` to see a list of resources."
 				))
 				return
+				
+			embed = resource_result(resources.get(source)) 
 		
 		embed.set_footer(text = f"Retrieved from Novov's Heraldic Resources.")		
 		await ctx.send(embed = embed)

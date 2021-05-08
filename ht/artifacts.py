@@ -103,6 +103,8 @@ async def art_institute_chicago(bot):
 		f"https://www.artic.edu/iiif/2/{result['image_id']}/full/843,/0/default.jpg", 
 		None
 	)
+
+SMTHS_IMG = re.compile("\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>")
 	
 async def smithsonian(bot):
 	api_key = bot.conf["AR_SMTHS"]
@@ -120,7 +122,7 @@ async def smithsonian(bot):
 	
 	#the image isn't provided by the api, so scrape the html :(
 	html = await utils.get_text(bot.session,url)
-	image_url = re.search("\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>", html)[1]
+	image_url = re.search(SMTHS_IMG, html)[1]
 	
 	return (url, result["title"], "", image_url, None)
 	
