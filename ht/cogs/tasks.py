@@ -13,11 +13,11 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		self.get_reddit_posts.start()
 		self.sync_book.start()
 		
-		if not os.path.isdir("data/temp"):
-			os.mkdir("data/temp")
+		if not os.path.isdir("data/book"):
+			os.mkdir("data/book")
 			
-		if not os.path.isfile("data/temp/book_timestamp"):
-			with open("data/temp/book_timestamp","w") as file:
+		if not os.path.isfile("data/book/timestamp"):
+			with open("data/book/timestamp","w") as file:
 				file.write("0")
 		
 	def cog_unload(self):
@@ -26,12 +26,12 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		
 	def write_book(self, doc):
 		#don't judge me, I didn't make the choice to store the info in a Word doc
-		with open("data/temp/book.docx", "wb") as file:
+		with open("data/book/book.docx", "wb") as file:
 			file.seek(0)
 			file.write(doc.getvalue())
 			file.truncate()
 			
-		text = re.sub(self.STRIP_SPACES, "\n", docx2python("data/temp/book.docx").text)
+		text = re.sub(self.STRIP_SPACES, "\n", docx2python("data/book/book.docx").text)
 		results = re.findall(self.FIND_DATA, text[text.find("This document contains"):])
 		return { entry[0]: entry for entry in results }
 		
@@ -44,7 +44,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		)
 		timestamp = time.mktime(datetime.fromisoformat(response["modifiedTime"].rsplit(".")[0]).timetuple())
 		
-		with open("data/temp/book_timestamp", "r") as file:
+		with open("data/book/timestamp", "r") as file:
 			if timestamp <= int(file.read()): return
 		
 		doc = await utils.get_bytes(self.bot.session, response["webContentLink"])
@@ -77,12 +77,12 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			
 			await self.bot.dbc.commit()
 			
-		with open("data/temp/book_timestamp", "w") as file:
+		with open("data/book/timestamp", "w") as file:
 			file.seek(0)
 			file.write(f"{timestamp:.0f}")
 			file.truncate()
 			
-		logging.getLogger("heraldtron").info(f"Successfully refreshed armiger database.")
+		self.bot.logger.info(f"Successfully refreshed armiger database.")
 		
 	@tasks.loop(hours = 2)
 	async def get_reddit_posts(self):
@@ -96,7 +96,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			)
 			
 			if posts.get("error"): 
-				logging.getLogger("heraldtron").warning(f"Cannot access Reddit:\n{posts}")
+				bot.logger.warning(f"Cannot access Reddit:\n{posts}")
 				continue #necessary as reddit can be down
 			
 			posts = posts["data"]["children"]
@@ -126,7 +126,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				)
 				await bot.dbc.commit()
 				
-		logging.getLogger("heraldtron").info(f"Successfully fetched Reddit posts.")
+		bot.logger.info(f"Successfully fetched Reddit posts.")
 	
 	@sync_book.before_loop			
 	@get_reddit_posts.before_loop

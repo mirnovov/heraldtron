@@ -1,6 +1,35 @@
 import discord, aiohttp, asyncio, json, io
 from discord.ext import commands
+from logging import Formatter
+from textwrap import TextWrapper
 from xml.etree import ElementTree
+
+class NvFormatter(Formatter):
+	LINE_WIDTH = 100
+	wrapper = TextWrapper(width = LINE_WIDTH)
+	
+	def __init__(self):
+		super().__init__()
+	
+	def format(self, record):
+		message = record.getMessage()
+		
+		if "\n" not in message[:self.LINE_WIDTH]:
+			lines = self.wrapper.wrap(message)
+		else:
+			lines = message.splitlines()
+			
+		message = f"\n{' ' * 7} | {' ' * 15} | ".join(lines)
+		return f"{record.levelname:7} | {record.name:15} | {message}"
+	
+class BadMessageResponse(Exception):
+	pass
+		
+class CommandCancelled(commands.CommandError):
+	@classmethod
+	async def create(self, message, ctx):
+		await ctx.send(f":x: | {message}.")
+		return CommandCancelled(message)
 
 async def typing(self, ctx):
 	await ctx.trigger_typing()
@@ -20,25 +49,15 @@ async def get_text(session, url, **kwargs):
 		
 async def get_channel(bot, channel):
 	return bot.get_channel(channel) or await bot.fetch_channel(channel)
-			
-async def get_guild_row(bot, guild_id):
-	cursor = await bot.dbc.execute("SELECT * FROM guilds WHERE discord_id == ?;",(guild_id,))
+	
+async def fetchone(dbc, query, substs = None):
+	cursor = await dbc.execute(query, substs)
 	return await cursor.fetchone()
 	
 async def unqualify_name(bot, name, discriminator):
 	return discord.utils.find(
 		lambda m: m.name == name and m.discriminator == discriminator, bot.users
 	)
-			
-def parse_xml(text_string, root):
-	return ElementTree.fromstring(text_string).find(root)
-	
-def qualify_name(member):
-	return f"{member.name}#{member.discriminator}"
-	
-def pronounise(word):
-	pron = "an" if word.strip()[0].upper() in "AEIOU1" else "a"
-	return f"{pron} {word}"
 	
 async def check_is_owner(ctx):
 	if not await ctx.bot.is_owner(ctx.author):
@@ -94,12 +113,16 @@ async def check_response(ctx, added_check, timeout = 300):
 async def add_multiple_reactions(message, reactions):
 	return await asyncio.gather(*[message.add_reaction(r) for r in reactions])
 	
-class BadMessageResponse(Exception):
-	pass
-		
-class CommandCancelled(commands.CommandError):
-	@classmethod
-	async def create(self, message, ctx):
-		await ctx.send(f":x: | {message}.")
-		return CommandCancelled(message)
-		
+def parse_xml(text_string, root):
+	return ElementTree.fromstring(text_string).find(root)
+	
+def qualify_name(member):
+	return f"{member.name}#{member.discriminator}"
+	
+def pronounise(word):
+	pron = "an" if word.strip()[0].upper() in "AEIOU1" else "a"
+	return f"{pron} {word}"
+
+def ascii_art():
+	with open("media/ascii_art", "r") as file:
+		return f"\n{file.read()}"

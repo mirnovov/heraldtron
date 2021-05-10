@@ -3,15 +3,14 @@ CREATE TABLE "armigers" (
 	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
-	"blazon" TEXT,
+	"blazon" TEXT
 );
 
 CREATE TABLE "emblazons" (
 	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
 	"greii_n" INTEGER REFERENCES "armigers"("greii_n"),
 	"url" TEXT
-)
-
+);
 
 CREATE TABLE "guilds" (
 	"discord_id" INTEGER PRIMARY KEY,
@@ -29,7 +28,7 @@ CREATE TABLE "reddit_feeds" (
 	"subreddit" TEXT NOT NULL,
 	"query" TEXT NOT NULL,
 	"last_post" TEXT DEFAULT null
-)
+);
 
 CREATE TABLE "roles" (
 	"discord_id" INTEGER PRIMARY KEY,

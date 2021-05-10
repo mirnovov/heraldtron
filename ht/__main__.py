@@ -1,4 +1,4 @@
-import discord, aiosqlite, aiohttp, logging, json, os
+import discord, aiosqlite, aiohttp, logging, json, os, time
 from discord.ext import commands
 from . import utils
 
@@ -10,13 +10,20 @@ class Heraldtron(commands.Bot):
 	
 	REQUISITES = [
 		"DISCORD_TOKEN", "GCS_TOKEN", "GCS_CX", "AR_RIJKS", 
-		"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI",
-		"DB_PATH"
+		"AR_EURO", "AR_DGTNZ", "AR_SMTHS", "AR_DDBTK", "DEEP_AI"
 	]
+	
+	DEFAULT_CONF = {
+		"DB_PATH": "./data/db/heraldtron.db",
+		"LOG_LEVEL": 20,
+		"OWNER_ONLY": False,
+		"USE_JISHAKU": False
+	}
 	
 	def __init__(self, *args, **kwargs):
 		self.conf = self.load_conf()
-		logging.basicConfig(level = self.conf.get("LOG_LEVEL") or 20)
+		self.root_logger = self.setup_root_logger() 
+		self.logger = logging.getLogger("heraldtron")
 		
 		super().__init__(
 			command_prefix = "!",
@@ -29,10 +36,12 @@ class Heraldtron(commands.Bot):
 		)
 		
 		self.session = self.loop.run_until_complete(self.start_session())
-		self.dbc = self.loop.run_until_complete(aiosqlite.connect(self.conf["DB_PATH"]))
+		self.dbc = self.loop.run_until_complete(self.setup_db())
 		
-		if self.conf.get("OWNER_ONLY"):
+		if self.conf["OWNER_ONLY"]:
 			self.add_check(utils.check_is_owner)
+			
+		self.logger.info(f"Bot initialisation complete. {utils.ascii_art()}")
 		
 	def get_default_intents(self):
 		return discord.Intents(
@@ -47,17 +56,17 @@ class Heraldtron(commands.Bot):
 			try: conf = json.load(file)
 			except: raise FileNotFoundError("Cannot load JSON file.")
 			
-		if not all(r in conf for r in self.REQUISITES):
+		if not all(r in conf for r in Heraldtron.REQUISITES):
 			raise NameError("JSON file does not have required values.")
 				
-		return conf
+		return dict(Heraldtron.DEFAULT_CONF, **conf)
 		
 	def load_default_cogs(self, custom_list = None):
-		coglist = custom_list or self.DEFAULT_COGS
+		coglist = custom_list or Heraldtron.DEFAULT_COGS
 		
 		for cog in coglist:
 			self.load_extension(f"ht.cogs.{cog}")
-			print(f"Cog {cog} loaded sucessfully")
+			self.logger.info(f"Cog \"{cog}\" loaded successfully")
 			
 		if self.conf.get("USE_JISHAKU"):
 			os.environ["JISHAKU_HIDE"] = "1" 
@@ -66,8 +75,32 @@ class Heraldtron(commands.Bot):
 			
 		return coglist
 		
+	def setup_root_logger(self):
+		logger = logging.getLogger()
+		logger.setLevel(self.conf["LOG_LEVEL"])
+		
+		handler = logging.StreamHandler()
+		handler.setFormatter(utils.NvFormatter())
+		logger.addHandler(handler)
+		
+		return logger
+		
+	def log_time(self, start):
+		self.logger.info(f"Startup time: {time.perf_counter() - start:.3f}s")
+		
 	async def start_session(self):
-		return aiohttp.ClientSession(loop=self.loop)
+		return aiohttp.ClientSession(loop = self.loop)
+		
+	async def setup_db(self):
+		dbc = await aiosqlite.connect(self.conf["DB_PATH"])
+		count = await utils.fetchone(dbc, "SELECT COUNT(*) FROM sqlite_master")
+		
+		if count[0] == 0:
+			with open("data/db/schema.sql", "r") as file:
+				await dbc.executescript(file.read())
+			await dbc.commit()
+			
+		return dbc
 		
 	async def close(self):
 		await self.dbc.close()
@@ -75,6 +108,9 @@ class Heraldtron(commands.Bot):
 		await super().close()
 
 if __name__ == "__main__":
+	start = time.perf_counter()
 	bot = Heraldtron()
+	
 	bot.load_default_cogs()
+	bot.log_time(start)
 	bot.run(bot.conf["DISCORD_TOKEN"])

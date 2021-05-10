@@ -32,8 +32,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		aliases = ("af", "feed")
 	)	
 	async def addfeed(self, ctx, subreddit : str, channel : discord.TextChannel, search_query : str):
-		query = await self.bot.dbc.execute("SELECT COUNT(*) FROM reddit_feeds")
-		rowcount = (await query.fetchone())[0]
+		rowcount = await utils.fetchone(self.bot.dbc, "SELECT COUNT(*) FROM reddit_feeds")[0]
 		
 		if rowcount > self.MAX_FEEDS:
 			await ctx.send(embeds.ERROR.create("Excessive feed count", f"A server cannot have more than 3 feeds."))

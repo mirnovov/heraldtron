@@ -5,6 +5,16 @@ from .. import utils
 class BotEvents(commands.Cog, name = "Bot events"):
 	def __init__(self, bot):
 		self.bot = bot
+		self.bot.loop.create_task(self.update_guilds())
+		
+	async def update_guilds(self):
+		await self.bot.wait_until_ready()
+		for guild in self.bot.guilds:
+			await self.bot.dbc.execute(
+				"INSERT OR IGNORE INTO guilds VALUES (?, ?, ?, ?, ?, ?);",
+				(guild.id, guild.name, 0, 1, None, None)
+			)
+			await self.bot.dbc.commit()		
 		
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
@@ -28,7 +38,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		await self.post_welcome_message(member, True)
 		
 	async def post_welcome_message(self, member, leave):
-		guild_db = await utils.get_guild_row(self.bot, member.guild.id)
+		guild_db = await utils.fetchone(self.bot.dbc, "SELECT * FROM guilds WHERE discord_id == ?;", (member.guild.id,))
 		
 		if not guild_db or not guild_db[3]: 
 			#if guild not in db (shouldn't happen) or if disabled
