@@ -2,6 +2,28 @@ import json, random, functools, re
 from . import utils
 from .ext import SlowTCPConnector
 
+class Source():
+	register = {}
+	
+	def __init__(self, name, desc):
+		Source.register[name] = self
+		self.desc = desc
+		
+	def __call__(self, coroutine):
+		self.retrieve = coroutine
+
+	@staticmethod	
+	def random():
+		return random.choice(list(Source.register.values()))
+	
+	@staticmethod
+	@functools.cache
+	def str_list():
+		return "".join(f"- `{name}`: {artifact.desc}\n" for name, artifact in Source.register.items())
+		
+SMTHS_IMG = re.compile("\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>")
+
+@Source("rijks", "The Rijksmuseum, Amsterdam")
 async def rijksmuseum(bot):
 	api_key = bot.conf["AR_RIJKS"]
 	collection = await utils.get_json(
@@ -17,7 +39,8 @@ async def rijksmuseum(bot):
 		result["webImage"]["url"], 
 		None
 	)
-	
+
+@Source("vanda", "The Victoria and Albert Museum, London")	
 async def victoria_and_albert(bot):
 	collection = await utils.get_json(
 		bot.session,
@@ -32,7 +55,8 @@ async def victoria_and_albert(bot):
 		result["_images"]["_primary_thumbnail"].replace("!100,100","!800,"), 
 		None
 	)
-	
+
+@Source("euro", "Europeana Pro")		
 async def europeana(bot):
 	api_key = bot.conf["AR_EURO"]
 	collection = await utils.get_json(
@@ -47,7 +71,8 @@ async def europeana(bot):
 		result["edmPreview"][0], 
 		result["dataProvider"][0]
 	)
-	
+
+@Source("dgtnz", "Digital NZ")		
 async def digital_nz(bot):
 	api_key = bot.conf["AR_DGTNZ"]
 	collection = await utils.get_json(
@@ -69,6 +94,7 @@ async def digital_nz(bot):
 		result["display_content_partner"]
 	)
 
+@Source("met", "The Metropolitan Museum of Art, New York")	
 async def met_museum(bot):
 	async with SlowTCPConnector.get_slow_session() as slow_session:
 		collection = await utils.get_json(
@@ -88,7 +114,8 @@ async def met_museum(bot):
 		result["primaryImageSmall"], 
 		None
 	)
-	
+
+@Source("artic", "The Art Institute of Chicago, Chicago")		
 async def art_institute_chicago(bot):
 	collection = await utils.get_json(
 		bot.session,
@@ -104,8 +131,7 @@ async def art_institute_chicago(bot):
 		None
 	)
 
-SMTHS_IMG = re.compile("\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>")
-	
+@Source("smths", "The Smithsonian, Washington D.C.")		
 async def smithsonian(bot):
 	api_key = bot.conf["AR_SMTHS"]
 	collection = await utils.get_json(
@@ -125,7 +151,8 @@ async def smithsonian(bot):
 	image_url = re.search(SMTHS_IMG, html)[1]
 	
 	return (url, result["title"], "", image_url, None)
-	
+
+@Source("wiki", "Wikimedia Commons")		
 async def wikimedia_commons(bot):
 	collection = await utils.get_json(
 		bot.session,
@@ -145,7 +172,8 @@ async def wikimedia_commons(bot):
 		result.find("urls").find("file").text, 
 		None
 	)
-	
+
+@Source("ddbtk", "Deutsche Digitale Bibliothek")		
 async def deutsche_digitale(bot):
 	api_key = bot.conf["AR_DDBTK"]
 	collection = await utils.get_json(
@@ -161,23 +189,3 @@ async def deutsche_digitale(bot):
 		f"https://iiif.deutsche-digitale-bibliothek.de/image/2/{result['thumbnail']}/full/!800,600/0/default.jpg", 
 		None
 	)
-	
-source_list = {
-	"rijks": (rijksmuseum, "The Rijksmuseum, Amsterdam"),
-	"vanda": (victoria_and_albert, "The Victoria and Albert Museum, London"),
-	"euro": (europeana, "Europeana Pro"),
-	"dgtnz": (digital_nz, "Digital NZ"),
-	"met": (met_museum, "The Metropolitan Museum of Art, New York"),
-	"artic": (art_institute_chicago, "The Art Institute of Chicago, Chicago"),
-	"smths": (smithsonian, "The Smithsonian, Washington D.C."),
-	"wiki": (wikimedia_commons, "Wikimedia Commons"),
-	"ddbtk": (deutsche_digitale, "Deutsche Digitale Bibliothek"),
-}
-
-@functools.cache
-def source_string():
-	string = ""
-	
-	for source, name in source_list.items():
-		string += f"- `{source}`: {name[1]}\n"
-	return string

@@ -1,7 +1,7 @@
 import discord, asyncio, urllib, csv, json, random, re
 from discord.ext import commands
 from .. import utils, services, embeds
-from ..artifacts import source_list, source_string
+from ..artifacts import Source
 
 class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	MOTTO_PARTS = re.compile("([&|!]\\w\\w\\w)")
@@ -15,32 +15,30 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	@commands.command(
 		help = "Displays a random historical heraldic artifact.\n"\
 			"This can be narrowed down to an individual source:\n\n"\
-			f"{source_string()}",
+			f"{Source.str_list()}",
 		aliases = ("ar", "relic")
 	)
 	@commands.before_invoke(utils.typing)
 	async def artifact(self, ctx, source = "all"):
 		if source == "all":
-			museum = random.choice(list(source_list.values()))
-		elif source not in source_list:
+			museum = Source.random()
+		elif source in Source.register:
+			museum = Source.register[source]
+		else:
 			await ctx.send(embed = embeds.ERROR.create(
 				"Invalid artifact source",
 				"Check your spelling and try again."
 			))
 			return
-		else:
-			museum = source_list[source]
 			
-		artifact = await museum[0](ctx.bot)
-		footer = f"{artifact[4]} via {museum[1]}" if artifact[4] else museum[1]
+		result = await museum.retrieve(ctx.bot)
+		embed = embeds.SEARCH_RESULT.create(result[1], result[2], heading = "Random artifact")
+		embed.url = result[0]	
 		
-		embed = embeds.SEARCH_RESULT.create(artifact[1], artifact[2], heading = "Random artifact")
-		embed.url = artifact[0]	
+		if result[3]: embed.set_image(url = result[3])
+		embed.set_footer(text = f"{result[4]} via {museum.desc}" if result[4] else museum.desc)
 		
-		if artifact[3]: embed.set_image(url=artifact[3])
-		embed.set_footer(text=footer)
-		
-		await ctx.send(embed=embed)	
+		await ctx.send(embed = embed)	
 		
 	@commands.command(
 		help = "Finds the results of `coat of arms [query]` using Google Images.",
