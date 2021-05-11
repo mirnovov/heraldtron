@@ -3,13 +3,8 @@ CREATE TABLE "armigers" (
 	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
-	"blazon" TEXT
-);
-
-CREATE TABLE "emblazons" (
-	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
-	"greii_n" INTEGER REFERENCES "armigers"("greii_n"),
-	"url" TEXT
+	"blazon" TEXT,
+	"emblazon_url" TEXT
 );
 
 CREATE TABLE "guilds" (

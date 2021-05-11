@@ -14,7 +14,7 @@ class NvFormatter(Formatter):
 	def format(self, record):
 		message = record.getMessage()
 		
-		if "\n" not in message[:self.LINE_WIDTH]:
+		if "\n" not in message[:self.LINE_WIDTH + 40]:
 			lines = self.wrapper.wrap(message)
 		else:
 			lines = message.splitlines()
@@ -49,6 +49,9 @@ async def get_text(session, url, **kwargs):
 		
 async def get_channel(bot, channel):
 	return bot.get_channel(channel) or await bot.fetch_channel(channel)
+	
+async def get_user(bot, user):
+	return bot.get_user(user) or await bot.fetch_user(user)
 	
 async def fetchone(dbc, query, substs = None):
 	cursor = await dbc.execute(query, substs)

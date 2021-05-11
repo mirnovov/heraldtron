@@ -1,6 +1,6 @@
-import discord, asyncio, urllib, csv, json, random, re
+import discord, asyncio, typing, urllib, csv, json, random, re
 from discord.ext import commands
-from .. import utils, services, embeds
+from .. import converters, embeds, services, utils
 from ..artifacts import Source
 
 class HeraldicStuff(commands.Cog, name = "Heraldry"):
@@ -40,6 +40,22 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		
 		await ctx.send(embed = embed)	
 		
+	@commands.command(
+		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source."\
+			   "If `alternate_emblazon` is enabled, also shows a user-selected emblazon, like with `!emblazon`."\
+			   "This is off by default as Greii eventually aims to implement a consistent emblazon style",
+		aliases = ("a", "greiin", "showarms", "arms")
+	)
+	@commands.before_invoke(utils.typing)
+	async def armiger(self, ctx, alt_emblazon: typing.Optional[bool] = False, user : converters.Armiger = None):
+		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", user[4], heading = f"GreiiN:{user[0]:04}")
+		embed.set_footer(text = "From the Book of Arms by GreiiEquites")
+		
+		if alt_emblazon and user[5]:
+			embed.set_thumbnail(url = user[5])
+		
+		await ctx.send(embed = embed)
+			
 	@commands.command(
 		help = "Finds the results of `coat of arms [query]` using Google Images.",
 		aliases = ("as",)
@@ -107,6 +123,20 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	async def drawshield(self, ctx, *, blazon : str):			
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
 		await ctx.send(embed = embed, file = file)
+		
+	@commands.command(
+		help = "Looks up a user-defined emblazon of a coat of arms.",
+		aliases = ("e",)
+	)
+	@commands.before_invoke(utils.typing)
+	async def emblazon(self, ctx, user : converters.Armiger = None):
+		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", "", heading = "Emblazon")
+		embed.set_footer(text = "Design and emblazon respectively property of the armiger and artist.")
+		
+		if user[5]: embed.set_image(url = user[5])
+		else: raise commands.BadArgument("User does not have emblazon")
+		
+		await ctx.send(embed = embed)
 		
 	@commands.command(
 		help = "Generates a coat of arms.\n If using in a DM, it is based on your name and birthday;"\
