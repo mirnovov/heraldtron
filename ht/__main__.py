@@ -51,7 +51,8 @@ class Heraldtron(commands.Bot):
 			guilds = True,
 			members = True,
 			messages = True,
-			reactions = True
+			reactions = True,
+			presences = True
 		)
 		
 	def load_conf(self):

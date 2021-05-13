@@ -98,8 +98,8 @@ class MemberOrUser(commands.Converter):
 			"SELECT * FROM armigers_e WHERE qualified_name LIKE ? AND discord_id IS NOT NULL",
 			(f"%{argument}%",)
 		)
-		user = await utils.get_user(ctx.bot, query[1]) 
-		
-		if user: return user
+		if query:
+			user = await utils.get_user(ctx.bot, query[1]) 
+			if user: return user
 		
 		raise commands.UserNotFound(argument)

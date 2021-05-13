@@ -176,11 +176,40 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 			"Trivia categories","To choose a category, specify its numeric ID.", heading = "Trivia"
 		)
 		
-		for catkind in result["trivia_categories"]:
-			embed.add_field(name=catkind["name"], value=catkind["id"], inline=True)	
+		for category in result["trivia_categories"]:
+			embed.add_field(name = category["name"], value=category["id"], inline=True)	
 			
-		embed.set_footer(text=f"Courtesy of the Open Trivia Database.")
-		await ctx.send(embed=embed)
+		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
+		await ctx.send(embed = embed)
+		
+	@commands.command(
+		help="Looks up a Discord user.",
+		aliases=("u",)
+	)
+	@commands.before_invoke(utils.typing)
+	async def user(self, ctx, *, user : converters.MemberOrUser = None):
+		user = user or ctx.author
+		
+		embed = embeds.USER_INFO.create(f"{user.name}#{user.discriminator}", f"{user.mention}")
+		if user.bot:
+			embed.description += " | **Bot**"
+			
+		embed.set_thumbnail(url = user.avatar_url_as(size = 512))
+		embed.add_field(name = "Created", value = utils.stdtime(user.created_at), inline = True)
+		embed.description += "\n\u200b"
+		
+		if isinstance(user, discord.Member):
+			embed.colour = user.colour
+			embed.description += "".join(f"\n{activity.emoji} {activity.name}" for activity in user.activities)
+			
+			embed.add_field(name = "Joined", value = utils.stdtime(user.joined_at), inline = True)
+			embed.add_field(name = "Status", value = f"Currently **{user.raw_status}**", inline = True)
+			
+			roles = (str(role.mention) for role in user.roles[1:])
+			embed.add_field(name = "Roles", value = ", ".join(("@everyone ", *roles)), inline = False)
+		
+		await ctx.send(embed = embed)
+	
 		
 def setup(bot):
 	bot.add_cog(MiscStuff(bot))

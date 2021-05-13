@@ -1,4 +1,4 @@
-import discord, aiohttp, asyncio, json, io
+import discord, aiohttp, asyncio, functools, json, io
 from discord.ext import commands
 from logging import Formatter
 from textwrap import TextWrapper
@@ -123,7 +123,12 @@ async def add_multiple_reactions(message, reactions):
 	
 def parse_xml(text_string, root):
 	return ElementTree.fromstring(text_string).find(root)
-	
+
+@functools.cache	
 def pronounise(word):
 	pron = "an" if word.strip()[0].upper() in "AEIOU1" else "a"
 	return f"{pron} {word}"
+	
+@functools.cache
+def stdtime(value):
+	return f"{value.day} {value:%B} {value.year}"
