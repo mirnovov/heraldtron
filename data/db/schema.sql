@@ -4,7 +4,11 @@ CREATE TABLE "armigers" (
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
 	"blazon" TEXT,
-	"emblazon_url" TEXT
+);
+
+CREATE TABLE "emblazons" (
+	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	"url" TEXT
 );
 
 CREATE TABLE "guilds" (
@@ -41,3 +45,8 @@ CREATE TABLE "roll_channels" (
 	"archived" INTEGER NOT NULL DEFAULT 0,
 	"never_archive" INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE VIEW "armigers_e" AS 
+	SELECT * 
+	FROM "armigers" LEFT JOIN "emblazons" 
+	ON "armigers"."discord_id" == "emblazons"."id";

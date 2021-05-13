@@ -56,7 +56,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		
 		special_vars = {
 			"GUILD_NAME": member.guild.name,
-			"MEMBER_NAME": utils.qualify_name(member),
+			"MEMBER_NAME": f"{member.name}#{member.discriminator}",
 			"MENTION": member.mention
 		}
 		

@@ -14,7 +14,7 @@ class NvFormatter(Formatter):
 	def format(self, record):
 		message = record.getMessage()
 		
-		if "\n" not in message[:self.LINE_WIDTH + 40]:
+		if "\n" not in message[:self.LINE_WIDTH + 80]:
 			lines = self.wrapper.wrap(message)
 		else:
 			lines = message.splitlines()
@@ -30,6 +30,11 @@ class CommandCancelled(commands.CommandError):
 	async def create(self, message, ctx):
 		await ctx.send(f":x: | {message}.")
 		return CommandCancelled(message)
+		
+class CustomCommandError(commands.CommandError):
+	def __init__(self, title, desc, *args, **kwargs):
+		self.title = title
+		self.desc = desc
 
 async def typing(self, ctx):
 	await ctx.trigger_typing()
@@ -119,13 +124,6 @@ async def add_multiple_reactions(message, reactions):
 def parse_xml(text_string, root):
 	return ElementTree.fromstring(text_string).find(root)
 	
-def qualify_name(member):
-	return f"{member.name}#{member.discriminator}"
-	
 def pronounise(word):
 	pron = "an" if word.strip()[0].upper() in "AEIOU1" else "a"
 	return f"{pron} {word}"
-
-def ascii_art():
-	with open("media/ascii_art", "r") as file:
-		return f"\n{file.read()}"

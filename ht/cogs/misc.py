@@ -1,6 +1,6 @@
 import discord, asyncio, typing, random, os, html
 from discord.ext import commands
-from .. import utils, services, embeds
+from .. import converters, embeds, services, utils
 
 class MiscStuff(commands.Cog, name = "Miscellaneous"):
 	def __init__(self, bot):
@@ -19,7 +19,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		help = "Generates a competition distribution.\n If no number is specified, asks for a list of names.", 
 		aliases = ("dt", "dist")
 	)
-	async def distribute(self, ctx, size : typing.Optional[int] = None):
+	async def distribute(self, ctx, size : converters.Range(3, 50) = None):
 		if not size:
 			message = await utils.respond_or_react(
 				ctx,
@@ -28,15 +28,8 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 				timeout = 1000
 			)
 			names = dict(enumerate(message.content.split("\n"), start = 1))
-			size = len(names)
+			size = converters.Range(3, 50).convert(len(names))
 		else: names = None
-			
-		if not 3 < size < 50:
-			await ctx.send(embed = embeds.ERROR.create(
-				"Invalid distribution size",
-				"To ensure a proper response, the size must be between 3 and 50."
-			))
-			return
 					
 		def distribution(keysize):
 			vals = list(range(1, keysize))
@@ -61,30 +54,23 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		
 		await ctx.send(output)
 		
-	@commands.command(help="Conducts a search using Google Images.", aliases=("img","gi"))
+	@commands.command(help = "Conducts a search using Google Images.", aliases = ("img", "gi"))
 	@commands.before_invoke(utils.typing)
 	async def imgsearch(self, ctx, *, query):
-		await services.gis(ctx,"" + query)
+		await services.gis(ctx, "" + query)
 
 	@commands.command(
 		help = "Chooses a random number.\n"\
 		" By default, this is out of 6, but another value can be specified.",
 		aliases = ("dice", "d")
 	)
-	async def roll(self, ctx, ceiling : typing.Optional[int] = 6):
-		if not 1 < ceiling < 9999:
-			await ctx.send(embed = embeds.ERROR.create(
-				"Incorrect roll ceiling",
-				"The value specified must be between 2 and 9999."
-			))
-			return
-		
+	async def roll(self, ctx, ceiling : converters.Range(2, 9999) = 6):		
 		message = await ctx.send(":game_die: | Rolling the dice...")
 		result = random.randrange(1, ceiling + 1)
 		await asyncio.sleep(2)
 		await message.edit(content=f":game_die: | The dice landed on... **{result}**!")
 		
-	@commands.command(help="Sends a post as the bot user. Handy for jokes and such.", aliases = ("st",), hidden = True)
+	@commands.command(help = "Sends a post as the bot user. Handy for jokes and such.", aliases = ("st",), hidden = True)
 	@commands.is_owner()	
 	async def sendtext(ctx, channel : typing.Optional[discord.TextChannel] = None, *, message_content):
 		channel = channel or ctx.channel
@@ -93,7 +79,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 	@commands.command(
 		help="Completes a passage of text using machine learning.\n"\
 		" This uses DeepAI's online model to compute the result.",
-		aliases=("aitext","tg")
+		aliases=("aitext", "tg")
 	)
 	@commands.before_invoke(utils.typing)
 	async def textgen(self, ctx, *, text : str):
@@ -103,11 +89,10 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 			
 		async with ctx.bot.session.post(url, data = data, headers = headers) as source:
 			if not source.ok:
-				await ctx.send(embed = embeds.ERROR.create(
+				raise utils.CustomCommandError(
 					"Invalid HTTP request",
 					f"Please try again. If problems persist, contact the bot's maintainer."
-				))
-				return
+				)
 			
 			result_json = await source.json()
 		
@@ -130,11 +115,10 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		result = await utils.get_json(self.bot.session, json)
 		
 		if result["response_code"] == 1:
-			await ctx.send(embed = embeds.ERROR.create(
+			raise utils.CustomCommandError(
 				"Invalid category code",
 				f"Consult `!trivia categories` to see the available codes."
-			))
-			return
+			)
 			
 		result = result["results"][0]
 		info = f"**{result['category']}** | {result['difficulty'].capitalize()}\n\n"

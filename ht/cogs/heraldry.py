@@ -25,18 +25,17 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		elif source in Source.register:
 			museum = Source.register[source]
 		else:
-			await ctx.send(embed = embeds.ERROR.create(
+			raise utils.CustomCommandError(
 				"Invalid artifact source",
 				"Check your spelling and try again."
-			))
-			return
+			)
 			
 		result = await museum.retrieve(ctx.bot)
 		embed = embeds.SEARCH_RESULT.create(result[1], result[2], heading = "Random artifact")
 		embed.url = result[0]	
+		embed.set_footer(text = f"{result[4]} via {museum.desc}" if result[4] else museum.desc)
 		
 		if result[3]: embed.set_image(url = result[3])
-		embed.set_footer(text = f"{result[4]} via {museum.desc}" if result[4] else museum.desc)
 		
 		await ctx.send(embed = embed)	
 		
@@ -47,12 +46,17 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
 	@commands.before_invoke(utils.typing)
-	async def armiger(self, ctx, alt_emblazon: typing.Optional[bool] = False, user : converters.Armiger = None):
+	async def armiger(self, ctx, alt_emblazon: typing.Optional[converters.ImageTag] = False, user: converters.Armiger = None):
+		if not user:
+			user = await utils.fetchone(
+				ctx.bot.dbc, "SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+			)
+		
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", user[4], heading = f"GreiiN:{user[0]:04}")
 		embed.set_footer(text = "From the Book of Arms by GreiiEquites")
 		
-		if alt_emblazon and user[5]:
-			embed.set_thumbnail(url = user[5])
+		if user[6] and alt_emblazon:
+			embed.set_thumbnail(url = user[6])
 		
 		await ctx.send(embed = embed)
 			
@@ -73,12 +77,10 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	async def ds_catalog(self, ctx, *, charge):			
 		url = await services.ds_catalog(self.bot.session, charge)
 		
-		if url == None:
-			await ctx.send(embed = embeds.ERROR.create(
-				"Invalid catalog item",
-				"Check your spelling and try again."
-			))
-			return
+		if url == None: raise utils.CustomCommandError(
+			"Invalid catalog item",
+			"Check your spelling and try again."
+		)
 		
 		embed = embeds.SEARCH_RESULT.create(
 			f"Catalog entry for \"{charge}\"", "",
@@ -102,11 +104,10 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		url = await utils.get_json(self.bot.session, f"https://drawshield.net/api/challenge/{source}")
 		
 		if isinstance(url, dict) and "error" in url:
-			await ctx.send(embed = embeds.ERROR.create(
+			raise utils.CustomCommandError(
 				"Invalid challenge category",
 				"Type `!help challenge` to see the available categories."
-			))
-			return
+			)
 		
 		embed = embeds.GENERIC.create("","Try emblazoning this using DrawShield!", heading = "Random image")		
 		embed.set_image(url = url)
@@ -129,14 +130,25 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		aliases = ("e",)
 	)
 	@commands.before_invoke(utils.typing)
-	async def emblazon(self, ctx, user : converters.Armiger = None):
-		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", "", heading = "Emblazon")
-		embed.set_footer(text = "Design and emblazon respectively property of the armiger and artist.")
+	async def emblazon(self, ctx, user : converters.MemberOrUser = None):
 		
-		if user[5]: embed.set_image(url = user[5])
-		else: raise commands.BadArgument("User does not have emblazon")
+		user = user or ctx.author
+
+		emblazon = await utils.fetchone(
+			ctx.bot.dbc, "SELECT * FROM emblazons WHERE id == ?;", (user.id,)
+		)
 		
-		await ctx.send(embed = embed)
+		if emblazon: 
+			embed = embeds.GENERIC.create(f"{user.name}#{user.discriminator}", "", heading = "Emblazon")
+			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
+			
+			embed.set_image(url = emblazon[1])
+			
+			await ctx.send(embed = embed)
+		else: raise utils.CustomCommandError(
+			"User does not have emblazon",
+			"The user you entered exists, but has not specified an emblazon."
+		)
 		
 	@commands.command(
 		help = "Generates a coat of arms.\n If using in a DM, it is based on your name and birthday;"\
@@ -230,11 +242,10 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		)
 		
 		if len(query["results"]) == 0:
-			await ctx.send(embed = embeds.ERROR.create(
+			raise utils.CustomCommandError(
 				"Invalid HERO term",
 				"The term could not be found. Check that it is entered correctly, or try other sources."
-			))
-			return
+			)
 		
 		uri = query["results"][0]["uri"]
 		
@@ -276,11 +287,10 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		
 		if "error" in results:
-			await ctx.send(embed = embeds.ERROR.create(
+			raise utils.CustomCommandError(
 				"Invalid DrawShield term",
 				"The term could not be found. Check that it is entered correctly, or try other sources."
-			))
-			return
+			)
 		
 		embed = embeds.SEARCH_RESULT.create(
 			f"Results for \"{term}\"",
@@ -393,20 +403,54 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			)
 			for name, resource in resources.items():
 				embed.description += f" - `{name}`: {re.sub(self.RES_SUB_A, '*', resource[2])}\n"
+				
+			embed.description += "[Full list](https://novov.me/linkroll/resources.html?bot)"
 		elif source == "random":
 			embed = resource_result(random.choice(resources))
 		else:
 			if source not in resources:
-				await ctx.send(embed = embeds.ERROR.create(
+				raise utils.CustomCommandError(
 					"Nonexistent resource",
 					"Type `!resources` to see a list of resources."
-				))
-				return
+				)
 				
 			embed = resource_result(resources.get(source)) 
 		
 		embed.set_footer(text = f"Retrieved from Novov's Heraldic Resources.")		
 		await ctx.send(embed = embed)
+		
+	@commands.command(
+		help = "Sets the emblazon of your arms shown by `!emblazon`."\
+			   "\nThis is associated with your Discord ID. If no value is provided, deletes any extant emblazon.",
+		aliases = ("se", "delemblazon", "de")
+	)
+	@commands.before_invoke(utils.typing)
+	async def setemblazon(self, ctx, url : typing.Optional[converters.Url] = None):	
+		if not url and len(ctx.message.attachments) > 0:
+			url = ctx.message.attachments[0].url
+						
+		if url:
+			await self.bot.dbc.execute(
+				"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET url = ?;",
+				(ctx.author.id, url, url)
+			)
+			await self.bot.dbc.commit()
+			await ctx.send(":white_check_mark: | Emblazon updated.")
+			
+			return
+		
+		if not await utils.fetchone(self.bot.dbc, "SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
+			raise utils.CustomCommandError(
+				"User does not have emblazon",
+				"You do not have an emblazon to remove."
+			)
+		
+		await self.bot.dbc.execute(
+			"DELETE FROM emblazons WHERE id = ?;",
+			(ctx.author.id,)
+		)
+		await self.bot.dbc.commit()
+		await ctx.send(":x: | Emblazon removed.")
 
 def setup(bot):
 	bot.add_cog(HeraldicStuff(bot))

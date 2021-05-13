@@ -41,7 +41,10 @@ class Heraldtron(commands.Bot):
 		if self.conf["OWNER_ONLY"]:
 			self.add_check(utils.check_is_owner)
 			
-		self.logger.info(f"Bot initialisation complete. {utils.ascii_art()}")
+		with open("media/ascii_art", "r") as file:
+			ascii = f"\n{file.read()}"
+			
+		self.logger.info(f"Bot initialisation complete. {ascii}")
 		
 	def get_default_intents(self):
 		return discord.Intents(

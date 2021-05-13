@@ -35,18 +35,15 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		rowcount = await utils.fetchone(self.bot.dbc, "SELECT COUNT(*) FROM reddit_feeds")
 		
 		if rowcount[0] > self.MAX_FEEDS:
-			await ctx.send(embeds.ERROR.create("Excessive feed count", f"A server cannot have more than 3 feeds."))
-			return
+			raise utils.CustomCommandError("Excessive feed count", f"A server cannot have more than 3 feeds.")
 		
 		subreddit = re.sub(self.SR_VAL, "", subreddit)
 		validate = await utils.get_json(self.bot.session, f"https://www.reddit.com/r/{subreddit}/new.json?limit=1")
 		
-		if validate.get("error"):
-			await ctx.send(embed = embeds.ERROR.create(
-				"Invalid subreddit",
-				f"**r/{subreddit}** either does not exist or is inaccessible."
-			))
-			return
+		if validate.get("error"): raise utils.CustomCommandError(
+			"Invalid subreddit",
+			f"**r/{subreddit}** either does not exist or is inaccessible."
+		)
 		elif validate["data"]["dist"] > 0:
 			newest = validate["data"]["children"][0]["data"]["name"] #json can be a nightmare
 		else: newest = None
@@ -147,13 +144,11 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	async def set_message(self, ctx, leave):
 		enabled = await self.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
 		
-		if enabled == 0:
-			await ctx.send(embeds.ERROR.create(
-				"Welcome and leave messages disabled",
-				"Your message cannot be set, as the welcome and leave message functionality"\
-				" is currently not operational. Turn it on with `!messages yes`."
-			))
-			return
+		if enabled == 0: raise utils.CustomCommandError(
+			"Welcome and leave messages disabled",
+			"Your message cannot be set, as the welcome and leave message functionality"\
+			" is currently not operational. Turn it on with `!messages yes`."
+		)
 			
 		result = await utils.respond_or_react(
 			ctx,

@@ -14,17 +14,15 @@ async def gis(ctx, query):
 	
 	search = await utils.get_json(ctx.bot.session, f"https://www.googleapis.com/customsearch/v1?{params}")
 	
-	if search == None:
-		ctx.send(embeds.ERROR.create(
-			"Invalid HTTP search request",
-			"The image search API returned an incorrect HTTP request."\
-			"This might be caused by the search amount exceeding the maximum quota."
-		))		
-	elif "items" not in search:
-		ctx.send(embeds.ERROR.create(
-			"Search has no results",
-			"The search returned no images. Check that what you are looking for exists."
-		))
+	if search == None: raise utils.CustomCommandError(
+		"Invalid HTTP search request",
+		"The image search API returned an incorrect HTTP request."\
+		"This might be caused by the search amount exceeding the maximum quota."
+	)	
+	elif "items" not in search: raise utils.CustomCommandError(
+		"Search has no results",
+		"The search returned no images. Check that what you are looking for exists."
+	)
 	
 	def image_result(index):
 		item = search["items"][index]

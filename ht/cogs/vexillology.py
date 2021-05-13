@@ -38,12 +38,11 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 			facts = list(csv.reader(file, delimiter = ";"))
 			
 			if fid > len(facts):
-				await ctx.send(embed = embed.ERROR.create(
+				raise utils.CustomCommandError(
 					"Flag fact is nonexistent",
 					"The number you entered is too high. Currently, there"\
 					f" are only {len(facts)} flag facts."
-				))
-				return
+				)
 			
 		fact = random.choice(facts) if fid < 0 else facts[fid] 			
 		embed = embeds.FLAG_FACT.create(f"{fact[1]}", "", heading = f"Flag fact #{fact[0]}")	
