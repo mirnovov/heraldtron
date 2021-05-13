@@ -35,9 +35,6 @@ class CustomCommandError(commands.CommandError):
 	def __init__(self, title, desc, *args, **kwargs):
 		self.title = title
 		self.desc = desc
-
-async def typing(self, ctx):
-	await ctx.trigger_typing()
 	
 async def get_bytes(session, url, **kwargs):
 	async with session.get(url) as source:
@@ -132,3 +129,6 @@ def pronounise(word):
 @functools.cache
 def stdtime(value):
 	return f"{value.day} {value:%B} {value.year}"
+
+async def _typing(self, ctx): await ctx.trigger_typing()	
+trigger_typing = commands.before_invoke(_typing)

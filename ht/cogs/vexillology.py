@@ -11,7 +11,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 		help = "Finds the results of `flag [query]` using Google Images.",
 		aliases = ("fs",)
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def flagsearch(self, ctx, *, query):
 		await services.gis(ctx, "flag " + query)
 		
@@ -21,7 +21,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 		" development. Code © Karl Wilcox",
 		aliases = ("df",)
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def drawflag(self, ctx, *, blazon : str):
 		embed, file = await services.ds(self.bot.session, blazon + " in flag shape", "Flag")
 		await ctx.send(embed = embed, file = file)
@@ -60,7 +60,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 		help = "Seychelles-izes a flag.\nUses Akshay Chitale's Seychelles Flag Generator script.",
 		aliases = ("sy","seych")
 	)
-	@commands.before_invoke(utils.typing)	
+	@utils.trigger_typing	
 	async def seychelles(self,ctx):
 		result = await utils.respond_or_react(
 			ctx,

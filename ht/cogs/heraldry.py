@@ -18,7 +18,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			f"{Source.str_list()}",
 		aliases = ("ar", "relic")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def artifact(self, ctx, source = "all"):
 		if source == "all":
 			museum = Source.random()
@@ -45,7 +45,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   "This is off by default as Greii eventually aims to implement a consistent emblazon style",
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def armiger(self, ctx, alt_emblazon: typing.Optional[converters.ImageTag] = False, user: converters.Armiger = None):
 		if not user:
 			user = await utils.fetchone(
@@ -64,7 +64,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		help = "Finds the results of `coat of arms [query]` using Google Images.",
 		aliases = ("as",)
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def armssearch(self, ctx, *, query):
 		await services.gis(ctx, "coat of arms " + query)
 		
@@ -73,7 +73,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		help = "Looks up a term in DrawShield's repository of charges.\nCode © Karl Wilcox",
 		aliases = ("charge", "cat")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def ds_catalog(self, ctx, *, charge):			
 		url = await services.ds_catalog(self.bot.session, charge)
 		
@@ -99,7 +99,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		" can be selected via *coadb*, *public*, and *wikimedia* respectively).",
 		aliases=("random","cl")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def ds_challenge(self, ctx, source="all"):			
 		url = await utils.get_json(self.bot.session, f"https://drawshield.net/api/challenge/{source}")
 		
@@ -120,7 +120,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		" all possible blazons. Code © Karl Wilcox",
 		aliases = ("ds",)
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def drawshield(self, ctx, *, blazon : str):			
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
 		await ctx.send(embed = embed, file = file)
@@ -129,7 +129,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		help = "Looks up a user-defined emblazon of a coat of arms.",
 		aliases = ("e",)
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def emblazon(self, ctx, user : converters.MemberOrUser = None):
 		
 		user = user or ctx.author
@@ -234,7 +234,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		help = "Looks up heraldic terms in the Finto HERO ontological database.",
 		aliases = ("finto", "luh", "ontology", "he")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def hero(self, ctx, *, term):
 		query = await utils.get_json(
 			self.bot.session,
@@ -282,7 +282,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		       " Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
 		aliases = ("lu", "define", "def")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def lookup(self, ctx, *, term : str):
 		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
 		
@@ -309,7 +309,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		       "motto generators.",
 		aliases = ("mt", "mot")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def motto(self, ctx):
 		with open("data/mottoparts.json") as file:
 			parts = json.load(file)
@@ -376,7 +376,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   " If no resource name is given, lists available resources.",
 		aliases = ("re", "source", "resources", "r")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def resource(self, ctx, source = None):
 		html = await utils.get_text(
 			ctx.bot.session, 
@@ -424,7 +424,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   "\nThis is associated with your Discord ID. If no value is provided, deletes any extant emblazon.",
 		aliases = ("se", "delemblazon", "de")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def setemblazon(self, ctx, url : typing.Optional[converters.Url] = None):	
 		if not url and len(ctx.message.attachments) > 0:
 			url = ctx.message.attachments[0].url

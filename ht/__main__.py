@@ -26,7 +26,7 @@ class Heraldtron(commands.Bot):
 		self.logger = logging.getLogger("heraldtron")
 		
 		super().__init__(
-			command_prefix = "!",
+			command_prefix = "!", #kept for documentation
 			description = "A heraldry-related bot designed for the Heraldry Community.",
 			activity = discord.Game("a !challenge"),
 			intents = self.get_default_intents(),
@@ -105,6 +105,14 @@ class Heraldtron(commands.Bot):
 			await dbc.commit()
 			
 		return dbc
+		
+	async def get_prefix(self, message):
+		list = (self.command_prefix, f"<@{bot.user.id}> ", f"<@!{bot.user.id}> ")
+		
+		if not message.guild:
+			return (*list, "")
+			
+		return list
 		
 	async def close(self):
 		await self.dbc.close()

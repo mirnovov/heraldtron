@@ -7,7 +7,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		self.bot = bot
 		
 	@commands.command(help = "Retrieves a random piece of advice.\nUses adviceslip.com", aliases = ("ad",))
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def advice(self, ctx):			
 		result = await utils.get_json(self.bot.session,f"https://api.adviceslip.com/advice",content_type="text/html")
 		
@@ -55,7 +55,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		await ctx.send(output)
 		
 	@commands.command(help = "Conducts a search using Google Images.", aliases = ("img", "gi"))
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def imgsearch(self, ctx, *, query):
 		await services.gis(ctx, "" + query)
 
@@ -81,7 +81,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		" This uses DeepAI's online model to compute the result.",
 		aliases=("aitext", "tg")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def textgen(self, ctx, *, text : str):
 		url = "https://api.deepai.org/api/text-generator"
 		data = {"text": text.strip()}
@@ -108,7 +108,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		"\nCourtesy of the Open Trivia Database.\n\u0020\n",
 		aliases = ("q","tr")
 	)
-	@commands.before_invoke(utils.typing)
+	@utils.trigger_typing
 	async def trivia(self, ctx, category : typing.Optional[int] = -1):
 		catstring = "" if category == -1 else f"&category={category}"
 		json = f"https://opentdb.com/api.php?amount=1{catstring}"
@@ -182,11 +182,8 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
 		await ctx.send(embed = embed)
 		
-	@commands.command(
-		help="Looks up a Discord user.",
-		aliases=("u",)
-	)
-	@commands.before_invoke(utils.typing)
+	@commands.command(help = "Looks up a Discord user.", aliases = ("u",))
+	@utils.trigger_typing
 	async def user(self, ctx, *, user : converters.MemberOrUser = None):
 		user = user or ctx.author
 		
