@@ -1,7 +1,7 @@
 import discord, asyncio, random
 from enum import Enum
 from discord.ext import commands
-from . import utils
+from . import responses
 
 class Theme(Enum):
 	ERROR = (0xdd3333, "4/4e/OOjs_UI_icon_error-destructive.svg/200px-OOjs_UI_icon_error-destructive.svg.png", "An error has been encountered")
@@ -39,31 +39,32 @@ USER_INFO = Theme.USER_INFO
 
 async def paginate(ctx, embed_function, embeds_size):
 	message = await ctx.send(embed = embed_function(0))		
-	buttons = ("\U000023EE\U0000FE0F", "\U00002B05\U0000FE0F", "\U0001F500", "\U000027A1\U0000FE0F", "\U000023ED\U0000FE0F")
+	emojis = ("\U000023EE\U0000FE0F", "\U00002B05\U0000FE0F", "\U0001F500", "\U000027A1\U0000FE0F", "\U000023ED\U0000FE0F")
 	index = 0
-	await utils.add_multiple_reactions(message, buttons)
-	
-	def check_react(reaction, user):
-		if ctx.author != user: return False
-		return reaction.message == message
+	await responses.multi_react(message, emojis)
 	
 	while True:
 		try:
-			reaction, user = await ctx.bot.wait_for("reaction_add", timeout = 150, check = check_react)
+			reaction, user = await ctx.bot.wait_for(
+				"reaction_add", 
+				check = responses.button_check(ctx, message, emojis),
+				timeout = responses.SHORT_TIMEOUT
+			)
 			updated = await message.channel.fetch_message(message.id)
 			
-			if reaction.emoji == buttons[0]: index = 0
-			elif reaction.emoji == buttons[1] and index > 0: index -= 1
-			elif reaction.emoji == buttons[2]: index = random.randrange(0, embeds_size - 1)
-			elif reaction.emoji == buttons[3] and index < embeds_size - 1: index += 1
-			elif reaction.emoji == buttons[4]: index = embeds_size - 1
+			if reaction.emoji == emojis[0]: index = 0
+			elif reaction.emoji == emojis[1] and index > 0: index -= 1
+			elif reaction.emoji == emojis[2]: index = random.randrange(0, embeds_size - 1)
+			elif reaction.emoji == emojis[3] and index < embeds_size - 1: index += 1
+			elif reaction.emoji == emojis[4]: index = embeds_size - 1
 			
 			await message.edit(embed = embed_function(index))
 			
 			if isinstance(ctx.channel, discord.abc.GuildChannel):
-				await message.remove_reaction(reaction,ctx.author)
+				await message.remove_reaction(reaction, ctx.author)
 			
 		except asyncio.TimeoutError:
 			await message.edit(content=":x: | The paged command has timed out.")
-			if isinstance(ctx.channel, discord.abc.GuildChannel): await message.clear_reactions()
+			if isinstance(ctx.channel, discord.abc.GuildChannel): 
+				await message.clear_reactions()
 			return

@@ -1,6 +1,6 @@
 import discord, asyncio, typing, random, os, html
 from discord.ext import commands
-from .. import converters, embeds, services, utils
+from .. import converters, embeds, services, responses, utils
 
 class MiscStuff(commands.Cog, name = "Miscellaneous"):
 	def __init__(self, bot):
@@ -21,11 +21,11 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 	)
 	async def distribute(self, ctx, size : converters.Range(3, 50) = None):
 		if not size:
-			message = await utils.respond_or_react(
+			message = await responses.respond_or_react(
 				ctx,
 				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)"\
 				", or react with :x: to cancel.",
-				timeout = 1000
+				timeout = reponses.LONG_TIMEOUT
 			)
 			names = dict(enumerate(message.content.split("\n"), start = 1))
 			size = converters.Range(3, 50).convert(len(names))
@@ -141,7 +141,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		
 		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
 		message = await ctx.send(embed = embed)
-		await utils.add_multiple_reactions(message, emojis)
+		await responses.multi_react(message, emojis)
 		await asyncio.sleep(60)
 		
 		embed.description = f"{info}The correct answer is: {emojis[correct]}"\

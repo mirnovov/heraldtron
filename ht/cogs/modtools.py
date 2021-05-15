@@ -1,7 +1,7 @@
 import discord, asyncio, typing, re
 from discord.ext import commands
 from datetime import datetime
-from .. import utils, embeds
+from .. import embeds, responses, utils
 
 class ModerationTools(commands.Cog, name = "Moderation"):
 	MAX_FEEDS = 3
@@ -72,14 +72,14 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		
 		embed.description += "\nReact with an emoji to delete a feed, or :x: to cancel."
 		message = await ctx.send(embed = embed)
-		await utils.add_multiple_reactions(message, emojis)
-		
-		def check_react(reaction, user):
-			if ctx.author != user: return False
-			return reaction.message == message and reaction.emoji in emojis 
+		await responses.multi_react(message, emojis)
 		
 		try:
-			reaction, user = await ctx.bot.wait_for("reaction_add", timeout = 150, check = check_react)		
+			reaction, user = await ctx.bot.wait_for(
+				"reaction_add", 
+				check = responses.button_check(ctx, message, emojis),
+				timeout = responses.TIMEOUT
+			)		
 		except asyncio.TimeoutError: 
 			raise await utils.CommandCancelled.create("Command timed out", ctx)
 		
@@ -101,6 +101,8 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	)
 	async def modmessage(self, ctx, channel : typing.Optional[discord.TextChannel] = None, *, message_content):
 		channel = channel or ctx.channel
+		
+		await responses.confirm(ctx, f"This will be posted to {channel.mention} in **{channel.guild.name}**.")
 	
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
@@ -150,7 +152,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			" is currently not operational. Turn it on with `!messages yes`."
 		)
 			
-		result = await utils.respond_or_react(
+		result = await responses.respond_or_react(
 			ctx,
 			"Either type your message below, react with :leftwards_arrow_with_hook:"\
 			" to revert to the default, or with :x: to cancel.\n"\
