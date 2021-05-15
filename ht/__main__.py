@@ -5,7 +5,7 @@ from . import utils
 class Heraldtron(commands.Bot):
 	DEFAULT_COGS = [
 		"errors", "events", "modtools", "heraldry", 
-		"misc", "tasks", "vexillology", "meta"
+		"misc", "sort", "tasks", "vexillology", "meta"
 	]
 	
 	REQUISITES = [

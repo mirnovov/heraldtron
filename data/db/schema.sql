@@ -40,6 +40,7 @@ CREATE TABLE "roles" (
 
 CREATE TABLE "roll_channels" (
 	"discord_id" INTEGER PRIMARY KEY,
+	"name" TEXT NOT NULL,
 	"user_id" INTEGER REFERENCES "armigers"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
 	"type" INTEGER DEFAULT 2 NOT NULL,
 	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
