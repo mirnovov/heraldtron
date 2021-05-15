@@ -70,6 +70,24 @@ async def check_is_owner(ctx):
 		return False
 	return True
 	
+async def check_limited(ctx):
+	if not ctx.guild: return True
+		
+	limited = await fetchone(
+		ctx.bot.dbc,
+		"SELECT limit_commands FROM guilds WHERE discord_id = ?",
+		(ctx.guild.id,)
+	)
+	
+	if limited[0] == 1: 
+		raise CustomCommandError(
+			"Command prohibited",
+			"This command is not allowed on this server."
+		)
+		return False
+	
+	return True
+	
 def parse_xml(text_string, root):
 	return ElementTree.fromstring(text_string).find(root)
 

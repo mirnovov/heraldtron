@@ -6,6 +6,9 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 	def __init__(self, bot):
 		self.bot = bot
 		
+	async def cog_check(self, ctx):
+		return await utils.check_limited(ctx)
+		
 	@commands.command(help = "Retrieves a random piece of advice.\nUses adviceslip.com", aliases = ("ad",))
 	@utils.trigger_typing
 	async def advice(self, ctx):			

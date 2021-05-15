@@ -119,14 +119,13 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		await channel.set_permissions(ctx.guild.default_role, send_messages=False)
 		await ctx.send(f":lock: | **{ctx.channel.mention} has been locked.**")
 		
+	@commands.command(help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
+	async def limit(self, ctx, enabled : bool):
+		await self.set_flag(ctx, enabled, "limit_commands", ":stop_sign:", "Command limits have")
+		
 	@commands.command(help = "Enables/disables welcome and leave messages for a server.", aliases = ("wl", "welcome", "ms", "message"))	
 	async def messages(self, ctx, enabled : bool):
-		enabled_int = int(enabled)
-		enabled_text = "enabled" if enabled else "disabled"
-		 
-		await self.bot.dbc.execute("UPDATE guilds SET welcome_users = ? WHERE discord_id = ?",(enabled_int, ctx.guild.id))
-		await self.bot.dbc.commit()
-		await ctx.send(f":envelope_with_arrow: | Welcome and leave messages have been **{enabled_text}** for this server.")
+		await self.set_flag(ctx, enabled, "welcome_users", ":envelope_with_arrow:", "Welcome and leave messages have")
 	
 	@commands.command(help = "Sets the leave message for this server.", aliases = ("sl", "setl"))	
 	async def setleave(self, ctx):
@@ -136,15 +135,29 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	async def setwelcome(self, ctx):
 		await self.set_message(ctx, False)
 		
+	@commands.command(help = "Enables/disables roll channel sorting for a server.", aliases = ("arrange", "s"))	
+	async def sort(self, ctx, enabled : bool):
+		await self.set_flag(ctx, enabled, "sort_channels", ":abcd:", "Roll channel sorting has")
+		
 	@commands.command(help = "Unlocks a channel, restoring the ability to send messages from it.",aliases=("ul",))	
 	async def unlock(self, ctx, channel : discord.TextChannel = None):
 		channel = channel or ctx.channel
 		
 		await channel.set_permissions(ctx.guild.default_role, send_messages=True)
 		await ctx.send(f":unlock: | **{ctx.channel.mention} has been unlocked.**")
-		
-	async def set_message(self, ctx, leave):
-		enabled = await self.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
+	
+	@staticmethod	
+	async def set_flag(ctx, enabled, db_col, emoji, desc):
+		enabled_int = int(enabled)
+		enabled_text = "enabled" if enabled else "disabled"
+		 
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ? WHERE discord_id = ?", (enabled_int, ctx.guild.id))
+		await ctx.bot.dbc.commit()
+		await ctx.send(f"{emoji} | {desc} been **{enabled_text}** for this server.")
+	
+	@staticmethod	
+	async def set_message(ctx, leave):
+		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
 		
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
@@ -164,8 +177,8 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			message_type = "welcome_text" if not leave else "leave_text"
 			new = None if isinstance(result, tuple) else result.content
 			
-			await self.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;",(new, ctx.guild.id))
-			await self.bot.dbc.commit()
+			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;",(new, ctx.guild.id))
+			await ctx.bot.dbc.commit()
 			await ctx.send(":white_check_mark: | Message changed.")
 		
 def setup(bot):

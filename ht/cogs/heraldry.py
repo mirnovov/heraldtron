@@ -12,6 +12,9 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	def __init__(self, bot):
 		self.bot = bot
 		
+	async def cog_check(self, ctx):
+		return await utils.check_limited(ctx)
+		
 	@commands.command(
 		help = "Displays a random historical heraldic artifact.\n"\
 			"This can be narrowed down to an individual source:\n\n"\

@@ -14,8 +14,9 @@ CREATE TABLE "emblazons" (
 CREATE TABLE "guilds" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"name" TEXT NOT NULL,
-	"type" INTEGER DEFAULT 0 NOT NULL,
-	"welcome_users" INTEGER,
+	"limit_commands" INTEGER DEFAULT 0 NOT NULL,
+	"sort_channels" INTEGER DEFAULT 0 NOT NULL,
+	"welcome_users" INTEGER DEFAULT 0 NOT NULL,
 	"welcome_text" TEXT,
 	"leave_text" TEXT
 );

@@ -42,7 +42,7 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		commands.BadArgument: (
 			"Command given invalid argument",
 			"One or more of the arguments you entered is invalid. Check that the command is correct and try again.",
-			True
+			False
 		),
 		aiohttp.ClientConnectionError: (
 			"Could not connect to server",
@@ -89,8 +89,8 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 			error = error.original
 			mention = (await self.bot.application_info()).owner.mention
 		
-		if type(error) in BotErrors.ERROR_MESSAGES:
-			message = BotErrors.ERROR_MESSAGES[type(error)]
+		if isinstance(error, tuple(BotErrors.ERROR_MESSAGES)):
+			message = tuple(y for x, y in BotErrors.ERROR_MESSAGES.items() if isinstance(error, x))[0]
 			embed = embeds.ERROR.create(
 				message[0].format(error = error), 
 				message[1].format(error = error, mention = mention)

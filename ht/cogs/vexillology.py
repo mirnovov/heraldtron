@@ -7,6 +7,9 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 	def __init__(self, bot):
 		self.bot = bot
 		
+	async def cog_check(self, ctx):
+		return await utils.check_limited(ctx)
+		
 	@commands.command(
 		help = "Finds the results of `flag [query]` using Google Images.",
 		aliases = ("fs",)
