@@ -11,10 +11,10 @@ Some elements in the project have been placed under different licenses:
 
 - Graphical content (`avatar.jpg` and `robot.png`) is exclusively proprietary, and **is not in the remit of the license above**.
 
-- Content in `ht/ext/seychelles` from the Seychelles Flag Generator (https://github.com/akshaychitale/seychelles) was originally released under the Unlicense, and freely relicensed in this project under the MIT license.
+- Content in `ht/ext/seychelles` from the Seychelles Flag Generator (https://github.com/akshaychitale/seychelles/) was originally released under the Unlicense, and freely relicensed in this project under the MIT license.
    - For more info, see the original project, or the licence file included at `ht/ext/seychelles/UNLICENSE.md`.
 
-- Portions of in `ht/ext.py` derived from aiohttp (https://pypi.org/project/aiohttp/) were originally released under the Apache License 2.0, and are now used in concord with said license's provisions regarding derivative works.
+- Portions of code in `ht/ext.py` derived from aiohttp (https://pypi.org/project/aiohttp/) were originally released under the Apache License 2.0, and are now used in concord with said license's provisions regarding derivative works.
    - The original aiohttp license text is included below as required by the Apache License 2.0:
       ```````````````````````````````````````````
       Copyright 2013-2020 aio-libs collaboration.

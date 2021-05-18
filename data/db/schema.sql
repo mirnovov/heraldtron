@@ -37,15 +37,10 @@ CREATE TABLE "roles" (
 	"is_admin" INTEGER DEFAULT 1
 );
 
-
 CREATE TABLE "roll_channels" (
 	"discord_id" INTEGER PRIMARY KEY,
-	"name" TEXT NOT NULL,
-	"user_id" INTEGER REFERENCES "armigers"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
-	"type" INTEGER DEFAULT 2 NOT NULL,
-	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id") NOT DEFERRABLE INITIALLY IMMEDIATE,
-	"archived" INTEGER NOT NULL DEFAULT 0,
-	"never_archive" INTEGER NOT NULL DEFAULT 0
+	"user_id" INTEGER REFERENCES "armigers"("discord_id"),
+	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id")
 );
 
 CREATE VIEW "armigers_e" AS 
