@@ -52,6 +52,9 @@ async def get_text(session, url, **kwargs):
 async def get_channel(bot, channel):
 	return bot.get_channel(channel) or await bot.fetch_channel(channel)
 	
+async def get_guild(bot, guild):
+	return bot.get_guild(guild) or await bot.fetch_guild(guild)
+	
 async def get_user(bot, user):
 	return bot.get_user(user) or await bot.fetch_user(user)
 	

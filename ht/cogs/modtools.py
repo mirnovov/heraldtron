@@ -116,7 +116,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	async def lock(self, ctx, channel : typing.Optional[discord.TextChannel] = None):
 		channel = channel or ctx.channel
 		
-		await channel.set_permissions(ctx.guild.default_role, send_messages=False)
+		await channel.set_permissions(ctx.guild.default_role, send_messages = False)
 		await ctx.send(f":lock: | **{ctx.channel.mention} has been locked.**")
 		
 	@commands.command(help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
@@ -138,12 +138,15 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	@commands.command(help = "Enables/disables roll channel sorting for a server.", aliases = ("arrange", "s"))	
 	async def sort(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "sort_channels", ":abcd:", "Roll channel sorting has")
+		rollsort = self.bot.get_cog("Roll Sorting")
+		
+		if rollsort: await rollsort.refresh_cache()
 		
 	@commands.command(help = "Unlocks a channel, restoring the ability to send messages from it.",aliases=("ul",))	
 	async def unlock(self, ctx, channel : discord.TextChannel = None):
 		channel = channel or ctx.channel
 		
-		await channel.set_permissions(ctx.guild.default_role, send_messages=True)
+		await channel.set_permissions(ctx.guild.default_role, send_messages = True)
 		await ctx.send(f":unlock: | **{ctx.channel.mention} has been unlocked.**")
 	
 	@staticmethod	

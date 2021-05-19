@@ -1,9 +1,10 @@
-import discord, asyncio, uuid, itertools
+import discord, asyncio, uuid
 from discord.ext import commands, tasks
 from collections import deque
+from datetime import datetime, timedelta
 from .. import utils
 
-class RollSort(commands.Cog):
+class RollSort(commands.Cog, name = "Roll Sorting"):
 	VARIANTS = (
 		("Market", "market", "\U0001F4B8"),
 		("Artist Gallery", "artist", "\U0001F3A8"),
@@ -11,24 +12,19 @@ class RollSort(commands.Cog):
 	)
 	LIMIT = 46
 	
-	#TODO:
-	#- add channel creation command (not in here)
-	#- add archiving method
-	
 	def __init__(self, bot):
 		self.bot = bot
-		self.bot.loop.create_task(self.update_channels())		
-		self.sort_all.start()
+		self.bot.loop.create_task(self.initialise())
+		#archive is started in initialise()
 		
 	def cog_unload(self):
-		self.sort_all().stop()	
+		self.archive.stop()
 		
-	async def update_channels(self):
+	async def initialise(self):
 		await self.bot.wait_until_ready()
 		
-		async for guild in await self.get_guilds(self.bot.dbc):
-			reified = self.bot.get_guild(guild[0])
-			if not reified: continue
+		async for guild in await self.bot.dbc.execute("SELECT discord_id FROM guilds WHERE sort_channels = 1"):
+			if not (reified := self.bot.get_guild(guild[0])): continue
 			
 			for category in reified.categories:				
 				for channel in category.channels:
@@ -39,27 +35,37 @@ class RollSort(commands.Cog):
 						(channel.id, owner, guild[0], owner)
 					)
 					await self.bot.dbc.commit()
-					
-		self.bot.logger.info(f"Successfully updated roll channel information.")
+		
+		await self.refresh_cache()	
+		self.archive.start()		
+		self.bot.logger.info(f"Successfully prepared roll information.")
+		
+	async def refresh_cache(self):
+		self.valid_guilds = {}
+		
+		async for guild in await self.bot.dbc.execute("SELECT discord_id FROM guilds WHERE sort_channels = 1"):
+			reference = await utils.get_guild(self.bot, guild[0])
+			if reference:
+				self.valid_guilds[guild[0]] = reference
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_update(self, before, after):
-		if not await self.is_valid(self.bot.dbc, after): return
+		if not self.is_roll(after): return
 		
 		if before.overwrites.items() != after.overwrites.items():
 			await self.bot.dbc.execute(
 				"UPDATE roll_channels SET owner = ? WHERE discord_id = ?;",
-				(self.get_owner(after), after.id)
+				(await self.get_owner(after), after.id)
 			)
 			await self.bot.dbc.commit()
 
 		if before.name != after.name:
-			cat = after.category
-			await self.sort(channel.guild, self.get_variant(cat), self.get_archived(cat))
+			info = self.get_info(after.category)
+			if info: await self.sort(channel.guild, info)
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_create(self, channel):
-		if not await self.is_valid(self.bot.dbc, channel) or not (variant := self.get_variant(channel.category)):
+		if not self.is_roll(channel) or not (info := self.get_info(channel.category)):
 			return
 			
 		await self.bot.dbc.execute(
@@ -67,41 +73,77 @@ class RollSort(commands.Cog):
 			(channel.id, await self.get_owner(channel), channel.guild.id)
 		)
 		await self.bot.dbc.commit()
-		await self.sort(channel.guild, variant, self.get_archived(channel.category))
+		await self.sort(channel.guild, info)
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_delete(self, channel):
-		if isinstance(channel, discord.CategoryChannel): return 
+		if not self.is_roll(channel): return
 		await self.bot.dbc.execute(
 			"DELETE FROM roll_channels WHERE discord_id = ?;", (channel.id,)
 		)
-		await self.sort(channel.guild, self.get_variant(channel.category), self.get_archived(channel.category))
+		info = self.get_info(channel.category)
+		if info: await self.sort(channel.guild, info	)
 		
+	@commands.Cog.listener()
+	async def on_message(self, message):
+		if not self.is_roll(message.channel): return
+		
+		info = self.get_info(message.channel.category)
+		
+		if info and info[3]:
+			info = (*info[:3], False)
+			await message.channel.edit(category = self.get_last_category(message.guild, info))
+			await self.sort(message.guild, info)
+	
 	@tasks.loop(hours = 48)
-	async def sort_all(self):
-		async for guild in await self.get_guilds(self.bot.dbc):
-			reified = self.bot.get_guild(guild[0])
-			if not reified: continue
+	async def archive(self):
+		for id, guild in self.valid_guilds.items():
+			to_sort = set()
 			
-			for archived, variant in ((int(a), v) for a in (0, 1) for v in RollSort.VARIANTS):
-				await self.sort(reified, variant, archived)
+			for category in guild.categories:
+				info = self.get_info(category)
+				if not info or info[3]: continue
+				
+				for channel in category.text_channels:	
+					message = channel.last_message_id
+					last = await channel.fetch_message(message) if message else channel
+					year_ago = datetime.now() - timedelta(days = 365)
+					
+					if last.created_at < year_ago: 	
+						info = (*info[:3], True)
+						await channel.edit(category = self.get_last_category(guild, info))
+						to_sort.add(info)
+					
+			for variant in to_sort:
+				await self.sort(guild, info)
+		
+		self.bot.logger.info(f"All channels have been checked for archiving.")
+	
+	async def sort_all(self):
+		#not ever called, only exists for debugging	
+		for id, guild in self.valid_guilds.items():			
+			for info in ((*v, a) for a in (False, True) for v in RollSort.VARIANTS):
+				await self.sort(guild, info)
 				
 			self.bot.logger.info(f"All channels have been sorted.")
 		
-	async def sort(self, guild, variant, archived):		
-		def chunkize(array):
+	async def sort(self, guild, info):
+		def chunkise(array):
 			#Sort and divide into subarrays of LIMIT size, then reverse the outer list
-			array = tuple(sorted(array, key = lambda ch: ch.name))
+			array, result = tuple(sorted(array, key = lambda ch: ch.name)), []
+			
 			for n in reversed(range(0, len(array), RollSort.LIMIT)):
-				yield tuple(array[n:n + RollSort.LIMIT])
+				result.append(tuple(array[n:n + RollSort.LIMIT]))
+			
+			return result
 		
-		categories = deque(self.get_categories(guild, variant, archived))
-		if len(categories) == 0: return
-		
-		chunks = tuple(chunkize(chn for cat in categories for chn in cat.channels))
+		categories = deque(self.get_categories(guild, info))
+		chunks = chunkise(chn for cat in categories for chn in cat.channels)
 		diff = len(chunks) - len(categories)
-		prefix = f"{variant[2]} {variant[0]}" if not archived else f"\U0001F3DB {variant[0]} Archives"
+		prefix = f"{info[2]} {info[0]}" if not info[3] else f"\U0001F3DB {info[0]} Archives"
 		payload = []
+		
+		if len(categories) == 0: return
 		
 		for i, chunk in enumerate(chunks): 
 			if i < diff: 
@@ -125,48 +167,38 @@ class RollSort(commands.Cog):
 		asyncio.gather(*(cat.delete() for cat in categories)) #delete unused
 		
 		await self.bot.http.bulk_channel_update(guild.id, payload)
-			
-	
-	@sort_all.before_loop
-	async def wait_before_loop(self):
-		await self.bot.wait_until_ready()
-		
-	@staticmethod
-	async def get_guilds(dbc):
-		return await dbc.execute("SELECT * FROM guilds WHERE sort_channels = 1")	
-	
-	@staticmethod	
-	def get_variant(category):
-		name = category.name.lower()
-		for variant in RollSort.VARIANTS:
-			if variant[2] in name: return variant
-		return None
-		
-	@staticmethod
-	def get_archived(category):
-		return int("archive" in category.name.lower())
 	
 	@staticmethod
 	async def get_owner(channel):
 		for member, overwrite in channel.overwrites.items():
 			if isinstance(member, discord.Role): continue
 			elif overwrite.pair()[0].manage_channels: return member.id 
-		
 		return None
-		
-	async def is_valid(self, dbc, channel):
+	
+	def is_roll(self, channel):
 		if isinstance(channel, discord.CategoryChannel): 
 			return False
 		
-		return await utils.fetchone(
-			dbc, "SELECT * FROM guilds WHERE sort_channels = 1 AND discord_id = ?;", 
-			(channel.guild.id,)
-		)
+		return channel.guild.id in self.valid_guilds
 		
-	def get_categories(self, guild, variant, archived):
+	def get_info(self, category):
+		name = category.name.lower()
+		
+		for v in RollSort.VARIANTS:
+			if v[1] in name: 
+				variant = v
+				break
+				
+		else: return None
+		
+		return (*variant, "archive" in category.name.lower())	
+		
+	def get_categories(self, guild, info):
 		for category in guild.categories:
-			if self.get_variant(category) == variant and self.get_archived(category) == archived:
-				 yield category
+			if self.get_info(category) == info: yield category
+			
+	def get_last_category(self, guild, info):
+		return tuple(self.get_categories(guild, info))[-1]
 		
 def setup(bot):
 	bot.add_cog(RollSort(bot))
