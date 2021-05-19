@@ -3,6 +3,7 @@ from discord.ext import commands
 from logging import Formatter
 from textwrap import TextWrapper
 from xml.etree import ElementTree
+from . import __version__
 
 class NvFormatter(Formatter):
 	LINE_WIDTH = 100
@@ -35,6 +36,8 @@ class CustomCommandError(commands.CommandError):
 	def __init__(self, title, desc, *args, **kwargs):
 		self.title = title
 		self.desc = desc
+		
+USER_AGENT = f"{aiohttp.http.SERVER_SOFTWARE} Heraldtron/{__version__} (like Herald 3.0)" #for fun
 	
 async def get_bytes(session, url, **kwargs):
 	async with session.get(url) as source:

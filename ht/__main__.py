@@ -93,7 +93,9 @@ class Heraldtron(commands.Bot):
 		self.logger.info(f"Startup time: {time.perf_counter() - start:.3f}s")
 		
 	async def start_session(self):
-		return aiohttp.ClientSession(loop = self.loop)
+		return aiohttp.ClientSession(
+			loop = self.loop, headers = {"User-Agent": utils.USER_AGENT}
+		)
 		
 	async def setup_db(self):
 		dbc = await aiosqlite.connect(self.conf["DB_PATH"])

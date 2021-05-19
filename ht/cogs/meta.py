@@ -1,6 +1,6 @@
 import discord, aiohttp, aiosqlite, platform, os, re
 from discord.ext import commands
-from .. import utils, embeds, version
+from .. import utils, embeds, __version__
 
 class MetaTools(commands.Cog, name = "Meta"):
 	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=(.+)")
@@ -22,7 +22,7 @@ class MetaTools(commands.Cog, name = "Meta"):
 		aliases = ("ab",)
 	)
 	async def about(self, ctx):
-		embed = embeds.ABOUT.create(f"Heraldtron {version.__version__}", self.bot.description)
+		embed = embeds.ABOUT.create(f"Heraldtron {__version__}", self.bot.description)
 		embed.url = "https://github.com/mirnovov/heraldtron"
 		embed.set_thumbnail(url = str(self.bot.user.avatar_url_as(size = 512)))
 		
