@@ -454,6 +454,23 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":x: | Emblazon removed.")
+		
+	@commands.command(
+		help = "Shows a list of commonly used tinctures.",
+		aliases = ("t", "colours", "colors", "metals", "furs")
+	)
+	@utils.trigger_typing
+	async def tinctures(self, ctx):
+		await ctx.send(
+			"In heraldry, *tinctures* are divided into:\n\n"
+			"- **Colours**: :red_circle: Gules, :green_circle: Vert,"
+			" :blue_circle: Azure, :black_circle: Sable, :purple_circle: Purpure\n\n"
+			"- **Metals**: :yellow_circle: Or, :white_circle: Argent\n\n"
+			"- **Furs**: Ermine, Vair, etc.\n\nThe *rule of tincture* states that colour"
+			" cannot touch metal, except for minor details and field divisions; furs can touch both."
+			"Keep in mind that the exact shades can vary. Various rarer tinctures also exist,"
+			" but many dislike them; use with caution."
+		)
 
 def setup(bot):
 	bot.add_cog(HeraldicStuff(bot))
