@@ -38,6 +38,8 @@ class Heraldtron(commands.Bot):
 		self.session = self.loop.run_until_complete(self.start_session())
 		self.dbc = self.loop.run_until_complete(self.setup_db())
 		
+		self.loop.create_task(self.refresh_cache())
+		
 		if self.conf["OWNER_ONLY"]:
 			self.add_check(utils.check_is_owner)
 			
@@ -107,6 +109,25 @@ class Heraldtron(commands.Bot):
 			await dbc.commit()
 			
 		return dbc
+		
+	async def refresh_cache_guild(self, guild_id):
+		record = await utils.fetchone(
+			self.dbc, "SELECT * FROM guilds WHERE discord_id = ?", (guild_id,)
+		)
+		guild = await utils.get_guild(self, record[0])
+		
+		if not guild or not record: return
+		self.guild_cache[guild_id] = (guild, record)
+			
+	async def refresh_cache(self):
+		await self.wait_until_ready()
+		self.guild_cache = {}
+		
+		async for record in await self.dbc.execute("SELECT * FROM guilds"):
+			guild = await utils.get_guild(self, record[0])
+			
+			if not guild or not record: continue
+			self.guild_cache[record[0]] = (guild, record)
 		
 	async def get_prefix(self, message):
 		list = (self.command_prefix, f"<@{bot.user.id}> ", f"<@!{bot.user.id}> ")

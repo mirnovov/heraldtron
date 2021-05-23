@@ -23,11 +23,13 @@ class BotEvents(commands.Cog, name = "Bot events"):
 			(guild.id, guild.name, 0, 0, 1, None, None)
 		)
 		await self.bot.dbc.commit()
+		await self.bot.refresh_cache_guild(guild.id)
 		
 	@commands.Cog.listener()
 	async def on_guild_remove(self, guild):
 		await self.bot.dbc.execute("DELETE FROM guilds WHERE discord_id = ?;",(guild.id,))
 		await self.bot.dbc.commit()
+		del self.bot.guild_cache[guild.id]
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):

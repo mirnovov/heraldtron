@@ -78,14 +78,8 @@ async def check_is_owner(ctx):
 	
 async def check_limited(ctx):
 	if not ctx.guild: return True
-		
-	limited = await fetchone(
-		ctx.bot.dbc,
-		"SELECT limit_commands FROM guilds WHERE discord_id = ?",
-		(ctx.guild.id,)
-	)
 	
-	if limited[0] == 1: 
+	if ctx.bot.guild_cache[ctx.guild.id][1][2]: 
 		raise CustomCommandError(
 			"Command prohibited",
 			"This command is not allowed on this server."

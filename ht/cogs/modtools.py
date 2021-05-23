@@ -138,9 +138,6 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	@commands.command(help = "Enables/disables roll channel sorting for a server.", aliases = ("arrange", "s"))	
 	async def sort(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "sort_channels", ":abcd:", "Roll channel sorting has")
-		rollsort = self.bot.get_cog("Roll Sorting")
-		
-		if rollsort: await rollsort.refresh_cache()
 		
 	@commands.command(help = "Unlocks a channel, restoring the ability to send messages from it.",aliases=("ul",))	
 	async def unlock(self, ctx, channel : discord.TextChannel = None):
@@ -157,6 +154,8 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ? WHERE discord_id = ?", (enabled_int, ctx.guild.id))
 		await ctx.bot.dbc.commit()
 		await ctx.send(f"{emoji} | {desc} been **{enabled_text}** for this server.")
+		
+		await ctx.bot.refresh_cache_guild(ctx.guild.id)
 	
 	@staticmethod	
 	async def set_message(ctx, leave):

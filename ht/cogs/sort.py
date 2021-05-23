@@ -36,18 +36,9 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 					)
 					await self.bot.dbc.commit()
 		
-		await self.refresh_cache()	
 		self.archive.start()		
 		self.bot.logger.info(f"Successfully prepared roll information.")
-		
-	async def refresh_cache(self):
-		self.valid_guilds = {}
-		
-		async for guild in await self.bot.dbc.execute("SELECT discord_id FROM guilds WHERE sort_channels = 1"):
-			reference = await utils.get_guild(self.bot, guild[0])
-			if reference:
-				self.valid_guilds[guild[0]] = reference
-		
+			
 	@commands.Cog.listener()
 	async def on_guild_channel_update(self, before, after):
 		if not self.is_roll(after): return
@@ -82,7 +73,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 			"DELETE FROM roll_channels WHERE discord_id = ?;", (channel.id,)
 		)
 		info = self.get_info(channel.category)
-		if info: await self.sort(channel.guild, info	)
+		if info: await self.sort(channel.guild, info)
 		
 	@commands.Cog.listener()
 	async def on_message(self, message):
@@ -97,7 +88,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 	
 	@tasks.loop(hours = 48)
 	async def archive(self):
-		for id, guild in self.valid_guilds.items():
+		for id, guild in self.sorted_guilds().items():
 			to_sort = set()
 			
 			for category in guild.categories:
@@ -121,7 +112,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 	
 	async def sort_all(self):
 		#not ever called, only exists for debugging	
-		for id, guild in self.valid_guilds.items():			
+		for id, guild in self.sorted_guilds().items():			
 			for info in ((*v, a) for a in (False, True) for v in RollSort.VARIANTS):
 				await self.sort(guild, info)
 				
@@ -176,10 +167,10 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 		return None
 	
 	def is_roll(self, channel):
-		if isinstance(channel, discord.CategoryChannel): 
+		if not isinstance(channel, discord.TextChannel): 
 			return False
 		
-		return channel.guild.id in self.valid_guilds
+		return channel.guild.id in self.sorted_guilds()
 		
 	def get_info(self, category):
 		name = category.name.lower()
@@ -199,6 +190,9 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 			
 	def get_last_category(self, guild, info):
 		return tuple(self.get_categories(guild, info))[-1]
+		
+	def sorted_guilds(self):
+		return {id: g[0] for (id, g) in self.bot.guild_cache.items() if g[1][3]}
 		
 def setup(bot):
 	bot.add_cog(RollSort(bot))
