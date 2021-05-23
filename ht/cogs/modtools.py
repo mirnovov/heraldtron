@@ -1,7 +1,7 @@
 import discord, asyncio, typing, re
 from discord.ext import commands
 from datetime import datetime
-from .. import embeds, responses, utils
+from .. import converters, embeds, responses, utils
 
 class ModerationTools(commands.Cog, name = "Moderation"):
 	MAX_FEEDS = 3
@@ -54,6 +54,20 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Subreddit feed created.")
+		
+	@commands.command(help = "Creates a new roll channel.", aliases = ("c", "create", "new"))	
+	async def channel(self, ctx, user : converters.MemberOrUser, info : converters.RollVariant):
+		sorting = self.bot.get_cog("Roll Sorting")
+		category = await sorting.get_last_category(ctx.guild, info)
+		overwrites = { 
+			ctx.guild.default_role: discord.PermissionOverwrite(send_messages = False),
+			user: discord.PermissionOverwrite(manage_channels = True) 
+		}
+		
+		await responses.confirm(ctx, f"A new channel will be created for {user.name}#{user.discriminator}.")
+		
+		channel = await ctx.guild.create_text_channel(user.name, category = category, overwrites = overwrites)
+		await ctx.send(f":scroll: | {channel.mention} created for {user.mention}.")
 	
 	@commands.command(
 		help = "Shows current Reddit feeds and allows deleting them.", 

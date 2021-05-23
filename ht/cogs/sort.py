@@ -45,7 +45,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 		
 		if before.overwrites.items() != after.overwrites.items():
 			await self.bot.dbc.execute(
-				"UPDATE roll_channels SET owner = ? WHERE discord_id = ?;",
+				"UPDATE roll_channels SET user_id = ? WHERE discord_id = ?;",
 				(await self.get_owner(after), after.id)
 			)
 			await self.bot.dbc.commit()
@@ -70,12 +70,11 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_delete(self, channel):
-		if not self.is_roll(channel): return
 		await self.bot.dbc.execute(
 			"DELETE FROM roll_channels WHERE discord_id = ?;", (channel.id,)
 		)
 		info = self.get_info(channel.category)
-		if info: await self.sort(channel.guild, info)
+		if info and self.is_roll(channel): await self.sort(channel.guild, info)
 		
 	@commands.Cog.listener()
 	async def on_message(self, message):
@@ -85,7 +84,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 		
 		if info and info[3]:
 			info = (*info[:3], False)
-			await message.channel.edit(category = self.get_last_category(message.guild, info))
+			await message.channel.edit(category = await self.get_last_category(message.guild, info))
 			await self.sort(message.guild, info)
 	
 	@tasks.loop(hours = 48)
@@ -104,7 +103,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 					
 					if last.created_at < year_ago: 	
 						info = (*info[:3], True)
-						await channel.edit(category = self.get_last_category(guild, info))
+						await channel.edit(category = await self.get_last_category(guild, info))
 						to_sort.add(info)
 					
 			for variant in to_sort:
@@ -131,7 +130,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 			chunks.append(tuple(chunk_source[n:n + RollSort.LIMIT]))
 		
 		diff = len(chunks) - len(categories)
-		prefix = f"{info[2]} {info[0]}" if not info[3] else f"\U0001F3DB {info[0]} Archives"
+		prefix = self.get_prefix(guild, info)
 		payload = []
 		
 		if len(categories) == 0: return
@@ -166,6 +165,10 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 			if isinstance(member, discord.Role): continue
 			elif overwrite.pair()[0].manage_channels: return member.id 
 		return None
+		
+	@staticmethod		
+	def get_prefix(guild, info):
+		return f"{info[2]} {info[0]}" if not info[3] else f"\U0001F3DB {info[0]} Archives"
 	
 	def is_roll(self, channel):
 		if not isinstance(channel, discord.TextChannel): 
@@ -188,9 +191,14 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 	def get_categories(self, guild, info):
 		for category in guild.categories:
 			if self.get_info(category) == info: yield category
+	
+	async def get_last_category(self, guild, info):
+		categories = tuple(self.get_categories(guild, info))
+		
+		if not categories:
+			return await guild.create_category(self.get_prefix(guild, info), position = 100)
 			
-	def get_last_category(self, guild, info):
-		return tuple(self.get_categories(guild, info))[-1]
+		return categories[-1]
 		
 	def sorted_guilds(self):
 		return {id: g[0] for (id, g) in self.bot.guild_cache.items() if g[1][3]}

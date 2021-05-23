@@ -103,3 +103,22 @@ class MemberOrUser(commands.Converter):
 			if user: return user
 		
 		raise commands.UserNotFound(argument)
+		
+class RollVariant(commands.Converter):
+	async def convert(self, ctx, argument):
+		variants = ctx.bot.get_cog("Roll Sorting").VARIANTS
+		
+		try:
+			argument = int(argument)
+			return (*variants[argument], False)
+		except ValueError: pass
+		
+		kw = tuple(v[1] for v in variants)
+		
+		if argument in kw:
+			return (*variants[kw.index(argument)], False)
+		
+		raise utils.CustomCommandError(
+			"Invalid roll variant",
+			f"The item you entered is not a valid roll channel type."
+		)
