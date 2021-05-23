@@ -52,7 +52,9 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 
 		if before.name != after.name:
 			info = self.get_info(after.category)
-			if info: await self.sort(channel.guild, info)
+			if info: 
+				await self.sort(before.guild, info)
+				await self.sort(after.guild, info)
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_create(self, channel):
@@ -119,30 +121,29 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 			self.bot.logger.info(f"All channels have been sorted.")
 		
 	async def sort(self, guild, info):
-		def chunkise(array):
-			#Sort and divide into subarrays of LIMIT size, then reverse the outer list
-			array, result = tuple(sorted(array, key = lambda ch: ch.name)), []
-			
-			for n in reversed(range(0, len(array), RollSort.LIMIT)):
-				result.append(tuple(array[n:n + RollSort.LIMIT]))
-			
-			return result
-		
 		categories = deque(self.get_categories(guild, info))
-		chunks = chunkise(chn for cat in categories for chn in cat.channels)
+		chunk_source = tuple(sorted(
+			(chn for cat in categories for chn in cat.channels), key = lambda ch: ch.name
+		))
+		chunks = []
+			
+		for n in reversed(range(0, len(chunk_source), RollSort.LIMIT)):
+			chunks.append(tuple(chunk_source[n:n + RollSort.LIMIT]))
+		
 		diff = len(chunks) - len(categories)
 		prefix = f"{info[2]} {info[0]}" if not info[3] else f"\U0001F3DB {info[0]} Archives"
 		payload = []
 		
 		if len(categories) == 0: return
 		
-		for i, chunk in enumerate(chunks): 
-			if i < diff: 
-				#create new category, except first since it's in reverse
-				category = await guild.create_category(str(uuid.uuid4()), position = categories[-1].position)
-				await asyncio.sleep(1)
-			else:
-				category = categories.pop()
+		for i in range(0,diff): 
+			#create new categories for the difference between required and actual
+			category = await guild.create_category(f"{prefix} {i+1}", position = categories[-1].position)
+			categories.append(category)
+			await asyncio.sleep(1)
+		
+		for chunk in chunks: 
+			category = categories.pop()
 			
 			for pos, channel in enumerate(chunk):
 				if channel.position != pos:
