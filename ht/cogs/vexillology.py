@@ -19,9 +19,9 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 		await services.gis(ctx, "flag " + query)
 		
 	@commands.command(
-		help = "Illustrates flags using DrawShield.\nNote that DrawShield does not support"\
-		" all possible flags, and the vexillological functionality is still in early"\
-		" development. Code © Karl Wilcox",
+		help = "Illustrates flags using DrawShield.\nNote that DrawShield does not support"
+			   " all possible flags, and the vexillological functionality is still in early"
+			   " development. Code © Karl Wilcox",
 		aliases = ("df",)
 	)
 	@utils.trigger_typing
@@ -30,9 +30,9 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 		await ctx.send(embed = embed, file = file)
 		
 	@commands.command(
-		help = "Displays a random flag fact from a list of 38 facts.\n"\
-		" Facts contributed by Miner, Capitalism, czechmate, Boatswain,"\
-		" DiamondMinotaur, Judah, Ohsama, and FrancisH.",
+		help = "Displays a random flag fact from a list of 38 facts.\n"
+			   " Facts contributed by Miner, Capitalism, czechmate, Boatswain,"
+			   " DiamondMinotaur, Judah, Ohsama, and FrancisH.",
 		aliases = ("flagfacts", "ff")
 	)
 	async def flagfact(self, ctx, *, fid : int = -1):
@@ -43,7 +43,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 			if fid > len(facts):
 				raise utils.CustomCommandError(
 					"Flag fact is nonexistent",
-					"The number you entered is too high. Currently, there"\
+					"The number you entered is too high. Currently, there"
 					f" are only {len(facts)} flag facts."
 				)
 			
@@ -67,7 +67,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 	async def seychelles(self,ctx):
 		result = await responses.respond_or_react(
 			ctx,
-			"What image would you like me to seychelles-ize?\n"\
+			"What image would you like me to seychelles-ize?\n"
 			"Respond with your image below, or react with :x: to cancel.\n",
 			added_check = lambda m: len(m.attachments) > 0 and m.attachments[0].content_type.startswith("image") 
 		)

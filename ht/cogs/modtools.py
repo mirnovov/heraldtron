@@ -26,8 +26,8 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		return True
 		
 	@commands.command(
-		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"\
-			   " for instance, `flair:novov` gets posts flaired `novov`."\
+		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"
+			   " for instance, `flair:novov` gets posts flaired `novov`."
 			   " Feeds get the newest 8 posts every 2 hours.", 
 		aliases = ("af", "feed")
 	)	
@@ -116,7 +116,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			await ctx.send(":x: | Subreddit feed deleted.")
 	
 	@commands.command(
-		help = "Displays a moderator message in a channel.\n By default, this is"\
+		help = "Displays a moderator message in a channel.\n By default, this is"
 		" the channel the command is invoked in, but it can be specified beforehand.",
 		aliases = ("m",)
 	)
@@ -184,14 +184,14 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
-			"Your message cannot be set, as the welcome and leave message functionality"\
+			"Your message cannot be set, as the welcome and leave message functionality"
 			" is currently not operational. Turn it on with `!messages yes`."
 		)
 			
 		result = await responses.respond_or_react(
 			ctx,
-			"Either type your message below, react with :leftwards_arrow_with_hook:"\
-			" to revert to the default, or with :x: to cancel.\n"\
+			"Either type your message below, react with :leftwards_arrow_with_hook:"
+			" to revert to the default, or with :x: to cancel.\n"
 			"To include details, use `GUILD_NAME`, `MENTION`, or `MEMBER_NAME`.",
 			["\U000021A9\U0000FE0F"]
 		)

@@ -16,7 +16,7 @@ async def gis(ctx, query):
 	
 	if search == None: raise utils.CustomCommandError(
 		"Invalid HTTP search request",
-		"The image search API returned an incorrect HTTP request."\
+		"The image search API returned an incorrect HTTP request."
 		"This might be caused by the search amount exceeding the maximum quota."
 	)	
 	elif "items" not in search: raise utils.CustomCommandError(

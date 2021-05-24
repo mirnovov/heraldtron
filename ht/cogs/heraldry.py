@@ -16,8 +16,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		return await utils.check_limited(ctx)
 		
 	@commands.command(
-		help = "Displays a random historical heraldic artifact.\n"\
-			"This can be narrowed down to an individual source:\n\n"\
+		help = "Displays a random historical heraldic artifact.\n"
+			"This can be narrowed down to an individual source:\n\n"
 			f"{Source.str_list()}",
 		aliases = ("ar", "relic")
 	)
@@ -43,8 +43,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)	
 		
 	@commands.command(
-		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source."\
-			   "If `alternate_emblazon` is enabled, also shows a user-selected emblazon, like with `!emblazon`."\
+		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source."
+			   "If `alternate_emblazon` is enabled, also shows a user-selected emblazon, like with `!emblazon`."
 			   "This is off by default as Greii eventually aims to implement a consistent emblazon style",
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
@@ -109,11 +109,11 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		
 	@commands.command(
 		name = "challenge",
-		help = "Displays a random image using the DrawShield API.\nDesigned to serve as an"\
-		" emblazonment challenge using DrawShield. Code © Karl Wilcox; images © coadb,"\
-		" The Book of Public Arms, Wikimedia Commons contributors (individual sources"\
-		" can be selected via *coadb*, *public*, and *wikimedia* respectively).",
-		aliases=("random","cl")
+		help = "Displays a random image using the DrawShield API.\nDesigned to serve as an"
+			   " emblazonment challenge using DrawShield. Code © Karl Wilcox; images © coadb,"
+			   " The Book of Public Arms, Wikimedia Commons contributors (individual sources"
+			   " can be selected via *coadb*, *public*, and *wikimedia* respectively).",
+		aliases=("random", "cl")
 	)
 	@utils.trigger_typing
 	async def ds_challenge(self, ctx, source="all"):			
@@ -132,8 +132,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)
 		
 	@commands.command(
-		help = "Illustrates arms using DrawShield.\nNote that DrawShield does not support"\
-		" all possible blazons. Code © Karl Wilcox",
+		help = "Illustrates arms using DrawShield.\nNote that DrawShield does not support"
+			   " all possible blazons. Code © Karl Wilcox",
 		aliases = ("ds",)
 	)
 	@utils.trigger_typing
@@ -167,8 +167,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		)
 		
 	@commands.command(
-		help = "Generates a coat of arms.\n If using in a DM, it is based on your name and birthday;"\
-		" for privacy reasons, it is random otherwise. Based on a chart by Snak and James.",
+		help = "Generates a coat of arms.\n If using in a DM, it is based on your name and birthday;"
+			   " for privacy reasons, it is random otherwise. Based on a chart by Snak and James.",
 		aliases = ("gen", "g")
 	)
 	async def generate(self, ctx):	
@@ -200,7 +200,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			
 			message = await responses.respond_or_react(
 				ctx,
-				"This command generates a blazon from a few details. React with :x: to cancel.\n"\
+				"This command generates a blazon from a few details. React with :x: to cancel.\n"
 				"To start with, give me a short name of a **day**, then a **month**, like 8 Apr.",
 				added_check = lambda m: m.content in parts["charge"].keys()
 			)
@@ -294,7 +294,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)
 		
 	@commands.command(
-		help = "Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"\
+		help = "Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"
 		       " Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
 		aliases = ("lu", "define", "def")
 	)
@@ -320,9 +320,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)
 		
 	@commands.command(
-		help = "Generates a motto randomly.\n"\
-			   "The included functionality has several advancements over previous"\
-		       "motto generators.",
+		help = "Generates a motto randomly.\nThe included functionality has several"
+			   " advancements over previous motto generators.",
 		aliases = ("mt", "mot")
 	)
 	@utils.trigger_typing
@@ -367,8 +366,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embeds.GENERIC.create(f"{motto}", "", heading = "Motto generator"))
 		
 	@commands.command(
-		help = "Randomly selects a motto from a list of over 400.\n"\
-		"These include countries, heads of state, and universities",
+		help = "Randomly selects a motto from a list of over 400.\n"
+			   "These include countries, heads of state, and universities",
 		aliases = ("rmot", "rm")
 	)
 	async def randmotto(self, ctx):
@@ -436,8 +435,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)
 		
 	@commands.command(
-		help = "Sets the emblazon of your arms shown by `!emblazon`."\
-			   "\nThis is associated with your Discord ID. If no value is provided, deletes any extant emblazon.",
+		help = "Sets the emblazon of your arms shown by `!emblazon`.\n"
+			   "This is associated with your Discord ID. If no value is provided, deletes any extant emblazon.",
 		aliases = ("se", "delemblazon", "de")
 	)
 	@utils.trigger_typing

@@ -26,7 +26,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		if not size:
 			message = await responses.respond_or_react(
 				ctx,
-				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)"\
+				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)"
 				", or react with :x: to cancel.",
 				timeout = reponses.LONG_TIMEOUT
 			)
@@ -63,7 +63,7 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		await services.gis(ctx, "" + query)
 
 	@commands.command(
-		help = "Chooses a random number.\n"\
+		help = "Chooses a random number.\n"
 		" By default, this is out of 6, but another value can be specified.",
 		aliases = ("dice", "d")
 	)
@@ -80,8 +80,8 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		await channel.send(message_content)
 		
 	@commands.command(
-		help="Completes a passage of text using machine learning.\n"\
-		" This uses DeepAI's online model to compute the result.",
+		help = "Completes a passage of text using machine learning.\n"
+			   " This uses DeepAI's online model to compute the result.",
 		aliases=("aitext", "tg")
 	)
 	@utils.trigger_typing
@@ -106,9 +106,9 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		
 	@commands.group(
 		invoke_without_command = True,
-		help = "Asks a trivia question that users can react to.\n"\
-		"Optionally, a numeric category can be specified."\
-		"\nCourtesy of the Open Trivia Database.\n\u0020\n",
+		help = "Asks a trivia question that users can react to.\n"
+			   "Optionally, a numeric category can be specified."
+			   "\nCourtesy of the Open Trivia Database.\n\u0020\n",
 		aliases = ("q","tr")
 	)
 	@utils.trigger_typing

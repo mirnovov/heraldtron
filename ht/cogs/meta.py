@@ -75,8 +75,8 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 		super().__init__(**options)
 		self.command_attrs.update({
 			"brief": "Look up the functionality of commands.",
-		    "help": "Look up the functionality of commands.\n"\
-					"Follow with `command` for more info on a command,"\
+		    "help": "Look up the functionality of commands.\n"
+					"Follow with `command` for more info on a command,"
 					" and `category` for more info on a category."
 		})
 	

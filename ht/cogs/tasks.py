@@ -39,7 +39,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	async def sync_book(self):
 		response = await utils.get_json(
 			self.bot.session,
-			f"https://www.googleapis.com/drive/v3/files/1RyuY_WM4zSRtVhTwjs9lut9vrlMmmd24?"\
+			f"https://www.googleapis.com/drive/v3/files/1RyuY_WM4zSRtVhTwjs9lut9vrlMmmd24?"
 			f"fields=modifiedTime%2C%20webContentLink&key={self.bot.conf['GCS_TOKEN']}"
 		)
 		timestamp = time.mktime(datetime.fromisoformat(response["modifiedTime"].rsplit(".")[0]).timetuple())
@@ -63,7 +63,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			)
 			
 			await self.bot.dbc.execute(
-				"INSERT INTO armigers (greii_n, qualified_name, qualified_id, blazon) VALUES"\
+				"INSERT INTO armigers (greii_n, qualified_name, qualified_id, blazon) VALUES"
 				" (?, ?, ?, ?) ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?, qualified_id = ?, blazon = ?;",
 				(greii_n, entry[1], entry[2], entry[3], entry[1], entry[2], entry[3])
 			)

@@ -46,25 +46,25 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		),
 		aiohttp.ClientConnectionError: (
 			"Could not connect to server",
-			"The server that the bot is trying to reach cannot connect. An error report has been sent."\
+			"The server that the bot is trying to reach cannot connect. An error report has been sent."
 			" If the problem persists, contact {mention}.",
 			True
 		),
 		json.JSONDecodeError: (
 			"Could not decode server response",
-			"The server has returned undecodable content. An error report has been sent."\
+			"The server has returned undecodable content. An error report has been sent."
 			" If the problem persists, contact {mention}.",
 			True
 		),
 		aiohttp.ContentTypeError: (
 			"Could not decode server response",
-			"The server has returned content of the incorrect type. An error report has been sent."\
+			"The server has returned content of the incorrect type. An error report has been sent."
 			" If the problem persists, contact {mention}.",
 			True
 		),
 		utils.BadMessageResponse: (
 			"Message response contains incorrect content",
-			"The bot message you are responding to does not accept this content."\
+			"The bot message you are responding to does not accept this content."
 			" Check that you have followed the instructions correctly and try again.",
 			False
 		),

@@ -30,7 +30,7 @@ class RollSort(commands.Cog, name = "Roll Sorting"):
 				for channel in category.channels:
 					owner = await self.get_owner(channel)
 					await self.bot.dbc.execute(
-						"INSERT INTO roll_channels (discord_id, user_id, guild_id) VALUES (?, ?, ?)"\
+						"INSERT INTO roll_channels (discord_id, user_id, guild_id) VALUES (?, ?, ?)"
 						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?;",
 						(channel.id, owner, guild[0], owner)
 					)
