@@ -89,7 +89,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		bot = self.bot
 
 		async for feed in await self.bot.dbc.execute("SELECT * FROM reddit_feeds"):
-			query = urllib.parse.quote(feed[4])
+			query = urllib.parse.quote(feed[5])
 			posts = await utils.get_json(
 				self.bot.session,
 				f"https://www.reddit.com/r/{feed[3]}/search.json?q={query}&restrict_sr=on&sort=new&limit=8"
@@ -106,7 +106,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			
 			for post in posts:
 				post = post["data"]
-				if post["name"] == feed[5]: break
+				if post["name"] == feed[6]: break
 				
 				desc = "" if not post.get("selftext") else post["selftext"].split("\n#")[0]
 				
@@ -117,9 +117,9 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				if post.get("preview"):
 					embed.set_thumbnail(url = post["preview"]["images"][0]["source"]["url"].replace("&amp;","&"))
 				
-				await channel.send(embed = embed)
+				await channel.send(None if not bool(feed[4]) else "@everyone", embed = embed)
 			
-			if posts[0]["data"]["name"] != feed[5]:	
+			if posts[0]["data"]["name"] != feed[6]:	
 				await bot.dbc.execute(
 					"UPDATE reddit_feeds SET last_post = ? WHERE id = ?", 
 					(posts[0]["data"]["name"], feed[0])

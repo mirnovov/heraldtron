@@ -26,6 +26,7 @@ CREATE TABLE "reddit_feeds" (
 	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
 	"channel_id" INTEGER NOT NULL,
 	"subreddit" TEXT NOT NULL,
+	"ping" INTEGER DEFAULT 0,
 	"query" TEXT NOT NULL,
 	"last_post" TEXT DEFAULT null
 );

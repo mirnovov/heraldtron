@@ -31,11 +31,18 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			   " Feeds get the newest 8 posts every 2 hours.", 
 		aliases = ("af", "feed")
 	)	
-	async def addfeed(self, ctx, subreddit : str, channel : discord.TextChannel, search_query : str):
+	async def addfeed(
+		self, ctx, 
+		subreddit : str, 
+		channel : discord.TextChannel, 
+		ping : typing.Optional[bool], 
+		search_query : str
+	):
+		ping = ping or False
 		rowcount = await utils.fetchone(self.bot.dbc, "SELECT COUNT(*) FROM reddit_feeds")
 		
 		if rowcount[0] > self.MAX_FEEDS:
-			raise utils.CustomCommandError("Excessive feed count", f"A server cannot have more than 3 feeds.")
+			raise utils.CustomCommandError("Excessive feed count", f"A server cannot have more than {self.MAX_FEEDS} feeds.")
 		
 		subreddit = re.sub(self.SR_VAL, "", subreddit)
 		validate = await utils.get_json(self.bot.session, f"https://www.reddit.com/r/{subreddit}/new.json?limit=1")
@@ -49,8 +56,8 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		else: newest = None
 		
 		await self.bot.dbc.execute(
-			"INSERT INTO reddit_feeds VALUES (?, ?, ?, ?, ?, ?);",
-			(None, ctx.guild.id, channel.id, subreddit, search_query, newest)
+			"INSERT INTO reddit_feeds VALUES (?, ?, ?, ?, ?, ?, ?);",
+			(None, ctx.guild.id, channel.id, subreddit, int(ping), search_query, newest)
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Subreddit feed created.")
@@ -82,7 +89,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		
 		for i, feed in enumerate(feeds, start = 1):
 			channel = (self.bot.get_channel(feed[2]) or await self.bot.fetch_channel(feed[2])).mention or "**invalid**"
-			embed.description += f"- {emojis[i]} **r/{feed[3]}** to {channel} (query: *{feed[4]}*)\n"
+			embed.description += f"- {emojis[i]} **r/{feed[3]}** to {channel} (query: *{feed[5]}*)\n"
 		
 		embed.description += "\nReact with an emoji to delete a feed, or :x: to cancel."
 		message = await ctx.send(embed = embed)
