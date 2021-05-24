@@ -60,6 +60,19 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		
 		if user[6] and alt_emblazon:
 			embed.set_thumbnail(url = user[6])
+			
+		channels = await ctx.bot.dbc.execute_fetchall(
+			"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;", 
+			(user[1],)
+		)
+		mentions = []
+		
+		for record in channels:
+			channel = await utils.get_channel(ctx.bot, record[0])
+			if not channel: continue
+			mentions.append(channel.mention)
+			
+		if mentions: embed.add_field(name = "Rolls of arms", value = ','.join(mentions))
 		
 		await ctx.send(embed = embed)
 			

@@ -1,6 +1,5 @@
 # Before release
 - Implement DB stuff
-	- Show appropriate roll channels alongside armiger command (hence the DB)
 	- Make functionality currently unusable in DMs available where possible
 	- Add proper mod authorisation (using _roles if viable for efficiency)
 
