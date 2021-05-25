@@ -1,4 +1,4 @@
-import discord, aiohttp, logging, json, os, time
+import discord, asyncio, aiohttp, logging, json, os, time
 from discord.ext import commands
 from . import db, utils
 
@@ -38,6 +38,7 @@ class Heraldtron(commands.Bot):
 		self.dbc = self.loop.run_until_complete(self.setup_db())
 		
 		self.loop.create_task(self.refresh_cache())
+		self.ready_flag = asyncio.Event()
 		
 		if self.conf["OWNER_ONLY"]:
 			self.add_check(utils.check_is_owner)
@@ -117,16 +118,18 @@ class Heraldtron(commands.Bot):
 		
 		if not guild or not record: return
 		self.guild_cache[guild_id] = (guild, record)
-			
+		
 	async def refresh_cache(self):
 		await self.wait_until_ready()
-		self.guild_cache = {}
-		
+		self.reset_cache()
+
 		async for record in await self.dbc.execute("SELECT * FROM guilds"):
 			guild = await utils.get_guild(self, record[0])
 			
 			if not guild or not record: continue
 			self.guild_cache[record[0]] = (guild, record)
+		
+		self.ready_flag.set()	
 		
 	async def get_prefix(self, message):
 		list = (self.command_prefix, f"<@{bot.user.id}> ", f"<@!{bot.user.id}> ")
@@ -136,7 +139,16 @@ class Heraldtron(commands.Bot):
 			
 		return list
 		
+	def reset_cache(self):
+		self.ready_flag.clear()
+		self.guild_cache = {}
+		
+	async def on_message(self, message):
+		await self.ready_flag.wait()
+		await self.process_commands(message)
+		
 	async def close(self):
+		self.reset_cache()
 		await self.dbc.close()
 		await self.session.close()
 		await super().close()
