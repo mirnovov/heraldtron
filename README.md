@@ -2,7 +2,7 @@
 
 # Heraldtron
 
-A heraldry-related bot, designed for the [Heraldry Community](https://twitter.com/arm_yourselves). Still very much a work in progress.
+A heraldry-related bot, designed for the [Heraldry Community](https://twitter.com/arm_yourselves).
 
 ## Requirements
 
