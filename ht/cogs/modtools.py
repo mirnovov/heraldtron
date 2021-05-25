@@ -3,8 +3,6 @@ from discord.ext import commands
 from datetime import datetime
 from .. import converters, embeds, responses, utils
 
-#finish, test
-
 class ModerationTools(commands.Cog, name = "Moderation"):
 	MAX_FEEDS = 3
 	SR_VAL = re.compile("(r\/|\/|r\/)+")
@@ -171,8 +169,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			if perms.manage_guild or perms.administrator:
 				possible.append(guild)
 				
-		#remove for testing
-		#if len(possible) == 1: return possible[0]
+		if len(possible) == 1: return possible[0]
 				
 		indice = await responses.choice(
 			ctx,
