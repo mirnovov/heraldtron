@@ -9,7 +9,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Some elements in the project have been placed under different licenses:
 
-- Graphical content (`avatar.jpg` and `robot.png`) is exclusively proprietary, and **is not in the remit of the license above**.
+- Graphical content (`media/*` excluding `ascii_art`) is exclusively proprietary, and **is not in the remit of the license above**.
 
 - Content in `ht/ext/seychelles` from the Seychelles Flag Generator (https://github.com/akshaychitale/seychelles/) was originally released under the Unlicense, and freely relicensed in this project under the MIT license.
    - For more info, see the original project, or the licence file included at `ht/ext/seychelles/UNLICENSE.md`.

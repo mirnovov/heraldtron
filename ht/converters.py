@@ -7,30 +7,26 @@ class Armiger(commands.Converter):
 		result = None
 		
 		if argument.isdecimal():
-			result = await utils.fetchone(
-				ctx.bot.dbc, 
+			result = await ctx.bot.dbc.execute_fetchone(
 				"SELECT * FROM armigers_e WHERE greii_n == ?;",
 				(int(argument),)
 			)
 		elif argument.startswith("<"):
 			try:
 				member = await commands.MemberConverter().convert(ctx, argument)
-				result = await utils.fetchone(
-					ctx.bot.dbc, 
+				result = await ctx.bot.dbc.execute_fetchone(
 					"SELECT * FROM armigers_e WHERE discord_id == ?;",
 					(member.id,)
 				)
 			except commands.MemberNotFound: pass
 		elif "#" in argument:
 			parts = argument.split("#")
-			result = await utils.fetchone(
-				ctx.bot.dbc, 
+			result = await ctx.bot.dbc.execute_fetchone(
 				"SELECT * FROM armigers_e WHERE qualified_name LIKE ? AND qualified_id == ?;",
 				(parts[0], parts[1])
 			)
 		else:
-			result = await utils.fetchone(
-				ctx.bot.dbc, 
+			result = await ctx.bot.dbc.execute_fetchone(
 				"SELECT * FROM armigers_e WHERE qualified_name LIKE ?",
 				(f"%{argument}%",)
 			)
@@ -93,8 +89,7 @@ class MemberOrUser(commands.Converter):
 		#use the armigers db as a basis for partial matching,
 		#since discord.py only does whole matches (and it would be too
 		#inefficient to redo its behaviour with that)
-		query = await utils.fetchone(
-			ctx.bot.dbc, 
+		query = await ctx.bot.dbc.execute_fetchone(
 			"SELECT * FROM armigers_e WHERE qualified_name LIKE ? AND discord_id IS NOT NULL",
 			(f"%{argument}%",)
 		)

@@ -1,6 +1,6 @@
-import discord, aiosqlite, aiohttp, logging, json, os, time
+import discord, aiohttp, logging, json, os, time
 from discord.ext import commands
-from . import utils
+from . import db, utils
 
 class Heraldtron(commands.Bot):
 	DEFAULT_COGS = [
@@ -28,7 +28,6 @@ class Heraldtron(commands.Bot):
 		super().__init__(
 			command_prefix = "!", #kept for documentation
 			description = "A heraldry-related bot designed for the Heraldry Community.",
-			activity = discord.Game("a !challenge"),
 			intents = self.get_default_intents(),
 			max_messages = 12000,
 			*args, 
@@ -100,8 +99,8 @@ class Heraldtron(commands.Bot):
 		)
 		
 	async def setup_db(self):
-		dbc = await aiosqlite.connect(self.conf["DB_PATH"])
-		count = await utils.fetchone(dbc, "SELECT COUNT(*) FROM sqlite_master")
+		dbc = await db.connect(self.conf["DB_PATH"])
+		count = await dbc.execute_fetchone("SELECT COUNT(*) FROM sqlite_master")
 		
 		if count[0] == 0:
 			with open("data/db/schema.sql", "r") as file:
@@ -111,8 +110,8 @@ class Heraldtron(commands.Bot):
 		return dbc
 		
 	async def refresh_cache_guild(self, guild_id):
-		record = await utils.fetchone(
-			self.dbc, "SELECT * FROM guilds WHERE discord_id = ?", (guild_id,)
+		record = await dbc.execute_fetchone(
+			"SELECT * FROM guilds WHERE discord_id = ?", (guild_id,)
 		)
 		guild = await utils.get_guild(self, record[0])
 		

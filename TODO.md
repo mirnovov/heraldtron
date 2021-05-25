@@ -1,6 +1,4 @@
 # Before release
-- Add task that checks every 24 hours and updates status to random
-	- On appropriate days of the year, changes the pfp and status thematically
 - Increment version
 
 # Long term/later

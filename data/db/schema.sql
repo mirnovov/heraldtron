@@ -21,6 +21,16 @@ CREATE TABLE "guilds" (
 	"leave_text" TEXT
 );
 
+CREATE TABLE "misc_store" (
+	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	"key" TEXT NOT NULL UNIQUE,
+	"value" TEXT DEFAULT NULL
+);
+
+INSERT INTO "misc_store" (key, value) VALUES 
+	("book_timestamp", "0"), 
+	("last_avatar", "0");
+
 CREATE TABLE "reddit_feeds" (
 	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
 	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
@@ -28,7 +38,7 @@ CREATE TABLE "reddit_feeds" (
 	"subreddit" TEXT NOT NULL,
 	"ping" INTEGER DEFAULT 0,
 	"query" TEXT NOT NULL,
-	"last_post" TEXT DEFAULT null
+	"last_post" TEXT DEFAULT NULL
 );
 
 CREATE TABLE "roll_channels" (

@@ -4,6 +4,5 @@
 __pycache__
 nvpriv
 .DS_Store
-data/book/timestamp
 data/book/book.docx
 data/db/heraldtron.db

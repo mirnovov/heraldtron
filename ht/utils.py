@@ -61,10 +61,6 @@ async def get_guild(bot, guild):
 async def get_user(bot, user):
 	return bot.get_user(user) or await bot.fetch_user(user)
 	
-async def fetchone(dbc, query, substs = None):
-	cursor = await dbc.execute(query, substs)
-	return await cursor.fetchone()
-	
 async def unqualify_name(bot, name, discriminator):
 	return discord.utils.find(
 		lambda m: m.name == name and m.discriminator == discriminator, bot.users

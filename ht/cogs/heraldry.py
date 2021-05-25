@@ -51,8 +51,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	@utils.trigger_typing
 	async def armiger(self, ctx, alt_emblazon: typing.Optional[converters.ImageTag] = False, user: converters.Armiger = None):
 		if not user:
-			user = await utils.fetchone(
-				ctx.bot.dbc, "SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+			user = await ctx.bot.dbc.execute_fetchone(
+				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
 			)
 		
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", user[4], heading = f"GreiiN:{user[0]:04}")
@@ -147,12 +147,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	)
 	@utils.trigger_typing
 	async def emblazon(self, ctx, user : converters.MemberOrUser = None):
-		
 		user = user or ctx.author
-
-		emblazon = await utils.fetchone(
-			ctx.bot.dbc, "SELECT * FROM emblazons WHERE id == ?;", (user.id,)
-		)
+		emblazon = await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
 		
 		if emblazon: 
 			embed = embeds.GENERIC.create(f"{user.name}#{user.discriminator}", "", heading = "Emblazon")
@@ -454,7 +450,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			
 			return
 		
-		if not await utils.fetchone(self.bot.dbc, "SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
+		if not await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
 			raise utils.CustomCommandError(
 				"User does not have emblazon",
 				"You do not have an emblazon to remove."

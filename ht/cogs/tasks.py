@@ -1,6 +1,6 @@
-import discord, sqlite3, urllib, logging, time, re, os
+import discord, urllib, time, re, random, os
 from docx2python import docx2python
-from datetime import datetime
+from datetime import datetime, timezone
 from discord.ext import commands, tasks
 from .. import utils, embeds
 
@@ -8,21 +8,76 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	STRIP_SPACES = re.compile(r"\n[\t\s]+")
 	FIND_DATA = re.compile(r"GreiiN:(\d+) - (?:[^\n\r#]+\n)?(.+)#(\d+)[\s\S]+?(Blazon[\s\S]+?)(?=GreiiN|$)")
 	
+	STATUSES = (
+		discord.Game("a !challenge"),
+		discord.Game("with a !resource"),
+		discord.Game("with a !drawshield"),
+		discord.Game("with fire"),
+		discord.Game("cards"),
+		discord.Game("bingo"),
+		discord.Game("canasta"),
+		discord.Game("Monopoly"),
+		discord.Activity(type = discord.ActivityType.listening, name="for !help"),
+		discord.Activity(type = discord.ActivityType.listening, name="a !motto"),
+		discord.Activity(type = discord.ActivityType.listening, name="the sounds of nature"),
+		discord.Activity(type = discord.ActivityType.watching, name="an !armiger"),
+		discord.Activity(type = discord.ActivityType.watching, name="heraldic documentaries"),
+		discord.Activity(type = discord.ActivityType.watching, name="Manos: The Hands of Fate"),
+		discord.Activity(type = discord.ActivityType.competing, name="a !trivia game")
+	)
+	
 	def __init__(self, bot):
 		self.bot = bot
 		self.get_reddit_posts.start()
+		self.update_info.start()
 		self.sync_book.start()
 		
 		if not os.path.isdir("data/book"):
 			os.mkdir("data/book")
-			
-		if not os.path.isfile("data/book/timestamp"):
-			with open("data/book/timestamp","w") as file:
-				file.write("0")
 		
 	def cog_unload(self):
 		self.get_reddit_posts.stop()
 		self.sync_book.stop()
+		self.update_info.stop()
+		
+	@tasks.loop(hours = 12)
+	async def update_info(self):
+		now = datetime.now().date()
+		last = await self.bot.dbc.store_get("last_avatar")
+		
+		if now.month == 6 and now.day in range(8, 12):
+			await self.update_avatar(self.bot, "media/avatars/ihd.jpg", last)
+			await self.bot.change_presence(activity = discord.Game(":shield: International Heraldry Day"))
+		
+		elif now.month == 6:
+			await self.update_avatar(self.bot, "media/avatars/pride.jpg", last)
+			await self.bot.change_presence(activity = discord.Game(":rainbow_flag: Happy Pride Month!"))
+			
+		elif now.month == 12:
+			await self.update_avatar(self.bot, "media/avatars/holiday.jpg", last)
+			await self.bot.change_presence(activity = discord.Game(":christmas_tree: Happy Holidays!"))
+			
+		elif now.month == 4:
+			await self.update_avatar(self.bot, "media/avatars/easter.jpg", last)
+			await self.bot.change_presence(activity = discord.Game(":chicken: Happy Easter!"))
+			
+		elif (now.month == 2 and now.day in range(8, 12)) or (now.month == 11 and now.day in range(12, 22)):
+			await self.update_avatar(self.bot, "media/avatars/trans.jpg", last)
+			await self.bot.change_presence(activity = discord.Game(":transgender_flag: Trans Rights!"))
+			
+		else:
+			await self.update_avatar(self.bot, "media/avatars/generic.jpg", last)
+			await self.bot.change_presence(activity = random.choice(BotTasks.STATUSES))
+	
+	@staticmethod		
+	async def update_avatar(bot, path, last):
+		if last == path: return
+		
+		with open(path, "rb") as image:
+			data = bytearray(image.read())
+		
+		await bot.user.edit(avatar = data)
+		await bot.dbc.store_set("last_avatar", path)
 		
 	def write_book(self, doc):
 		#don't judge me, I didn't make the choice to store the info in a Word doc
@@ -44,8 +99,8 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		)
 		timestamp = time.mktime(datetime.fromisoformat(response["modifiedTime"].rsplit(".")[0]).timetuple())
 		
-		with open("data/book/timestamp", "r") as file:
-			if timestamp <= int(file.read()): return
+		if timestamp <= int(await self.bot.dbc.store_get("book_timestamp")): 
+			return
 		
 		doc = await utils.get_bytes(self.bot.session, response["webContentLink"])
 		book = await self.bot.loop.run_in_executor(None, self.write_book, doc)
@@ -77,11 +132,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			
 			await self.bot.dbc.commit()
 			
-		with open("data/book/timestamp", "w") as file:
-			file.seek(0)
-			file.write(f"{timestamp:.0f}")
-			file.truncate()
-			
+		await self.bot.dbc.store_set("book_timestamp", f"{timestamp:.0f}")
 		self.bot.logger.info(f"Successfully refreshed armiger database.")
 		
 	@tasks.loop(hours = 2)
@@ -128,6 +179,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				
 		bot.logger.info(f"Successfully fetched Reddit posts.")
 	
+	@update_info.before_loop
 	@sync_book.before_loop			
 	@get_reddit_posts.before_loop
 	async def wait_before_loop(self):

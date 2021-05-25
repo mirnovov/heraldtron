@@ -1,6 +1,5 @@
 import sqlite3
 from discord.ext import commands
-from .. import utils
 
 class BotEvents(commands.Cog, name = "Bot events"):
 	def __init__(self, bot):
@@ -40,7 +39,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		await self.post_welcome_message(member, True)
 		
 	async def post_welcome_message(self, member, leave):
-		guild_db = await utils.fetchone(self.bot.dbc, "SELECT * FROM guilds WHERE discord_id == ?;", (member.guild.id,))
+		guild_db = await self.bot.dbc.execute_fetchone("SELECT * FROM guilds WHERE discord_id == ?;", (member.guild.id,))
 		
 		if not guild_db or not guild_db[3]: 
 			#if guild not in db (shouldn't happen) or if disabled

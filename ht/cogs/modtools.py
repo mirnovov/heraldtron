@@ -41,7 +41,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		search_query : str
 	):
 		ping = ping or False
-		rowcount = await utils.fetchone(self.bot.dbc, "SELECT COUNT(*) FROM reddit_feeds")
+		rowcount = await self.bot.dbc.execute_fetchone("SELECT COUNT(*) FROM reddit_feeds")
 		
 		if rowcount[0] > self.MAX_FEEDS:
 			raise utils.CustomCommandError("Excessive feed count", f"A server cannot have more than {self.MAX_FEEDS} feeds.")
