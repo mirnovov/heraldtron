@@ -11,7 +11,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	STATUSES = (
 		discord.Game("a !challenge"),
 		discord.Game("with a !resource"),
-		discord.Game("with a !drawshield"),
+		discord.Game("with !drawshield"),
 		discord.Game("with fire"),
 		discord.Game("cards"),
 		discord.Game("bingo"),
@@ -23,6 +23,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		discord.Activity(type = discord.ActivityType.watching, name="an !armiger"),
 		discord.Activity(type = discord.ActivityType.watching, name="heraldic documentaries"),
 		discord.Activity(type = discord.ActivityType.watching, name="Manos: The Hands of Fate"),
+		discord.Activity(type = discord.ActivityType.watching, name="Puparia"),
 		discord.Activity(type = discord.ActivityType.competing, name="a !trivia game")
 	)
 	
