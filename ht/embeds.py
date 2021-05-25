@@ -13,6 +13,7 @@ class Theme(Enum):
 	FLAG_FACT = (0x444850, "1/14/OOjs_UI_icon_flag-ltr-invert.svg/200px-OOjs_UI_icon_flag-ltr-invert.svg.png", "Flag fact")
 	FEED = (0x444850, "2/21/OOjs_UI_icon_feedback-ltr-invert.svg/240px-OOjs_UI_icon_feedback-ltr-invert.svg.png", "Reddit post")
 	USER_INFO = (0x444850, "d/d4/VisualEditor_icon_profile-invert.svg/240px-VisualEditor_icon_profile-invert.svg.png", "User")
+	CHOICE = (0x444850, "d/df/OOjs_UI_icon_next-ltr-invert.svg/240px-OOjs_UI_icon_next-ltr-invert.svg.png", "Choice required")
 	
 	def __init__(self, colour, icon_url, heading):
 		self.colour = colour
@@ -36,6 +37,7 @@ ABOUT = Theme.ABOUT
 FLAG_FACT = Theme.FLAG_FACT
 FEED = Theme.FEED
 USER_INFO = Theme.USER_INFO
+CHOICE = Theme.CHOICE
 
 async def paginate(ctx, embed_function, embeds_size):
 	message = await ctx.send(embed = embed_function(0))		

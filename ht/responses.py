@@ -71,6 +71,32 @@ async def confirm(ctx, info, timeout = TIMEOUT):
 		await message.edit(content = ":white_check_mark: | Confirmed.")
 		return True
 		
+async def choice(ctx, values, emojis, embed_type, embed_title, embed_heading, action_description):
+	embed = embed_type.create(embed_title, "", heading = embed_heading)
+	emojis_constrained = emojis[:len(values)]
+	emojis_full = ("\U0000274C", *emojis_constrained)
+	
+	for emoji, value in zip(emojis_constrained, values):
+		embed.description += f"- {emoji} {value}\n"
+	
+	embed.description += f"\nReact with an emoji to {action_description}, or :x: to cancel."
+	message = await ctx.send(embed = embed)
+	await multi_react(message, emojis_full)
+	
+	try:
+		reaction, user = await ctx.bot.wait_for(
+			"reaction_add", 
+			check = button_check(ctx, message, emojis_full),
+			timeout = TIMEOUT
+		)		
+	except asyncio.TimeoutError: 
+		raise await utils.CommandCancelled.create("Command timed out", ctx)
+	
+	if reaction.emoji == emojis_full[0]:
+		raise await utils.CommandCancelled.create("Command cancelled", ctx)
+	else:
+		return emojis_constrained.index(reaction.emoji)
+		
 async def multi_react(message, emojis):
 	return await asyncio.gather(*[message.add_reaction(r) for r in emojis])
 

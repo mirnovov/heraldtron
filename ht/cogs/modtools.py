@@ -3,6 +3,8 @@ from discord.ext import commands
 from datetime import datetime
 from .. import converters, embeds, responses, utils
 
+#finish, test
+
 class ModerationTools(commands.Cog, name = "Moderation"):
 	MAX_FEEDS = 3
 	SR_VAL = re.compile("(r\/|\/|r\/)+")
@@ -10,21 +12,21 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	def __init__(self, bot):
 		self.bot = bot
 		
-	#right now, just a bodge of has_role, but expand this so it works in dm, by checking all valid servers under that circumstance
-	#also allow bot owner do access certain commands to prevent abuse
 	async def cog_check(self, ctx):
-		item = "Herald"
-		if not isinstance(ctx.channel, discord.abc.GuildChannel):
-			raise commands.NoPrivateMessage()
-
-		if isinstance(item, int):
-			role = discord.utils.get(ctx.author.roles, id=item)
+		if await ctx.bot.is_owner(ctx.author):
+			return True
+		elif isinstance(ctx.channel, discord.abc.GuildChannel):
+			perms = ctx.author.guild_permissions
 		else:
-			role = discord.utils.get(ctx.author.roles, name=item)
-		if role is None:
-			raise commands.MissingRole(item)
-		return True
+			for guild in ctx.author.mutual_guilds:
+				perms = await guild.get_member(ctx.author.id).guild_permissions
+				if perms.manage_guild or perms.administrator: return True
+				
+		if perms.manage_guild or perms.administrator:
+			return True		
 		
+		raise commands.MissingRole("admin")
+	
 	@commands.command(
 		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"
 			   " for instance, `flair:novov` gets posts flaired `novov`."
@@ -57,7 +59,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		
 		await self.bot.dbc.execute(
 			"INSERT INTO reddit_feeds VALUES (?, ?, ?, ?, ?, ?, ?);",
-			(None, ctx.guild.id, channel.id, subreddit, int(ping), search_query, newest)
+			(None, (await self.choose_guild(ctx)).id, channel.id, subreddit, int(ping), search_query, newest)
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Subreddit feed created.")
@@ -65,15 +67,16 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	@commands.command(help = "Creates a new roll channel.", aliases = ("c", "create", "new"))	
 	async def channel(self, ctx, user : converters.MemberOrUser, info : converters.RollVariant):
 		sorting = self.bot.get_cog("Roll Sorting")
-		category = await sorting.get_last_category(ctx.guild, info)
+		guild = await self.choose_guild(ctx)
+		category = await sorting.get_last_category(guild, info)
 		overwrites = { 
-			ctx.guild.default_role: discord.PermissionOverwrite(send_messages = False),
+			guild.default_role: discord.PermissionOverwrite(send_messages = False),
 			user: discord.PermissionOverwrite(manage_channels = True) 
 		}
 		
 		await responses.confirm(ctx, f"A new channel will be created for {user.name}#{user.discriminator}.")
 		
-		channel = await ctx.guild.create_text_channel(user.name, category = category, overwrites = overwrites)
+		channel = await guild.create_text_channel(user.name, category = category, overwrites = overwrites)
 		await ctx.send(f":scroll: | {channel.mention} created for {user.mention}.")
 	
 	@commands.command(
@@ -81,39 +84,28 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		aliases = ("managefeed", "mf", "feeds")
 	)	
 	async def delfeed(self, ctx):
-		query = await self.bot.dbc.execute("SELECT * FROM reddit_feeds WHERE guild = ?", (ctx.guild.id,))
+		guild = await self.choose_guild(ctx)
+		query = await self.bot.dbc.execute("SELECT * FROM reddit_feeds WHERE guild = ?", (guild.id,))
 		feeds = await query.fetchmany(size = self.MAX_FEEDS)
 		
-		embed = embeds.FEED.create("", "\n\u200B\n", heading = f"Feeds for {ctx.guild.name}")
-		emojis = ("\U0000274C","\U0001F98A", "\U0001F428", "\U0001fF42E")[:len(feeds) + 1]
-		
-		for i, feed in enumerate(feeds, start = 1):
-			channel = (self.bot.get_channel(feed[2]) or await self.bot.fetch_channel(feed[2])).mention or "**invalid**"
-			embed.description += f"- {emojis[i]} **r/{feed[3]}** to {channel} (query: *{feed[5]}*)\n"
-		
-		embed.description += "\nReact with an emoji to delete a feed, or :x: to cancel."
-		message = await ctx.send(embed = embed)
-		await responses.multi_react(message, emojis)
-		
-		try:
-			reaction, user = await ctx.bot.wait_for(
-				"reaction_add", 
-				check = responses.button_check(ctx, message, emojis),
-				timeout = responses.TIMEOUT
-			)		
-		except asyncio.TimeoutError: 
-			raise await utils.CommandCancelled.create("Command timed out", ctx)
-		
-		if reaction.emoji == emojis[0]:
-			raise await utils.CommandCancelled.create("Command cancelled", ctx)
-		else:
-			await self.bot.dbc.execute(
-				"DELETE FROM reddit_feeds WHERE id = ?;", 
-				(feeds[emojis.index(reaction.emoji) - 1][0],)
-			)
+		values = []
+		for feed in feeds:
+			channel = getattr(await utils.get_channel(self.bot, feed[2]), "mention", "**invalid**")
+			values.append(f"**r/{feed[3]}** to {channel} (query: *{feed[5]}*)")
 			
-			await self.bot.dbc.commit()
-			await ctx.send(":x: | Subreddit feed deleted.")
+		indice = await responses.choice(
+			ctx,
+			values,
+			("\U0001F98A", "\U0001F428", "\U0001F42E"), 
+			embeds.FEED, 
+			"",
+			f"Feeds for {guild.name}",
+			"delete a feed"
+		)
+		await self.bot.dbc.execute("DELETE FROM reddit_feeds WHERE id = ?;", (feeds[indice][0],))
+		
+		await self.bot.dbc.commit()
+		await ctx.send(":x: | Subreddit feed deleted.")
 	
 	@commands.command(
 		help = "Displays a moderator message in a channel.\n By default, this is"
@@ -133,6 +125,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 
 		await channel.send(embed=embed)
 	
+	@commands.guild_only()
 	@commands.command(help = "Locks a channel, disabling the ability to send messages from it.", aliases = ("l",))	
 	async def lock(self, ctx, channel : typing.Optional[discord.TextChannel] = None):
 		channel = channel or ctx.channel
@@ -159,27 +152,55 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 	@commands.command(help = "Enables/disables roll channel sorting for a server.", aliases = ("arrange", "s"))	
 	async def sort(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "sort_channels", ":abcd:", "Roll channel sorting has")
-		
+	
+	@commands.guild_only()	
 	@commands.command(help = "Unlocks a channel, restoring the ability to send messages from it.",aliases=("ul",))	
 	async def unlock(self, ctx, channel : discord.TextChannel = None):
 		channel = channel or ctx.channel
 		
 		await channel.set_permissions(ctx.guild.default_role, send_messages = True)
 		await ctx.send(f":unlock: | **{ctx.channel.mention} has been unlocked.**")
+		
+	@staticmethod		
+	async def choose_guild(ctx):
+		if isinstance(ctx.channel, discord.abc.GuildChannel): return ctx.guild
+		
+		possible = []
+		for guild in ctx.author.mutual_guilds:
+			perms = guild.get_member(ctx.author.id).guild_permissions
+			if perms.manage_guild or perms.administrator:
+				possible.append(guild)
+				
+		#remove for testing
+		#if len(possible) == 1: return possible[0]
+				
+		indice = await responses.choice(
+			ctx,
+			tuple(guild.name for guild in possible),
+			("\U0001F3DB", "\U0001F3E2", "\U0001F3ED", "\U0001F3F0", "\U0001F3EF"), 
+			embeds.CHOICE,
+			"Multiple servers are available",
+			None,
+			"select a server to use the command in"
+		) 
+		
+		return possible[indice]
 	
 	@staticmethod	
 	async def set_flag(ctx, enabled, db_col, emoji, desc):
+		guild = await ModerationTools.choose_guild(ctx)
 		enabled_int = int(enabled)
 		enabled_text = "enabled" if enabled else "disabled"
 		 
-		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ? WHERE discord_id = ?", (enabled_int, ctx.guild.id))
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ? WHERE discord_id = ?", (enabled_int, guild.id))
 		await ctx.bot.dbc.commit()
 		await ctx.send(f"{emoji} | {desc} been **{enabled_text}** for this server.")
 		
-		await ctx.bot.refresh_cache_guild(ctx.guild.id)
+		await ctx.bot.refresh_cache_guild(guild.id)
 	
 	@staticmethod	
 	async def set_message(ctx, leave):
+		guild = await ModerationTools.choose_guild(ctx)
 		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
 		
 		if enabled == 0: raise utils.CustomCommandError(
@@ -200,7 +221,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			message_type = "welcome_text" if not leave else "leave_text"
 			new = None if isinstance(result, tuple) else result.content
 			
-			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;",(new, ctx.guild.id))
+			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;", (new, guild.id))
 			await ctx.bot.dbc.commit()
 			await ctx.send(":white_check_mark: | Message changed.")
 		

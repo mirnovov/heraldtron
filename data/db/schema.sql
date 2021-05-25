@@ -31,13 +31,6 @@ CREATE TABLE "reddit_feeds" (
 	"last_post" TEXT DEFAULT null
 );
 
-CREATE TABLE "roles" (
-	"discord_id" INTEGER PRIMARY KEY,
-	"name" TEXT NOT NULL,
-	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
-	"is_admin" INTEGER DEFAULT 1
-);
-
 CREATE TABLE "roll_channels" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"user_id" INTEGER REFERENCES "armigers"("discord_id"),
