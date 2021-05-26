@@ -152,31 +152,36 @@ class MiscStuff(commands.Cog, name = "Miscellaneous"):
 		updated = await message.channel.fetch_message(message.id)
 		
 		if updated is None: return #message deleted
-			
-		if len(updated.reactions) > 0:
-			embed.description += "\n\n**Responses:**\n\u0020"
 		
+		response_lines = ""
+
 		for react in updated.reactions:
 			if react.emoji not in emojis or react.count == 1: continue
 			
 			num = emojis.index(react.emoji)
-			user_str = " "
+			respondents = []
 			emoji_str = str(react.emoji)
 			
 			async for user in react.users():
 				if user == ctx.bot.user: continue
-				user_str += f"{user.mention},"
+				respondents.append(user.mention)
 				
-			embed.description += f"\n- {emoji_str} {answers[num]}: "\
-								 f"{user_str.rstrip(',')} (**{react.count - 1}**)\n\u200b"
+			response_lines += f"\n- {emoji_str} {answers[num]}: "\
+						   f"{', '.join(respondents)} (**{react.count - 1}**)\n\u200b"
+						   
+		if response_lines:
+			embed.description += f"\n\n**Responses:**\n\u0020{response_lines}"
 		
 		await message.edit(embed = embed)
+		
+		if isinstance(ctx.channel, discord.abc.GuildChannel):
+			await message.clear_reactions()
 			
 	@trivia.command(help = "Lists all categories.")
 	async def categories(self, ctx):
 		result = await utils.get_json(self.bot.session, f"https://opentdb.com/api_category.php") 
 		embed = embeds.GENERIC.create(
-			"Trivia categories","To choose a category, specify its numeric ID.", heading = "Trivia"
+			"Trivia categories", "To choose a category, specify its numeric ID.", heading = "Trivia"
 		)
 		
 		for category in result["trivia_categories"]:

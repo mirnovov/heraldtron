@@ -111,7 +111,7 @@ class Heraldtron(commands.Bot):
 		return dbc
 		
 	async def refresh_cache_guild(self, guild_id):
-		record = await dbc.execute_fetchone(
+		record = await self.dbc.execute_fetchone(
 			"SELECT * FROM guilds WHERE discord_id = ?", (guild_id,)
 		)
 		guild = await utils.get_guild(self, record[0])

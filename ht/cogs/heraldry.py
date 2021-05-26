@@ -409,13 +409,14 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		if not source:
 			embed = embeds.GENERIC.create(
 				"", 
+				"Enter `!re name` to show a resource.\n\n"
 				f"- `random`: Choose a random resource.\n", 
 				heading = "Resources list"
 			)
 			for name, resource in resources.items():
 				embed.description += f" - `{name}`: {re.sub(self.RES_SUB_A, '*', resource[2])}\n"
 				
-			embed.description += "[Full list](https://novov.me/linkroll/resources.html?bot)"
+			embed.description += "\n[Full list](https://novov.me/linkroll/resources.html?bot)"
 		elif source == "random":
 			embed = resource_result(random.choice(resources))
 		else:
