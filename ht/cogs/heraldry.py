@@ -44,8 +44,8 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		
 	@commands.command(
 		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source."
-			   "If `alternate_emblazon` is enabled, also shows a user-selected emblazon, like with `!emblazon`."
-			   "This is off by default as Greii eventually aims to implement a consistent emblazon style",
+			   " If you type `img` before the user name, also shows a user-selected emblazon, like with `!emblazon`."
+			   " This is off by default as Greii eventually aims to implement a consistent emblazon style.",
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
 	@utils.trigger_typing
@@ -75,6 +75,22 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		if mentions: embed.add_field(name = "Rolls of arms", value = ','.join(mentions))
 		
 		await ctx.send(embed = embed)
+		
+	@commands.command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
+	@utils.trigger_typing
+	async def delemblazon(self, ctx):
+		if not await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
+			raise utils.CustomCommandError(
+				"User does not have emblazon",
+				"You do not have an emblazon to remove."
+			)
+		
+		await self.bot.dbc.execute(
+			"DELETE FROM emblazons WHERE id = ?;",
+			(ctx.author.id,)
+		)
+		await self.bot.dbc.commit()
+		await ctx.send(":x: | Emblazon removed.")	
 			
 	@commands.command(
 		help = "Finds the results of `coat of arms [query]` using Google Images.",
@@ -433,36 +449,27 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		
 	@commands.command(
 		help = "Sets the emblazon of your arms shown by `!emblazon`.\n"
-			   "This is associated with your Discord ID. If no value is provided, deletes any extant emblazon.",
-		aliases = ("se", "delemblazon", "de")
+			   "This can either be an attachment or image URL; "
+			   "once set, it is associated with your Discord ID.",
+		aliases = ("se",)
 	)
 	@utils.trigger_typing
 	async def setemblazon(self, ctx, url : typing.Optional[converters.Url] = None):	
 		if not url and len(ctx.message.attachments) > 0:
 			url = ctx.message.attachments[0].url
-						
-		if url:
-			await self.bot.dbc.execute(
-				"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET url = ?;",
-				(ctx.author.id, url, url)
-			)
-			await self.bot.dbc.commit()
-			await ctx.send(":white_check_mark: | Emblazon updated.")
-			
-			return
-		
-		if not await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
+		elif not url:
 			raise utils.CustomCommandError(
-				"User does not have emblazon",
-				"You do not have an emblazon to remove."
+				"No emblazon provided",
+				"An image is required to set as the emblazon. "
+				"Either attach one or provide an URL."
 			)
-		
+			
 		await self.bot.dbc.execute(
-			"DELETE FROM emblazons WHERE id = ?;",
-			(ctx.author.id,)
+			"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET url = ?;",
+			(ctx.author.id, url, url)
 		)
 		await self.bot.dbc.commit()
-		await ctx.send(":x: | Emblazon removed.")
+		await ctx.send(":white_check_mark: | Emblazon updated.")
 		
 	@commands.command(
 		help = "Shows a list of commonly used tinctures.",

@@ -137,7 +137,7 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 	def add_command_formatting(self, command):
 		desc = "\n"
 		if signature := self.get_command_signature(command):
-			desc += f"\u0060{signature}\u0060" 
+			desc += signature 
 		if command.help:
 			desc += "\n\n" + command.help.rstrip("\u0060")
 			
@@ -145,6 +145,53 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 			
 	def get_ending_note(self):
 		return "Type !help [command] for more info on a command."
+		
+	def get_command_signature(self, command):
+		parent = command.parent
+		entries = []
+		
+		while parent is not None:
+			if not parent.signature or parent.invoke_without_command:
+				entries.append(parent.name)
+			else:
+				entries.append(f"{parent.name} {self.list_params(parent)}")
+			parent = parent.parent
+		parent_sig = " ".join(reversed(entries))
+
+		primary_name = command.name if not parent_sig else f"{parent_sig} {command.name}"
+		aliases = ""
+		
+		if len(command.aliases) > 0:
+			alias_list = ", ".join(f"`{a}`" for a in command.aliases)
+			aliases = f"\n**Aliases**: {alias_list}"
+
+		return f"`{self.clean_prefix}{primary_name} {self.list_params(command)}`{aliases}"
+	
+	@staticmethod	
+	def list_params(command):
+		#an override of command.signature; placed here as it's not worth overriding
+		#the whole class for this
+		if command.usage is not None: return command.usage
+
+		params = command.clean_params
+		if not params: return ""
+
+		result = []
+		for name, param in params.items():
+			greedy = isinstance(param.annotation, commands.converter._Greedy)
+
+			if param.default is not param.empty:
+				if (isinstance(param.default, str) and param.default) or param.default is not None:
+					result.append(f"({name})" if not greedy else f"({name})...")
+				else:
+					result.append(f"({name})")
+
+			elif param.kind == param.VAR_POSITIONAL or greedy:
+				result.append(f"{name}...")
+			else:
+				result.append(name)
+
+		return " ".join(result)
 	
 	def add_indented_commands(self, commands, *, heading):
 		desc = f"\u200b\n**{heading}**\n" if heading else ""
