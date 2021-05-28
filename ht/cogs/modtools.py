@@ -17,7 +17,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			perms = ctx.author.guild_permissions
 		else:
 			for guild in ctx.author.mutual_guilds:
-				perms = (await guild.get_member(ctx.author.id)).guild_permissions
+				perms = guild.get_member(ctx.author.id).guild_permissions
 				if perms.manage_guild or perms.administrator: return True
 				
 		if perms.manage_guild or perms.administrator:
@@ -165,11 +165,17 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 		
 		possible = []
 		for guild in ctx.author.mutual_guilds:
+			if await ctx.bot.is_owner(ctx.author):
+				possible.append(guild)
+				continue
+			
 			perms = guild.get_member(ctx.author.id).guild_permissions
 			if perms.manage_guild or perms.administrator:
 				possible.append(guild)
 				
-		if len(possible) == 1: return possible[0]
+		if len(possible) == 1: 
+			await ctx.send(f"Executing command in **{possible[0].name}**...")
+			return possible[0]
 				
 		indice = await responses.choice(
 			ctx,
