@@ -54,6 +54,12 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			user = await ctx.bot.dbc.execute_fetchone(
 				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
 			)
+			
+			if not user: raise utils.CustomCommandError(
+				"Invalid armiger",
+				"There are no arms associated with your user account. "
+				"To find those of another user, follow the command with their username."
+			)
 		
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", user[4], heading = f"GreiiN:{user[0]:04}")
 		embed.set_footer(text = "From the Book of Arms by GreiiEquites")
