@@ -201,9 +201,6 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 			desc += f"- **{command.name}**:   {command.short_doc}\n"
 			
 		return desc
-		
-	#async def filter_commands(self, commands, *, sort=False, key=None):
-	#TODO: hide mod commands
 	
 def setup(bot):
 	bot.add_cog(MetaTools(bot))

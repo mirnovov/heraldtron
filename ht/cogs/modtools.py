@@ -17,7 +17,7 @@ class ModerationTools(commands.Cog, name = "Moderation"):
 			perms = ctx.author.guild_permissions
 		else:
 			for guild in ctx.author.mutual_guilds:
-				perms = await guild.get_member(ctx.author.id).guild_permissions
+				perms = (await guild.get_member(ctx.author.id)).guild_permissions
 				if perms.manage_guild or perms.administrator: return True
 				
 		if perms.manage_guild or perms.administrator:
