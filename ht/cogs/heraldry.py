@@ -8,6 +8,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
 	RES_SUB_A = re.compile("<i>|</i>")
 	RES_SUB_B = re.compile("<[^<]+?>")
+	SBW_SUB = re.compile(r"== *(.*) *==|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|\[+[^\[]+?\]+")
 	
 	def __init__(self, bot):
 		self.bot = bot
@@ -61,7 +62,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 				"To find those of another user, follow the command with their username."
 			)
 		
-		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]}", user[4], heading = f"GreiiN:{user[0]:04}")
+		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
 		embed.set_footer(text = "From the Book of Arms by GreiiEquites")
 		
 		if user[6] and alt_emblazon:
@@ -451,6 +452,46 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			embed = resource_result(resources.get(source)) 
 		
 		embed.set_footer(text = f"Retrieved from Novov's Heraldic Resources.")		
+		await ctx.send(embed = embed)
+		
+	@commands.command(
+		help = "Displays an entry from the Sourced Blazons Wiki.",
+		aliases = ("w",)
+	)
+	async def sbw(self, ctx, *, query):
+		title = urllib.parse.quote(query.title())
+		response = await utils.get_json(
+			self.bot.session,
+			"https://sourcedblazons.fandom.com/api.php?action=query&titles="
+			f"{title}&prop=revisions&rvslots=main&rvprop=content&rvlimit=1&format=json"
+		)
+		
+		if response["query"]["pages"].get("-1"):
+			raise utils.CustomCommandError(
+				"Invalid page",
+				f"The term could not be found. Check that it is entered correctly."
+			)
+			
+		def wikitext_parse(matchobj):
+			if matchobj.group(1) and "Sources" not in matchobj.group(1):
+				return f"**{matchobj.group(1)}**"
+			elif matchobj.group(2):
+				return matchobj.group(2)
+			else: return ""
+		
+		response = list(response["query"]["pages"].values())[0]
+		text = re.sub(
+			self.SBW_SUB,
+			wikitext_parse,
+			response["revisions"][0]["slots"]["main"]["*"]
+		)
+		
+		if len(text) > 2048:
+			text = f"{text[:2045]}..."
+		
+		embed = embeds.SEARCH_RESULT.create(response["title"], text, heading = "Sourced Blazons Wiki result")
+		embed.url = f"https://sourcedblazons.fandom.com/wiki/{urllib.parse.quote(response['title'])}"
+		
 		await ctx.send(embed = embed)
 		
 	@commands.command(
