@@ -3,17 +3,20 @@ from enum import Enum
 from discord.ext import commands
 from . import responses
 
+DEFAULT = 0x444850
+
 class Theme(Enum):
 	ERROR = (0xdd3333, "4/4e/OOjs_UI_icon_error-destructive.svg/200px-OOjs_UI_icon_error-destructive.svg.png", "An error has been encountered")
 	MOD_MESSAGE = (0xff5d01, "4/4c/OOjs_UI_icon_notice-warning.svg/240px-OOjs_UI_icon_notice-warning.svg.png", "Official moderator message")
 	HELP = (0x3365ca, "5/5f/OOjs_UI_icon_info-progressive.svg/240px-OOjs_UI_icon_info-progressive.svg.png", "Command help")
 	SEARCH_RESULT = (0x444850, "8/8c/OOjs_UI_icon_search-ltr-invert.svg/240px-OOjs_UI_icon_search-ltr-invert.svg.png", "Search result")
-	GENERIC = (0x444850, "5/5e/VisualEditor_icon_reference-rtl-invert.svg/240px-VisualEditor_icon_reference-invert.svg.png", "Result")
+	GENERIC = (DEFAULT, "5/5e/VisualEditor_icon_reference-rtl-invert.svg/240px-VisualEditor_icon_reference-invert.svg.png", "Result")
 	ABOUT = (0x02af89, "4/4e/Echo_gratitude.svg/240px-Echo_gratitude.svg.png", "About Heraldtron")
-	FLAG_FACT = (0x444850, "1/14/OOjs_UI_icon_flag-ltr-invert.svg/200px-OOjs_UI_icon_flag-ltr-invert.svg.png", "Flag fact")
-	FEED = (0x444850, "2/21/OOjs_UI_icon_feedback-ltr-invert.svg/240px-OOjs_UI_icon_feedback-ltr-invert.svg.png", "Reddit post")
-	USER_INFO = (0x444850, "d/d4/VisualEditor_icon_profile-invert.svg/240px-VisualEditor_icon_profile-invert.svg.png", "User")
-	CHOICE = (0x444850, "d/df/OOjs_UI_icon_next-ltr-invert.svg/240px-OOjs_UI_icon_next-ltr-invert.svg.png", "Choice required")
+	FLAG_FACT = (DEFAULT, "1/14/OOjs_UI_icon_flag-ltr-invert.svg/200px-OOjs_UI_icon_flag-ltr-invert.svg.png", "Flag fact")
+	FEED = (DEFAULT, "2/21/OOjs_UI_icon_feedback-ltr-invert.svg/240px-OOjs_UI_icon_feedback-ltr-invert.svg.png", "Reddit post")
+	USER_INFO = (DEFAULT, "d/d4/VisualEditor_icon_profile-invert.svg/240px-VisualEditor_icon_profile-invert.svg.png", "User")
+	CHOICE = (DEFAULT, "d/df/OOjs_UI_icon_next-ltr-invert.svg/240px-OOjs_UI_icon_next-ltr-invert.svg.png", "Choice required")
+	DRAW = (DEFAULT, "d/d2/OOjs_UI_icon_edit-rtl-invert.svg/240px-OOjs_UI_icon_edit-rtl-invert.svg.png", "Drawn!")
 	
 	def __init__(self, colour, icon_url, heading):
 		self.colour = colour
@@ -38,6 +41,7 @@ FLAG_FACT = Theme.FLAG_FACT
 FEED = Theme.FEED
 USER_INFO = Theme.USER_INFO
 CHOICE = Theme.CHOICE
+DRAW = Theme.DRAW
 
 async def paginate(ctx, embed_function, embeds_size):
 	message = await ctx.send(embed = embed_function(0))		

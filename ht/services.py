@@ -31,7 +31,7 @@ async def gis(ctx, query):
 			f"[{item['title']}]({item['image']['contextLink']})",
 			heading = f"Google image search ({index + 1}/{IMAGE_NUM})"
 		)
-		embed.set_image(url=item["link"])	
+		embed.set_image(url=item["link"])
 		embed.set_footer(text=f"Search conducted using the Google Custom Search API in {search['searchInformation']['formattedSearchTime']}s.")
 		return embed
 	
@@ -42,14 +42,14 @@ async def ds(session, blazon, drawn_kind):
 	results = await utils.get_json(session, f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
 	image = discord.File(io.BytesIO(base64.b64decode(results["image"])), filename = "ds.png")
 	
-	embed = embeds.GENERIC.create("", f"*{blazon}*", heading = f"{drawn_kind} drawn!")	
+	embed = embeds.DRAW.create("", f"*{blazon}*", heading = f"{drawn_kind} drawn!")	
 	embed.set_image(url = "attachment://ds.png")	
 	embed.set_footer(text = f"Drawn using DrawShield; © Karl Wilcox. ")
 	
 	for message in results["messages"]:
 		if message["category"] != "blazon": continue
 		elif "linerange" in message:
-			embed.add_field(name = f"Error {message['linerange']}", value = message["content"], inline = False)
+			embed.add_field(name = f"Error {message['linerange'].strip()}", value = message["content"], inline = False)
 		elif "context" in message:
 			embed.add_field(name = "Error", value = f"{message['content']} {message['context']}", inline = False)
 			
