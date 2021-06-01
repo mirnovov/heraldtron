@@ -30,6 +30,7 @@ class Heraldtron(commands.Bot):
 			description = "A heraldry-related bot designed for the Heraldry Community.",
 			intents = self.get_default_intents(),
 			max_messages = 12000,
+			case_insensitive = True,
 			*args, 
 			**kwargs
 		)
