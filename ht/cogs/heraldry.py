@@ -49,7 +49,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   " This is off by default as Greii eventually aims to implement a consistent emblazon style.",
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
-	@utils.trigger_typing
 	async def armiger(self, ctx, alt_emblazon: typing.Optional[converters.ImageTag] = False, user: converters.Armiger = None):
 		if not user:
 			user = await ctx.bot.dbc.execute_fetchone(
@@ -84,7 +83,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)
 		
 	@commands.command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
-	@utils.trigger_typing
 	async def delemblazon(self, ctx):
 		if not await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
 			raise utils.CustomCommandError(
@@ -458,6 +456,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		help = "Displays an entry from the Sourced Blazons Wiki.",
 		aliases = ("w",)
 	)
+	@utils.trigger_typing
 	async def sbw(self, ctx, *, query):
 		title = urllib.parse.quote(query.title())
 		response = await utils.get_json(
@@ -500,7 +499,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   "once set, it is associated with your Discord ID.",
 		aliases = ("se",)
 	)
-	@utils.trigger_typing
 	async def setemblazon(self, ctx, url : typing.Optional[converters.Url] = None):	
 		if not url and len(ctx.message.attachments) > 0:
 			url = ctx.message.attachments[0].url
@@ -522,7 +520,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		help = "Shows a list of commonly used tinctures.",
 		aliases = ("t", "colours", "colors", "metals", "furs")
 	)
-	@utils.trigger_typing
 	async def tinctures(self, ctx):
 		await ctx.send(
 			"In heraldry, *tinctures* are divided into:\n\n"
