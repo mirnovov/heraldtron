@@ -1,4 +1,5 @@
 import discord, asyncio, urllib, io, base64
+from xml.etree import ElementTree
 from . import utils, embeds
 
 async def gis(ctx, query):
@@ -61,3 +62,12 @@ async def ds_catalog(session, charge):
 	
 	if not catalog.startswith("http"): return None
 	return catalog
+	
+async def commons(session, loop, filename):
+	result_text = await utils.get_text(
+		session,
+		f"https://magnus-toolserver.toolforge.org/commonsapi.php?image={filename}&thumbwidth=600&thumbheight=600&meta"
+	)
+	get_json = lambda text_string, root: ElementTree.fromstring(text_string).find(root)
+	
+	return await loop.run_in_executor(None, get_json, result_text, "file")

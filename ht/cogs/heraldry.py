@@ -136,10 +136,10 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   " emblazonment challenge using DrawShield. Code © Karl Wilcox; images © coadb,"
 			   " The Book of Public Arms, Wikimedia Commons contributors (individual sources"
 			   " can be selected via *coadb*, *public*, and *wikimedia* respectively).",
-		aliases=("random", "cl")
+		aliases = ("random", "cl")
 	)
 	@utils.trigger_typing
-	async def ds_challenge(self, ctx, source="all"):			
+	async def ds_challenge(self, ctx, source = "all"):			
 		url = await utils.get_json(self.bot.session, f"https://drawshield.net/api/challenge/{source}")
 		
 		if isinstance(url, dict) and "error" in url:
@@ -148,9 +148,17 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 				"Type `!help challenge` to see the available categories."
 			)
 		
-		embed = embeds.GENERIC.create("","Try emblazoning this using DrawShield!", heading = "Random image")		
-		embed.set_image(url = url)
-		embed.set_footer(text = "Retrieved using DrawShield; © Karl Wilcox. ")
+		embed = embeds.GENERIC.create("", "Try emblazoning this using DrawShield!", heading = "Random image")
+		embed.url = url
+		embed.set_footer(text = "Retrieved using DrawShield; © Karl Wilcox. ")		
+		
+		if url.startswith("https://commons.wikimedia.org"):
+			result = await services.commons(
+				self.bot.session, self.bot.loop, url.removeprefix("https://commons.wikimedia.org//wiki/")
+			)
+			embed.set_image(url = result.find("urls").find("thumbnail").text)
+			
+		else: embed.set_image(url = url)
 		
 		await ctx.send(embed = embed)
 		

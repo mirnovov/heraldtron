@@ -1,5 +1,5 @@
 import json, random, functools, re
-from . import utils
+from . import services, utils
 from .ext import SlowTCPConnector
 
 class Source():
@@ -156,14 +156,11 @@ async def smithsonian(bot):
 async def wikimedia_commons(bot):
 	collection = await utils.get_json(
 		bot.session,
-		"https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&cmtype=file&cmtitle=Category:Paintings_of_coats_of_arms&format=json&cmlimit=500"
+		"https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers"
+		"&cmtype=file&cmtitle=Category:Paintings_of_coats_of_arms&format=json&cmlimit=500"
 	)
 	resultid = random.choice(collection["query"]["categorymembers"])["title"].replace("File:","")
-	result_text = await utils.get_text(
-		bot.session,
-		f"https://magnus-toolserver.toolforge.org/commonsapi.php?image={resultid}&thumbwidth=600&thumbheight=600&meta"
-	)
-	result = await bot.loop.run_in_executor(None, utils.parse_xml,result_text,"file")
+	result = await services.commons(bot.session, bot.loop, resultid)
 	
 	return (
 		result.find("urls").find("description").text, 

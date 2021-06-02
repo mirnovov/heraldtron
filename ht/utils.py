@@ -2,7 +2,6 @@ import discord, aiohttp, asyncio, functools, json, io
 from discord.ext import commands
 from logging import Formatter
 from textwrap import TextWrapper
-from xml.etree import ElementTree
 from . import __version__
 
 class NvFormatter(Formatter):
@@ -83,9 +82,6 @@ async def check_limited(ctx):
 		return False
 	
 	return True
-	
-def parse_xml(text_string, root):
-	return ElementTree.fromstring(text_string).find(root)
 
 @functools.cache	
 def pronounise(word):
