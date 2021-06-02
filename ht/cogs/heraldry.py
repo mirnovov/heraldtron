@@ -8,6 +8,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
 	RES_SUB_A = re.compile("<i>|</i>")
 	RES_SUB_B = re.compile("<[^<]+?>")
+	RAND_SUB = re.compile("\n|\t")
 	SBW_SUB = re.compile(r"== *(.*) *==|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|\[+[^\[]+?\]+")
 	
 	def __init__(self, bot):
@@ -125,7 +126,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			f"Catalog entry for \"{charge}\"", "",
 			heading = "DrawShield catalog"
 		)		
-		embed.set_image(url=url)
+		embed.set_image(url = url)
 		embed.set_footer(text=f"Retrieved using DrawShield; © Karl Wilcox. ")
 		
 		await ctx.send(embed=embed)
@@ -136,7 +137,7 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			   " emblazonment challenge using DrawShield. Code © Karl Wilcox; images © coadb,"
 			   " The Book of Public Arms, Wikimedia Commons contributors (individual sources"
 			   " can be selected via *coadb*, *public*, and *wikimedia* respectively).",
-		aliases = ("random", "cl")
+		aliases = ("ch", "cl")
 	)
 	@utils.trigger_typing
 	async def ds_challenge(self, ctx, source = "all"):			
@@ -194,8 +195,9 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		)
 		
 	@commands.command(
-		help = "Generates a coat of arms.\n If using in a DM, it is based on your name and birthday;"
-			   " for privacy reasons, it is random otherwise. Based on a chart by Snak and James.",
+		help = "Generates a coat of arms based on personal details.\n If using in a DM, it is based"
+			   " on your name and birthday; for privacy reasons, it is random otherwise. Based on a"
+			   " chart by Snak and James.",
 		aliases = ("gen", "g")
 	)
 	async def generate(self, ctx):	
@@ -411,6 +413,19 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			embed.description += f"\n*{row[3].strip(' ')}* ({row[2].strip(' ')})"	
 					
 		await ctx.send(embed=embed)
+		
+	@commands.command(
+		name = "random",
+		help = "Generates random arms using the DrawShield API.\nCode © Karl Wilcox.",
+		aliases = ("ra",)
+	)
+	@utils.trigger_typing
+	async def ds_random(self, ctx):
+		blazon = await utils.get_text(self.bot.session, "https://drawshield.net/include/randomblazon.php")
+		blazon = re.sub(self.RAND_SUB, " ", blazon.removesuffix("created by Drawshield.net/random\n")).strip()
+		
+		embed, file = await services.ds(self.bot.session, blazon, "Random shield")
+		await ctx.send(embed = embed, file = file)
 		
 	@commands.command(
 		help = "Provides links to a number of heraldic resources.\n"\
