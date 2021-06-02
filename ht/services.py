@@ -26,9 +26,10 @@ async def gis(ctx, query):
 	
 	def image_result(index):
 		item = search["items"][index]
+		url = discord.utils.escape_markdown(item["image"]["contextLink"])
 		embed = embeds.SEARCH_RESULT.create(
 			f"Results for \"{query}\"",
-			f"[{item['title']}]({item['image']['contextLink']})",
+			f"[{item['title']}]({url})",
 			heading = f"Google image search ({index + 1}/{IMAGE_NUM})"
 		)
 		embed.set_image(url=item["link"])

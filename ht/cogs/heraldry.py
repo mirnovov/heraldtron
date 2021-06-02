@@ -35,7 +35,9 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 			)
 			
 		result = await museum.retrieve(ctx.bot)
-		embed = embeds.SEARCH_RESULT.create(result[1], result[2], heading = "Random artifact")
+		title = discord.utils.escape_markdown(result[1])
+		
+		embed = embeds.SEARCH_RESULT.create(title, result[2], heading = "Random artifact")
 		embed.url = result[0]	
 		embed.set_footer(text = f"{result[4]} via {museum.desc}" if result[4] else museum.desc)
 		
