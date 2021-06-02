@@ -4,6 +4,20 @@ from logging import Formatter
 from textwrap import TextWrapper
 from . import __version__
 
+class MeldedCog(commands.Cog):
+	def __init_subclass__(self, *args, **kwargs):
+		super().__init_subclass__()
+		self.category = kwargs.pop("category", None)
+		self.limit = kwargs.pop("limit", True)
+		
+		async def cog_check(self, ctx):
+			return await check_limited(ctx)
+			
+		if self.limit:
+			self.cog_check = cog_check
+		
+		return self
+
 class NvFormatter(Formatter):
 	LINE_WIDTH = 100
 	wrapper = TextWrapper(width = LINE_WIDTH)

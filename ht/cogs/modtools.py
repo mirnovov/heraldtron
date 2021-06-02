@@ -3,7 +3,7 @@ from discord.ext import commands
 from datetime import datetime
 from .. import converters, embeds, responses, utils
 
-class ModerationTools(commands.Cog, name = "Moderation"):
+class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderation", limit = False):
 	MAX_FEEDS = 3
 	SR_VAL = re.compile("(r\/|\/|r\/)+")
 	

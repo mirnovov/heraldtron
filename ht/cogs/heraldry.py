@@ -1,21 +1,14 @@
-import discord, asyncio, typing, urllib, csv, json, random, re
+import discord, csv, json, random, re
 from discord.ext import commands
 from .. import converters, embeds, services, utils
 from ..artifacts import Source
 
-class HeraldicStuff(commands.Cog, name = "Heraldry"):
+class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	MOTTO_PARTS = re.compile("([&|!]\\w\\w\\w)")
-	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
-	RES_SUB_A = re.compile("<i>|</i>")
-	RES_SUB_B = re.compile("<[^<]+?>")
 	RAND_SUB = re.compile("\n|\t")
-	SBW_SUB = re.compile(r"== *(.*) *==|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|\[+[^\[]+?\]+")
 	
 	def __init__(self, bot):
 		self.bot = bot
-		
-	async def cog_check(self, ctx):
-		return await utils.check_limited(ctx)
 		
 	@commands.command(
 		help = "Displays a random historical heraldic artifact.\n"
@@ -45,68 +38,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		if result[3]: embed.set_image(url = result[3])
 		
 		await ctx.send(embed = embed)	
-		
-	@commands.command(
-		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source."
-			   " If you type `img` before the user name, also shows a user-selected emblazon, like with `!emblazon`."
-			   " This is off by default as Greii eventually aims to implement a consistent emblazon style.",
-		aliases = ("a", "greiin", "showarms", "arms")
-	)
-	async def armiger(self, ctx, alt_emblazon: typing.Optional[converters.ImageTag] = False, user: converters.Armiger = None):
-		if not user:
-			user = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
-			)
-			
-			if not user: raise utils.CustomCommandError(
-				"Invalid armiger",
-				"There are no arms associated with your user account. "
-				"To find those of another user, follow the command with their username."
-			)
-		
-		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
-		embed.set_footer(text = "From the Book of Arms by GreiiEquites")
-		
-		if user[6] and alt_emblazon:
-			embed.set_thumbnail(url = user[6])
-			
-		channels = await ctx.bot.dbc.execute_fetchall(
-			"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;", 
-			(user[1],)
-		)
-		mentions = []
-		
-		for record in channels:
-			channel = await utils.get_channel(ctx.bot, record[0])
-			if not channel: continue
-			mentions.append(channel.mention)
-			
-		if mentions: embed.add_field(name = "Rolls of arms", value = ','.join(mentions))
-		
-		await ctx.send(embed = embed)
-		
-	@commands.command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
-	async def delemblazon(self, ctx):
-		if not await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)): 
-			raise utils.CustomCommandError(
-				"User does not have emblazon",
-				"You do not have an emblazon to remove."
-			)
-		
-		await self.bot.dbc.execute(
-			"DELETE FROM emblazons WHERE id = ?;",
-			(ctx.author.id,)
-		)
-		await self.bot.dbc.commit()
-		await ctx.send(":x: | Emblazon removed.")	
-			
-	@commands.command(
-		help = "Finds the results of `coat of arms [query]` using Google Images.",
-		aliases = ("as",)
-	)
-	@utils.trigger_typing
-	async def armssearch(self, ctx, *, query):
-		await services.gis(ctx, "coat of arms " + query)
 		
 	@commands.command(
 		name = "catalog",
@@ -172,27 +103,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 	async def drawshield(self, ctx, *, blazon : str):			
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
 		await ctx.send(embed = embed, file = file)
-		
-	@commands.command(
-		help = "Looks up a user-defined emblazon of a coat of arms.",
-		aliases = ("e",)
-	)
-	@utils.trigger_typing
-	async def emblazon(self, ctx, user : converters.MemberOrUser = None):
-		user = user or ctx.author
-		emblazon = await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
-		
-		if emblazon: 
-			embed = embeds.GENERIC.create(f"{user.name}#{user.discriminator}", "", heading = "Emblazon")
-			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
-			
-			embed.set_image(url = emblazon[1])
-			
-			await ctx.send(embed = embed)
-		else: raise utils.CustomCommandError(
-			"User does not have emblazon",
-			"The user you entered exists, but has not specified an emblazon."
-		)
 		
 	@commands.command(
 		help = "Generates a coat of arms based on personal details.\n If using in a DM, it is based"
@@ -276,79 +186,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		await ctx.send(embed = embed)
 		
 	@commands.command(
-		help = "Looks up heraldic terms in the Finto HERO ontological database.",
-		aliases = ("finto", "luh", "ontology", "he")
-	)
-	@utils.trigger_typing
-	async def hero(self, ctx, *, term):
-		query = await utils.get_json(
-			self.bot.session,
-			f"http://api.finto.fi/rest/v1/search?vocab=hero&query={urllib.parse.quote(term)}&lang=en"
-		)
-		
-		if len(query["results"]) == 0:
-			raise utils.CustomCommandError(
-				"Invalid HERO term",
-				"The term could not be found. Check that it is entered correctly, or try other sources."
-			)
-		
-		uri = query["results"][0]["uri"]
-		
-		results = await utils.get_json(
-			self.bot.session,
-			f"http://api.finto.fi/rest/v1/hero/data?format=application%2Fjson&uri={urllib.parse.quote(uri)}&lang=en"
-		)
-		results = results["graph"]
-		embed = embeds.SEARCH_RESULT.create(f"Results for \"{term}\"", f"", heading = "HERO results")
-		
-		for result in results:
-			if result["uri"] == "http://www.yso.fi/onto/hero/": continue
-			elif result["uri"] == uri: result_type = "**Primary**:"
-			elif result.get("narrower"): result_type = "Broader:"
-			elif result.get("broader"): result_type = "Narrower:"
-			else: result_type = "Related:"
-			
-			result_name = "(unknown)"
-			
-			if result.get("prefLabel"):
-				for lang_label in result.get("prefLabel"):
-					if lang_label["lang"] != "en": continue
-					result_name = lang_label["value"] 
-					break				
-			
-			en_uri = result["uri"].replace("http://www.yso.fi/onto/hero/","http://finto.fi/hero/en/page/")
-			embed.description += f"- {result_type} [{result_name}]({en_uri})\n"
-
-		embed.set_footer(text = f"Term retrieved using Finto HERO.")
-		await ctx.send(embed = embed)
-		
-	@commands.command(
-		help = "Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"
-		       " Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
-		aliases = ("lu", "define", "def")
-	)
-	@utils.trigger_typing
-	async def lookup(self, ctx, *, term : str):
-		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
-		
-		if "error" in results:
-			raise utils.CustomCommandError(
-				"Invalid DrawShield term",
-				"The term could not be found. Check that it is entered correctly, or try other sources."
-			)
-		
-		embed = embeds.SEARCH_RESULT.create(
-			f"Results for \"{term}\"",
-			f"{results['content']}\n\u200b\n[View original entry]({results['URL']})",
-		)
-		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
-		
-		thumb = await services.ds_catalog(self.bot.session, term)
-		if thumb: embed.set_thumbnail(url = thumb)
-		
-		await ctx.send(embed = embed)
-		
-	@commands.command(
 		help = "Generates a motto randomly.\nThe included functionality has several"
 			   " advancements over previous motto generators.",
 		aliases = ("mt", "mot")
@@ -427,135 +264,6 @@ class HeraldicStuff(commands.Cog, name = "Heraldry"):
 		embed, file = await services.ds(self.bot.session, blazon, "Random shield")
 		await ctx.send(embed = embed, file = file)
 		
-	@commands.command(
-		help = "Provides links to a number of heraldic resources.\n"\
-			   "Retrieves information from Novov's Heraldic Resources."
-			   " If no resource name is given, lists available resources.",
-		aliases = ("re", "source", "resources", "r")
-	)
-	@utils.trigger_typing
-	async def resource(self, ctx, source = None):
-		html = await utils.get_text(
-			ctx.bot.session, 
-			"https://novov.me/linkroll/resources.html?bot",
-			encoding = "UTF-8"
-		)
-		results = await self.bot.loop.run_in_executor(None, re.findall, self.RESOURCE, html)
-		resources = { r[0]: r for r in results }
-		
-		def resource_result(resource):
-			embed = embeds.GENERIC.create(
-				re.sub(self.RES_SUB_A, "*", resource[2]),
-				re.sub(self.RES_SUB_B, "", resource[3]),
-				heading = "Resource"
-			)
-			embed.url = resource[1]
-			return embed
-		
-		if not source:
-			embed = embeds.GENERIC.create(
-				"", 
-				"Enter `!re name` to show a resource.\n\n"
-				f"- `random`: Choose a random resource.\n", 
-				heading = "Resources list"
-			)
-			for name, resource in resources.items():
-				embed.description += f" - `{name}`: {re.sub(self.RES_SUB_A, '*', resource[2])}\n"
-				
-			embed.description += "\n[Full list](https://novov.me/linkroll/resources.html?bot)"
-		elif source == "random":
-			embed = resource_result(random.choice(resources))
-		else:
-			if source not in resources:
-				raise utils.CustomCommandError(
-					"Nonexistent resource",
-					"Type `!resources` to see a list of resources."
-				)
-				
-			embed = resource_result(resources.get(source)) 
-		
-		embed.set_footer(text = f"Retrieved from Novov's Heraldic Resources.")		
-		await ctx.send(embed = embed)
-		
-	@commands.command(
-		help = "Displays an entry from the Sourced Blazons Wiki.",
-		aliases = ("w",)
-	)
-	@utils.trigger_typing
-	async def sbw(self, ctx, *, query):
-		title = urllib.parse.quote(query.title())
-		response = await utils.get_json(
-			self.bot.session,
-			"https://sourcedblazons.fandom.com/api.php?action=query&titles="
-			f"{title}&prop=revisions&rvslots=main&rvprop=content&rvlimit=1&format=json"
-		)
-		
-		if response["query"]["pages"].get("-1"):
-			raise utils.CustomCommandError(
-				"Invalid page",
-				f"The term could not be found. Check that it is entered correctly."
-			)
-			
-		def wikitext_parse(matchobj):
-			if matchobj.group(1) and "Sources" not in matchobj.group(1):
-				return f"**{matchobj.group(1)}**"
-			elif matchobj.group(2):
-				return matchobj.group(2)
-			else: return ""
-		
-		response = list(response["query"]["pages"].values())[0]
-		text = re.sub(
-			self.SBW_SUB,
-			wikitext_parse,
-			response["revisions"][0]["slots"]["main"]["*"]
-		)
-		
-		if len(text) > 2048:
-			text = f"{text[:2045]}..."
-		
-		embed = embeds.SEARCH_RESULT.create(response["title"], text, heading = "Sourced Blazons Wiki result")
-		embed.url = f"https://sourcedblazons.fandom.com/wiki/{urllib.parse.quote(response['title'])}"
-		
-		await ctx.send(embed = embed)
-		
-	@commands.command(
-		help = "Sets the emblazon of your arms shown by `!emblazon`.\n"
-			   "This can either be an attachment or image URL; "
-			   "once set, it is associated with your Discord ID.",
-		aliases = ("se",)
-	)
-	async def setemblazon(self, ctx, url : typing.Optional[converters.Url] = None):	
-		if not url and len(ctx.message.attachments) > 0:
-			url = ctx.message.attachments[0].url
-		elif not url:
-			raise utils.CustomCommandError(
-				"No emblazon provided",
-				"An image is required to set as the emblazon. "
-				"Either attach one or provide an URL."
-			)
-			
-		await self.bot.dbc.execute(
-			"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET url = ?;",
-			(ctx.author.id, url, url)
-		)
-		await self.bot.dbc.commit()
-		await ctx.send(":white_check_mark: | Emblazon updated.")
-		
-	@commands.command(
-		help = "Shows a list of commonly used tinctures.",
-		aliases = ("t", "colours", "colors", "metals", "furs")
-	)
-	async def tinctures(self, ctx):
-		await ctx.send(
-			"In heraldry, *tinctures* are divided into:\n\n"
-			"- **Colours**: :red_circle: Gules, :green_circle: Vert,"
-			" :blue_circle: Azure, :black_circle: Sable, :purple_circle: Purpure\n\n"
-			"- **Metals**: :yellow_circle: Or, :white_circle: Argent\n\n"
-			"- **Furs**: Ermine, Vair, etc.\n\nThe *rule of tincture* states that colour"
-			" cannot touch metal, except for minor details and field divisions; furs can touch both."
-			"Keep in mind that the exact shades can vary. Various rarer tinctures also exist,"
-			" but many dislike them; use with caution."
-		)
 
 def setup(bot):
-	bot.add_cog(HeraldicStuff(bot))
+	bot.add_cog(HeraldryMisc(bot))

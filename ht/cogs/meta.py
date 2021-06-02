@@ -2,7 +2,7 @@ import discord, aiohttp, aiosqlite, platform, os, re
 from discord.ext import commands
 from .. import utils, embeds, __version__
 
-class MetaTools(commands.Cog, name = "Meta"):
+class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = False):
 	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=(.+)")
 	
 	def __init__(self, bot):
@@ -79,38 +79,51 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 					"Follow with `command` for more info on a command,"
 					" and `category` for more info on a category."
 		})
+		
+	def sort_melded_cogs(self, key):
+		if key == "Other": return "zzzz"
+		elif key == "Heraldry": return "AAAA"
+		return key
 	
 	async def send_bot_help(self, mapping):
 		bot = self.context.bot
 		pages = []
-		cogs = sorted(
-			self.context.bot.cogs,
-			key = lambda c: "z" if c == "Meta" else c
-		)
 		
-		for cog in cogs:
-			embed, teeth = await self.send_cog_help(bot.get_cog(cog), send = False)
-			if teeth: pages.append(embed)
+		for key in sorted(self.context.bot.melded_cogs, key = self.sort_melded_cogs):
+			page = self.context.bot.melded_cogs[key]
+			embed, valid = await self.send_melded_cog_help(key, page)
+			if valid: pages.append(embed)
 			
 		for i, embed in enumerate(pages, start = 1):
 			embed.set_author(icon_url = embeds.HELP.icon_url, name = f"Command help ({i}/{len(pages)})")
 			
 		await embeds.paginate(self.context, lambda i: pages[i], len(pages))
+	
+	async def send_melded_cog_help(self, title, cogs):
+		embed = embeds.HELP.create(f"{title} commands", "")
+		valid = {}
 		
-	async def send_cog_help(self, cog, send = True):
-		embed = embeds.HELP.create(
-			f"{cog.qualified_name} commands", 
-			f"{cog.description}\n" if cog.description else "",
-		)
+		for cog in cogs:
+			commands = await self.filter_commands(cog.get_commands(), sort = self.sort_commands)
+			if not commands: continue
+			
+			value = f"{cog.description}\n" if cog.description else ""
+			valid[cog.qualified_name] = f"{value}{self.add_indented_commands(commands, heading = None)}"
 		
-		teeth = await self.filter_commands(cog.get_commands(), sort = self.sort_commands)
-		embed.description += self.add_indented_commands(teeth, heading = None)
-
+		if len(valid) == 1:
+			embed.description += next(iter(valid.values()))
+		else:	
+			for name, desc in valid.items():
+				embed.add_field(name = name, value = desc, inline = False)
+			
 		if note := self.get_ending_note():
 			embed.set_footer(text = note)
-			
-		if send: await self.get_destination().send(embed = embed)
-		else: return embed, teeth
+				
+		return embed, valid
+	
+	async def send_cog_help(self, cog):
+		embed, _ = await self.send_melded_cog_help(cog.qualified_name, [cog])	
+		await self.get_destination().send(embed = embed)
 		
 	async def send_command_help(self, command):
 		embed = embeds.HELP.create(command.name, command.description or "")
@@ -144,7 +157,7 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 		return desc
 			
 	def get_ending_note(self):
-		return "Type !help [command] for more info on a command."
+		return "Type !help [command] for more info on a command, including aliases."
 		
 	def get_command_signature(self, command):
 		parent = command.parent

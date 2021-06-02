@@ -1,11 +1,13 @@
 import discord, asyncio, aiohttp, logging, json, os, time
 from discord.ext import commands
+from collections import defaultdict
 from . import db, utils
 
 class Heraldtron(commands.Bot):
 	DEFAULT_COGS = [
 		"errors", "events", "modtools", "heraldry", 
-		"misc", "sort", "tasks", "vexillology", "meta"
+		"misc", "reference", "roll",
+		"sort", "tasks", "vexillology", "meta"
 	]
 	
 	REQUISITES = [
@@ -24,6 +26,7 @@ class Heraldtron(commands.Bot):
 		self.conf = self.load_conf()
 		self.root_logger = self.setup_root_logger() 
 		self.logger = logging.getLogger("heraldtron")
+		self.melded_cogs = defaultdict(list)
 		
 		super().__init__(
 			command_prefix = "!", #kept for documentation
@@ -38,8 +41,8 @@ class Heraldtron(commands.Bot):
 		self.session = self.loop.run_until_complete(self.start_session())
 		self.dbc = self.loop.run_until_complete(self.setup_db())
 		
-		self.loop.create_task(self.refresh_cache())
 		self.ready_flag = asyncio.Event()
+		self.loop.create_task(self.refresh_cache())
 		
 		if self.conf["OWNER_ONLY"]:
 			self.add_check(utils.check_is_owner)
@@ -76,7 +79,6 @@ class Heraldtron(commands.Bot):
 			self.logger.info(f"Cog \"{cog}\" loaded successfully")
 			
 		if self.conf.get("USE_JISHAKU"):
-			os.environ["JISHAKU_HIDE"] = "1" 
 			self.load_extension("jishaku")
 			coglist.append("jishaku")
 			
@@ -131,6 +133,16 @@ class Heraldtron(commands.Bot):
 			self.guild_cache[record[0]] = (guild, record)
 		
 		self.ready_flag.set()	
+		
+	def add_cog(self, cog):
+		super().add_cog(cog)
+		if isinstance(cog, utils.MeldedCog):
+			self.melded_cogs[cog.category].append(cog)
+			
+	def remove_cog(self, cog):
+		super().remove_cog(cog)
+		if isinstance(cog, utils.MeldedCog):
+			self.melded_cogs[cog.category].remove(cog)
 		
 	async def get_prefix(self, message):
 		list = (self.command_prefix, f"<@{bot.user.id}> ", f"<@!{bot.user.id}> ")

@@ -2,12 +2,9 @@ import discord, asyncio, typing, random, os, html
 from discord.ext import commands
 from .. import converters, embeds, services, responses, utils
 
-class MiscStuff(commands.Cog, name = "Miscellaneous"):
+class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
 	def __init__(self, bot):
 		self.bot = bot
-		
-	async def cog_check(self, ctx):
-		return await utils.check_limited(ctx)
 		
 	@commands.command(help = "Retrieves a random piece of advice.\nUses adviceslip.com", aliases = ("ad",))
 	@utils.trigger_typing

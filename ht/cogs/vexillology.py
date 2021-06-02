@@ -3,12 +3,9 @@ from discord.ext import commands
 from ..ext import OnlineSeych
 from .. import embeds, responses, services, utils
 
-class VexStuff(commands.Cog, name = "Vexillology"):
+class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 	def __init__(self, bot):
 		self.bot = bot
-		
-	async def cog_check(self, ctx):
-		return await utils.check_limited(ctx)
 		
 	@commands.command(
 		help = "Finds the results of `flag [query]` using Google Images.",
@@ -61,7 +58,7 @@ class VexStuff(commands.Cog, name = "Vexillology"):
 	
 	@commands.command(
 		help = "Seychelles-izes a flag.\nUses Akshay Chitale's Seychelles Flag Generator script.",
-		aliases = ("sy","seych")
+		aliases = ("sy", "seych")
 	)
 	@utils.trigger_typing	
 	async def seychelles(self,ctx):
