@@ -3,6 +3,16 @@ from discord.ext import commands
 from .. import converters, embeds, services, responses, utils
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
+	ACTIVITIES = {
+		-1: "",
+		0: "Playing",
+		1: "Streaming",
+		2: "Listening to",
+		3: "Watching",
+		4: "Activity:",
+		5: "Competing in" 
+	}
+	
 	def __init__(self, bot):
 		self.bot = bot
 		
@@ -192,6 +202,9 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	async def user(self, ctx, *, user : converters.MemberOrUser = None):
 		user = user or ctx.author
 		
+		if not isinstance(user, discord.Member) and ctx.guild:
+			user = ctx.guild.get_member(user.id) or user
+		
 		embed = embeds.USER_INFO.create(f"{user.name}#{user.discriminator}", f"{user.mention}")
 		if user.bot:
 			embed.description += " | **Bot**"
@@ -201,14 +214,18 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		embed.description += "\n\u200b"
 		
 		if isinstance(user, discord.Member):
-			embed.colour = user.colour
-			embed.description += "".join(f"\n{activity.emoji} {activity.name}" for activity in user.activities)
+			embed.colour = user.colour if user.colour.value != 0 else embeds.DEFAULT
+						
+			for activity in user.activities:
+				preface = activity.emoji or "" if hasattr(activity, "emoji") else f"**{self.ACTIVITIES[int(activity.type)]}**"
+				embed.description += f"\n{preface} {activity.name}"
 			
 			embed.add_field(name = "Joined", value = utils.stdtime(user.joined_at), inline = True)
 			embed.add_field(name = "Status", value = f"Currently **{user.raw_status}**", inline = True)
 			
-			roles = (str(role.mention) for role in user.roles[1:])
-			embed.add_field(name = "Roles", value = ", ".join(("@everyone ", *roles)), inline = False)
+			if isinstance(ctx.channel, discord.abc.GuildChannel):
+				roles = (str(role.mention) for role in user.roles[1:])
+				embed.add_field(name = "Roles", value = ", ".join(("@everyone ", *roles)), inline = False)
 		
 		await ctx.send(embed = embed)
 	
