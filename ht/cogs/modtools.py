@@ -14,16 +14,18 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		if await ctx.bot.is_owner(ctx.author):
 			return True
 		elif isinstance(ctx.channel, discord.abc.GuildChannel):
-			perms = ctx.author.guild_permissions
+			if self.is_mod(ctx.author.guild_permissions):
+				return True	
 		else:
 			for guild in ctx.author.mutual_guilds:
 				perms = guild.get_member(ctx.author.id).guild_permissions
-				if perms.manage_guild or perms.administrator: return True
-				
-		if perms.manage_guild or perms.administrator:
-			return True		
+				if self.is_mod(perms): return True
 		
 		raise commands.MissingRole("admin")
+	
+	@staticmethod	
+	def is_mod(perms):
+		return perms.manage_channels or perms.manage_guild or perms.administrator
 	
 	@commands.command(
 		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"
