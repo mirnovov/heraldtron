@@ -1,11 +1,8 @@
-import urllib, random, re
+import urllib, re
 from discord.ext import commands
 from .. import embeds, services, utils
 
 class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldry"):
-	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
-	RES_SUB_A = re.compile("<i>|</i>")
-	RES_SUB_B = re.compile("<[^<]+?>")
 	SBW_SUB = re.compile(r"== *(.*) *==|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|\[+[^\[]+?\]+")
 	
 	def __init__(self, bot):
@@ -92,55 +89,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		
 		await ctx.send(embed = embed)
 		
-	@commands.command(
-		help = "Provides links to a number of heraldic resources.\n"\
-			   "Retrieves information from Novov's Heraldic Resources."
-			   " If no resource name is given, lists available resources.",
-		aliases = ("re", "source", "resources", "r")
-	)
-	@utils.trigger_typing
-	async def resource(self, ctx, source = None):
-		html = await utils.get_text(
-			ctx.bot.session, 
-			"https://novov.me/linkroll/resources.html?bot",
-			encoding = "UTF-8"
-		)
-		results = await self.bot.loop.run_in_executor(None, re.findall, self.RESOURCE, html)
-		resources = { r[0]: r for r in results }
-		
-		def resource_result(resource):
-			embed = embeds.GENERIC.create(
-				re.sub(self.RES_SUB_A, "*", resource[2]),
-				re.sub(self.RES_SUB_B, "", resource[3]),
-				heading = "Resource"
-			)
-			embed.url = resource[1]
-			return embed
-		
-		if not source:
-			embed = embeds.GENERIC.create(
-				"", 
-				"Enter `!re name` to show a resource.\n\n"
-				f"- `random`: Choose a random resource.\n", 
-				heading = "Resources list"
-			)
-			for name, resource in resources.items():
-				embed.description += f" - `{name}`: {re.sub(self.RES_SUB_A, '*', resource[2])}\n"
-				
-			embed.description += "\n[Full list](https://novov.me/linkroll/resources.html?bot)"
-		elif source == "random":
-			embed = resource_result(random.choice(resources))
-		else:
-			if source not in resources:
-				raise utils.CustomCommandError(
-					"Nonexistent resource",
-					"Type `!resources` to see a list of resources."
-				)
-				
-			embed = resource_result(resources.get(source)) 
-		
-		embed.set_footer(text = f"Retrieved from Novov's Heraldic Resources.")		
-		await ctx.send(embed = embed)
+	
 		
 	@commands.command(
 		help = "Displays an entry from the Sourced Blazons Wiki.",
