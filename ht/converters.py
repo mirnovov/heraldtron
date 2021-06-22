@@ -1,5 +1,7 @@
-import re
+import warnings, csv, re, sys
 from discord.ext import commands
+from datetime import timezone
+from dateutil import parser as duparser
 from . import utils
 
 class Armiger(commands.Converter):
@@ -115,5 +117,32 @@ class RollVariant(commands.Converter):
 		
 		raise utils.CustomCommandError(
 			"Invalid roll variant",
-			f"The item you entered is not a valid roll channel type."
+			"The item you entered is not a valid roll channel type."
 		)
+		
+class Date(commands.Converter):
+	def __init__(self):
+		warnings.simplefilter("error", duparser.UnknownTimezoneWarning)
+		
+		if not getattr(Date, "timezones", 0):
+			#only do this once, and save it for all class members
+			with open("data/tz.csv") as file:
+				csvdata = {a: int(b) for (a, b) in csv.reader(file, delimiter = ";")}
+			
+			setattr(Date, "timezones", csvdata)
+	
+	async def convert(self, ctx, argument):	
+		try:	
+			date = duparser.parse(argument, fuzzy = True, tzinfos = self.timezones)
+		except ValueError:
+			raise utils.CustomCommandError(
+				"Invalid date",
+				"The date you entered is in an unrecognisable format."
+			)
+		except duparser.UnknownTimezoneWarning:	
+			raise utils.CustomCommandError(
+				"Invalid timezone",
+				"The timezone you entered is invalid."
+			)			
+		
+		return date.astimezone(timezone.utc)

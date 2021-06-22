@@ -1,7 +1,8 @@
 import discord, asyncio, random
-from enum import Enum
 from discord.ext import commands
-from . import responses
+from enum import Enum
+from datetime import datetime, timezone, timedelta
+from . import responses, utils
 
 DEFAULT = 0x444850
 
@@ -17,6 +18,7 @@ class Theme(Enum):
 	USER_INFO = (DEFAULT, "d/d4/VisualEditor_icon_profile-invert.svg/240px-VisualEditor_icon_profile-invert.svg.png", "User")
 	CHOICE = (DEFAULT, "d/df/OOjs_UI_icon_next-ltr-invert.svg/240px-OOjs_UI_icon_next-ltr-invert.svg.png", "Choice required")
 	DRAW = (DEFAULT, "d/d2/OOjs_UI_icon_edit-rtl-invert.svg/240px-OOjs_UI_icon_edit-rtl-invert.svg.png", "Drawn!")
+	COUNTDOWN = (DEFAULT, "b/bb/OOjs_UI_icon_clock-invert.svg/240px-OOjs_UI_icon_clock-invert.svg.png", "Countdown")
 	
 	def __init__(self, colour, icon_url, heading):
 		self.colour = colour
@@ -42,6 +44,7 @@ FEED = Theme.FEED
 USER_INFO = Theme.USER_INFO
 CHOICE = Theme.CHOICE
 DRAW = Theme.DRAW
+COUNTDOWN = Theme.COUNTDOWN
 
 async def paginate(ctx, embed_function, embeds_size):
 	message = await ctx.send(embed = embed_function(0))		
@@ -74,3 +77,29 @@ async def paginate(ctx, embed_function, embeds_size):
 			if isinstance(ctx.channel, discord.abc.GuildChannel): 
 				await message.clear_reactions()
 			return
+			
+def countdown(time):
+	now = datetime.now(tz = timezone.utc)
+	delta = (time - now) + timedelta(minutes = 1)
+	
+	embed = COUNTDOWN.create(utils.stddelta(delta), "")
+	endsat = "\n".join((
+		utils.stddatetime(time, "America/Vancouver"),
+		utils.stddatetime(time, "America/Mexico_City"),
+		utils.stddatetime(time, "America/New_York"),
+		utils.stddatetime(time), #UTC
+		utils.stddatetime(time, "Europe/London"),
+		utils.stddatetime(time, "Europe/Berlin"),
+		utils.stddatetime(time, "Europe/Helsinki"),
+		utils.stddatetime(time, "Asia/Jerusalem"),
+		utils.stddatetime(time, "Asia/Kolkata"),
+		utils.stddatetime(time, "Asia/Manila"),
+		utils.stddatetime(time, "Asia/Tokyo"),
+		utils.stddatetime(time, "Australia/Melbourne"),
+		utils.stddatetime(time, "Pacific/Auckland")
+	))
+	
+	embed.add_field(name = "Ends at", value = f"`{endsat}`")
+	embed.set_footer(text = f"Last updated: {utils.stddatetime(now)}.")
+	
+	return embed, delta

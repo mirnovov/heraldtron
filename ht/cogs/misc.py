@@ -3,6 +3,7 @@ from discord.ext import commands
 from .. import converters, embeds, services, responses, utils
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
+	COUNTDOWN_LIMIT = 3
 	ACTIVITIES = {
 		-1: "",
 		0: "Playing",
@@ -24,6 +25,36 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		embed = embeds.GENERIC.create(result["slip"]["advice"], "", heading = "Random advice")		
 		embed.set_footer(text=f"Retrieved using adviceslip.com")
 		await ctx.send(embed = embed)
+	
+	@commands.command(
+		help = "Generates a continuously updated countdown post.", 
+		aliases = ("time", "cd")
+	)
+	async def countdown(self, ctx, *, elapsed : converters.Date):		
+		amount = await self.bot.dbc.execute_fetchone(
+			"SELECT COUNT(*) FROM countdowns WHERE user_id == ?;", (ctx.author.id,)
+		)
+		
+		if amount[0] > self.COUNTDOWN_LIMIT:
+			raise utils.CustomCommandError(
+				"Too many active countdowns",
+				f"A user can only have {self.COUNTDOWN_LIMIT} countdowns active at once."
+			)
+		
+		embed, delta = embeds.countdown(elapsed)
+		
+		if delta.total_seconds() < 0:
+			raise utils.CustomCommandError(
+				"Date has already occured",
+				"The date that you entered is in the past."
+			)
+			
+		message = await ctx.send(embed = embed)
+		await self.bot.dbc.execute(
+			"INSERT INTO countdowns (timestamp, user_id, channel_id, message_id) VALUES (?, ?, ?, ?);",
+			(elapsed.timestamp(), ctx.author.id, ctx.channel.id, message.id)
+		)
+		await self.bot.dbc.commit()
 		
 	@commands.command(
 		help = "Generates a competition distribution.\n If no number is specified, asks for a list of names.", 
@@ -210,7 +241,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 			embed.description += " | **Bot**"
 			
 		embed.set_thumbnail(url = user.avatar_url_as(size = 512))
-		embed.add_field(name = "Created", value = utils.stdtime(user.created_at), inline = True)
+		embed.add_field(name = "Created", value = utils.stddate(user.created_at), inline = True)
 		embed.description += "\n\u200b"
 		
 		if isinstance(user, discord.Member):
@@ -220,7 +251,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				preface = activity.emoji or "" if hasattr(activity, "emoji") else f"**{self.ACTIVITIES[int(activity.type)]}**"
 				embed.description += f"\n{preface} {activity.name}"
 			
-			embed.add_field(name = "Joined", value = utils.stdtime(user.joined_at), inline = True)
+			embed.add_field(name = "Joined", value = utils.stddate(user.joined_at), inline = True)
 			embed.add_field(name = "Status", value = f"Currently **{user.raw_status}**", inline = True)
 			
 			if isinstance(ctx.channel, discord.abc.GuildChannel):

@@ -6,6 +6,14 @@ CREATE TABLE "armigers" (
 	"blazon" TEXT,
 );
 
+CREATE TABLE "countdowns" (
+	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	"timestamp" INTEGER NOT NULL,
+	"user_id" INTEGER NOT NULL,
+	"channel_id" INTEGER NOT NULL,
+	"message_id" INTEGER UNIQUE NOT NULL
+)
+
 CREATE TABLE "emblazons" (
 	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
 	"url" TEXT

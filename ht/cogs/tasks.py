@@ -29,17 +29,19 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	
 	def __init__(self, bot):
 		self.bot = bot
-		self.get_reddit_posts.start()
 		self.update_info.start()
 		self.sync_book.start()
+		self.count_down.start()
+		self.get_reddit_posts.start()
 		
 		if not os.path.isdir("data/book"):
 			os.mkdir("data/book")
 		
 	def cog_unload(self):
-		self.get_reddit_posts.stop()
-		self.sync_book.stop()
 		self.update_info.stop()
+		self.sync_book.stop()
+		self.count_down.stop()
+		self.get_reddit_posts.stop()
 		
 	@tasks.loop(hours = 12)
 	async def update_info(self):
@@ -136,6 +138,31 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		await self.bot.dbc.store_set("book_timestamp", f"{timestamp:.0f}")
 		self.bot.logger.info(f"Successfully refreshed armiger database.")
 		
+	@tasks.loop(minutes = 40)
+	async def count_down(self):
+		async for countdown in await self.bot.dbc.execute("SELECT * FROM countdowns;"):
+			channel = await utils.get_channel(self.bot, countdown[3])
+			post = None
+			
+			if channel:
+				try: post = await channel.fetch_message(countdown[4])
+				except discord.NotFound: pass
+			
+			if not (post and channel.permissions_for(channel.guild.me).send_messages):
+				await self.bot.dbc.execute("DELETE FROM countdowns WHERE id = ?;", (countdown[0],))
+				await self.bot.dbc.commit()
+				continue
+			
+			date = datetime.fromtimestamp(countdown[1], tz = timezone.utc)
+			embed, delta = embeds.countdown(date)
+			
+			if delta.total_seconds() < 0:
+				await self.bot.dbc.execute("DELETE FROM countdowns WHERE id = ?;", (countdown[0],))
+				await self.bot.dbc.commit()
+				embed.title = "The countdown has elapsed."
+				
+			await post.edit(embed = embed)
+			
 	@tasks.loop(hours = 2)
 	async def get_reddit_posts(self):
 		bot = self.bot
@@ -183,6 +210,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	@update_info.before_loop
 	@sync_book.before_loop			
 	@get_reddit_posts.before_loop
+	@count_down.before_loop
 	async def wait_before_loop(self):
 		await self.bot.wait_until_ready()
 		

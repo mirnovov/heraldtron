@@ -12,6 +12,7 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * [Pillow](https://pypi.org/project/Pillow/)
 * [aiosqlite](https://pypi.org/project/aiosqlite/)
 * [docx2python](https://pypi.org/project/docx2python/)
+* [python-dateutil](https://pypi.org/project/python-dateutil/)
 * Developer credentials (see below)
 
 [cchardet](https://pypi.org/project/cchardet/) and [aiodns](https://pypi.org/project/aiodns/) are also recommended to improve performance.
