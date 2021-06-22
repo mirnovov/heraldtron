@@ -155,6 +155,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			
 			date = datetime.fromtimestamp(countdown[1], tz = timezone.utc)
 			embed, delta = embeds.countdown(date)
+			embed.description = countdown[5]	
 			
 			if delta.total_seconds() < 0:
 				await self.bot.dbc.execute("DELETE FROM countdowns WHERE id = ?;", (countdown[0],))

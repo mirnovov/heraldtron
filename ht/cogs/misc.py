@@ -48,11 +48,19 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				"Date has already occured",
 				"The date that you entered is in the past."
 			)
-			
+		
+		desc = (await responses.respond_or_react(
+			ctx,
+			f"Your countdown will expire at **{utils.stddatetime(elapsed)}**. Now,"
+			" give it a name by responding below, or react with :x: to cancel."
+		)).content
+		
+		embed.description = desc	
 		message = await ctx.send(embed = embed)
+		
 		await self.bot.dbc.execute(
-			"INSERT INTO countdowns (timestamp, user_id, channel_id, message_id) VALUES (?, ?, ?, ?);",
-			(elapsed.timestamp(), ctx.author.id, ctx.channel.id, message.id)
+			"INSERT INTO countdowns (timestamp, user_id, channel_id, message_id, name) VALUES (?, ?, ?, ?, ?);",
+			(elapsed.timestamp(), ctx.author.id, ctx.channel.id, message.id, desc)
 		)
 		await self.bot.dbc.commit()
 		
