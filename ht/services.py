@@ -61,7 +61,7 @@ async def ds_catalog(session, charge):
 	catalog = await utils.get_json(session, f"https://drawshield.net/api/catalog/{urllib.parse.quote(charge)}")
 	
 	if not catalog.startswith("http"): return None
-	return catalog
+	return catalog.split("\n")
 	
 async def commons(session, loop, filename):
 	result_text = await utils.get_text(

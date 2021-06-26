@@ -46,7 +46,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	)
 	@utils.trigger_typing
 	async def ds_catalog(self, ctx, *, charge):			
-		url = await services.ds_catalog(self.bot.session, charge)
+		url, details = await services.ds_catalog(self.bot.session, charge)
 		
 		if url == None: raise utils.CustomCommandError(
 			"Invalid catalog item",
@@ -54,7 +54,8 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		)
 		
 		embed = embeds.SEARCH_RESULT.create(
-			f"Catalog entry for \"{charge}\"", "",
+			f"Catalog entry for \"{charge}\"", 
+			details,
 			heading = "DrawShield catalog"
 		)		
 		embed.set_image(url = url)

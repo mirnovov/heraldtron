@@ -84,7 +84,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		)
 		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
 		
-		thumb = await services.ds_catalog(self.bot.session, term)
+		thumb = (await services.ds_catalog(self.bot.session, term))[0]
 		if thumb: embed.set_thumbnail(url = thumb)
 		
 		await ctx.send(embed = embed)
