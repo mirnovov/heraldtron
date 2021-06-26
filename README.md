@@ -29,6 +29,9 @@ Before running, the bot requires an `config.json` file in the root directory con
 
 * `DISCORD_TOKEN`: The Discord Developer API token.
 * `GCS_TOKEN`: The Google Cloud Platform API key. Custom Search and Google Drive must be enabled for this key.
+
+This is adequate for most use cases, but for a few commands, additional information is required:
+
 * `GCS_CX`: The Programmable Search engine identifier.
 * `AR_RIJKS`: The key for the [Rijksmuseum API](https://data.rijksmuseum.nl/object-metadata/api/).
 * `AR_EURO`: The key for the [Europeana Pro API](https://pro.europeana.eu/page/apis).
