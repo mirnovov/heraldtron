@@ -58,14 +58,6 @@ class Range(commands.Converter):
 			)
 		return argument
 		
-class ImageTag(commands.Converter):
-	#replace with generic Literal when 2.0 is released
-	async def convert(self, ctx, argument):
-		if argument in ("image", "img", "i"):
-			return argument
-		
-		raise commands.BadArgument("Invalid literal")
-		
 class Url(commands.Converter):
 	VALID = re.compile(r"\S+\.\S{1,4}\S*")
 	

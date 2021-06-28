@@ -12,7 +12,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			   " This is off by default as Greii eventually aims to implement a consistent emblazon style.",
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
-	async def armiger(self, ctx, alt_emblazon: typing.Optional[converters.ImageTag] = False, user: converters.Armiger = None):
+	async def armiger(self, ctx, user: converters.Armiger = None):
 		if not user:
 			user = await ctx.bot.dbc.execute_fetchone(
 				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
@@ -25,9 +25,11 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			)
 		
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
-		embed.set_footer(text = "From the Book of Arms by GreiiEquites")
+		embed.set_footer(
+			text = "Textual content from the Book of Arms by GreiiEquites. Image specified by user."
+		)
 		
-		if user[6] and alt_emblazon:
+		if user[6]:
 			embed.set_thumbnail(url = user[6])
 			
 		channels = await ctx.bot.dbc.execute_fetchall(
