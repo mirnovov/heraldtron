@@ -77,8 +77,10 @@ async def get_user(bot, user):
 	return bot.get_user(user) or await bot.fetch_user(user)
 	
 async def unqualify_name(bot, name, discriminator):
-	return discord.utils.find(
-		lambda m: m.name == name and m.discriminator == discriminator, bot.users
+	return discord.utils.get(
+		bot.users, name = name, discriminator = discriminator
+	) or discord.utils.get(
+		bot.users, name = name
 	)
 	
 async def check_is_owner(ctx):

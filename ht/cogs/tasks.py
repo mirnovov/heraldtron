@@ -115,23 +115,22 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		await self.bot.dbc.commit()
 		
 		for greii_n, entry in book.items():
-			has_id = await self.bot.dbc.execute(
-				"SELECT * FROM armigers WHERE discord_id IS NULL AND greii_n IS ?",
-				(greii_n,)
-			)
-			
 			await self.bot.dbc.execute(
 				"INSERT INTO armigers (greii_n, qualified_name, qualified_id, blazon) VALUES"
 				" (?, ?, ?, ?) ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?, qualified_id = ?, blazon = ?;",
 				(greii_n, entry[1], entry[2], entry[3], entry[1], entry[2], entry[3])
 			)
 			
-			if has_id:
+			if await self.bot.dbc.execute(
+				"SELECT * FROM armigers WHERE discord_id IS NULL AND greii_n IS ?", (greii_n,)
+			):
 				user = await utils.unqualify_name(self.bot, entry[1], entry[2])
-				await self.bot.dbc.execute(
-					"UPDATE armigers SET discord_id = ? WHERE greii_n = ?;",
-					(user.id if user else None, greii_n)
-				)
+				
+				if user:
+					await self.bot.dbc.execute(
+						"UPDATE armigers SET discord_id = ? WHERE greii_n = ?;",
+						(user.id, greii_n)
+					)
 			
 			await self.bot.dbc.commit()
 			
