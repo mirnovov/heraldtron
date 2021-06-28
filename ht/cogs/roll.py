@@ -7,9 +7,8 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		self.bot = bot
 		
 	@commands.command(
-		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source."
-			   " If you type `img` before the user name, also shows a user-selected emblazon, like with `!emblazon`."
-			   " This is off by default as Greii eventually aims to implement a consistent emblazon style.",
+		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source,"
+			   " and if the user has defined an emblazon using `!setemblazon`, their emblazon.",
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
 	async def armiger(self, ctx, user: converters.Armiger = None):
@@ -25,12 +24,13 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			)
 		
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
-		embed.set_footer(
-			text = "Textual content from the Book of Arms by GreiiEquites. Image specified by user."
-		)
+		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
 		
 		if user[6]:
 			embed.set_thumbnail(url = user[6])
+			embed.set_footer(text = embed.footer.text + " Image specified by user.")
+		elif user[1] == ctx.author.id:
+			embed.description += "\n**To set an image, use `!setemblazon your_url`.**"
 			
 		channels = await ctx.bot.dbc.execute_fetchall(
 			"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;", 
