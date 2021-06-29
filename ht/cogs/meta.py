@@ -24,7 +24,7 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 	async def about(self, ctx):
 		embed = embeds.ABOUT.create(f"Heraldtron {__version__}", self.bot.description)
 		embed.url = "https://github.com/mirnovov/heraldtron"
-		embed.set_thumbnail(url = str(self.bot.user.avatar_url_as(size = 512)))
+		embed.set_thumbnail(url = str(self.bot.user.avatar.with_size(512).url))
 		
 		embed.add_field(
 			name="Developed using", 
