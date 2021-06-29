@@ -166,7 +166,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		if result["response_code"] == 1:
 			raise utils.CustomCommandError(
 				"Invalid category code",
-				f"Consult `!trivia categories` to see the available codes."
+				f"Consult `{ctx.clean_prefix}trivia categories` to see the available codes."
 			)
 			
 		result = result["results"][0]

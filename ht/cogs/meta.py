@@ -178,7 +178,7 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 			alias_list = ", ".join(f"`{a}`" for a in command.aliases)
 			aliases = f"\n**Aliases**: {alias_list}"
 
-		return f"`{self.clean_prefix}{primary_name} {self.list_params(command)}`{aliases}"
+		return f"`{self.context.clean_prefix}{primary_name} {self.list_params(command)}`{aliases}"
 	
 	@staticmethod	
 	def list_params(command):
@@ -191,7 +191,7 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 
 		result = []
 		for name, param in params.items():
-			greedy = isinstance(param.annotation, commands.converter._Greedy)
+			greedy = isinstance(param.annotation, commands.converter.Greedy)
 
 			if param.default is not param.empty:
 				if (isinstance(param.default, str) and param.default) or param.default is not None:

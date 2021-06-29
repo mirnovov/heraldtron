@@ -211,7 +211,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
 			"Your message cannot be set, as the welcome and leave message functionality"
-			" is currently not operational. Turn it on with `!messages yes`."
+			f" is currently not operational. Turn it on with `{ctx.clean_prefix}messages yes`."
 		)
 			
 		result = await responses.respond_or_react(

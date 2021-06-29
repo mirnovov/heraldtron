@@ -83,7 +83,7 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 				
 			embed.add_field(
 				name = name, 
-				value = f"`!{command.name}` - {command.help} [\u2139\uFE0E]({url})", 
+				value = f"`{ctx.clean_prefix}{command.name}` - {command.help} [\u2139\uFE0E]({url})", 
 				inline = False
 			)
 			embed_size += 1

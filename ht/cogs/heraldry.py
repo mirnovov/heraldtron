@@ -78,7 +78,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		if isinstance(url, dict) and "error" in url:
 			raise utils.CustomCommandError(
 				"Invalid challenge category",
-				"Type `!help challenge` to see the available categories."
+				f"Type `{ctx.clean_prefix}help challenge` to see the available categories."
 			)
 		
 		embed = embeds.GENERIC.create("", "Try emblazoning this using DrawShield!", heading = "Random image")
