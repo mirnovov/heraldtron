@@ -53,3 +53,29 @@ class Navigator(ui.View):
 			self.last_button.disabled = False
 		
 		await interaction.response.edit_message(embed = self.embeds[self.index], view = self)
+		
+	async def on_timeout(self):
+		self.clear_items()
+		
+class HelpSwitcher(ui.View):
+	def __init__(self, embeds, logger):
+		super().__init__()
+		
+		for name, embed in embeds.items():
+			self.add_item(self.help_button(name, embed))
+			
+		self.children[0].disabled = True
+		
+	def help_button(self, name, embed):
+		async def switch(interaction):
+			for child in self.children:
+				child.disabled = child.label == name
+	
+			await interaction.response.edit_message(embed = embed, view = self)
+		
+		button = ui.Button(label = name, style = discord.ButtonStyle.primary)
+		button.callback = switch
+		return button
+		
+	async def on_timeout(self):
+		self.clear_items()

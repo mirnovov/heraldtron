@@ -87,14 +87,16 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 	
 	async def send_bot_help(self, mapping):
 		bot = self.context.bot
-		pages = []
+		pages = {}
 		
 		for key in sorted(self.context.bot.melded_cogs, key = self.sort_melded_cogs):
 			page = self.context.bot.melded_cogs[key]
 			embed, valid = await self.send_melded_cog_help(key, page)
-			if valid: pages.append(embed)
+			if valid: pages[key] = embed
+			
 
-		await self.context.send(embed = pages[0], view = views.Navigator(pages))
+		first = next(iter(pages.values()))
+		await self.context.send(embed = first, view = views.HelpSwitcher(pages, self.context.bot.logger))
 	
 	async def send_melded_cog_help(self, title, cogs):
 		embed = embeds.HELP.create(f"{title} commands", "")
