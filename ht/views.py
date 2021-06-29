@@ -15,23 +15,23 @@ class Navigator(ui.View):
 		self.embeds = embeds
 		self.size = len(self.embeds) - 1
 	
-	@ui.button(label = "\u27E8\u27E8", style = discord.ButtonStyle.primary, disabled = True)
+	@ui.button(emoji = "<:first:859371978612015136>", style = discord.ButtonStyle.primary, disabled = True)
 	async def first_button(self, button, interaction):
 		await self.modify(0, interaction)
 	
-	@ui.button(label = "\U0001F868", style = discord.ButtonStyle.primary, disabled = True)
+	@ui.button(emoji = "<:prev:859371979035377694>", style = discord.ButtonStyle.primary, disabled = True)
 	async def prev_button(self, button, interaction):
 		await self.modify(self.index - 1, interaction)
 		
-	@ui.button(label = "?")
+	@ui.button(emoji = "<:random:859371979093442580>")
 	async def random_button(self, button, interaction):
 		await self.modify(random.randrange(0, self.size + 1), interaction)
 	
-	@ui.button(label = "\U0001F86A", style = discord.ButtonStyle.primary)
+	@ui.button(emoji = "<:next:859371979026071582>", style = discord.ButtonStyle.primary)
 	async def next_button(self, button, interaction):
 		await self.modify(self.index + 1, interaction)
 		
-	@ui.button(label = "\u27E9\u27E9", style = discord.ButtonStyle.primary)
+	@ui.button(emoji = "<:last:859371979026464778>", style = discord.ButtonStyle.primary)
 	async def last_button(self, button, interaction):
 		await self.modify(self.size, interaction)
 		
