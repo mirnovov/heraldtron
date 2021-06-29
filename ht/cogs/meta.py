@@ -23,7 +23,6 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 	)
 	async def about(self, ctx):
 		embed = embeds.ABOUT.create(f"Heraldtron {__version__}", self.bot.description)
-		embed.url = "https://github.com/mirnovov/heraldtron"
 		embed.set_thumbnail(url = str(self.bot.user.avatar.with_size(512).url))
 		
 		embed.add_field(
@@ -54,7 +53,21 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		)
 		embed.set_footer(text="© novov 2021. This is an open source project available under the MIT license.")
 		
-		await ctx.send(embed=embed)	
+		view = discord.ui.View()
+		view.add_item(discord.ui.Button(
+			emoji = "\U0001F6E1",
+			label = "Visit the Heraldry Discord", 
+			style = discord.ButtonStyle.secondary, 
+			url = "https://discord.gg/Wvsz2M36nt"
+		))
+		view.add_item(discord.ui.Button(
+			emoji = "\U0001F4BB",
+			label = "Edit on GitHub", 
+			style = discord.ButtonStyle.secondary, 
+			url = "https://github.com/mirnovov/heraldtron"
+		))
+		
+		await ctx.send(embed = embed, view = view)
 		
 	def get_os_name(self):
 		if os.path.exists("/etc/os-release"):
