@@ -1,6 +1,6 @@
 import discord, aiohttp, aiosqlite, platform, os, re
 from discord.ext import commands
-from .. import utils, embeds, __version__
+from .. import utils, views, embeds, __version__
 
 class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = False):
 	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=(.+)")
@@ -93,11 +93,8 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 			page = self.context.bot.melded_cogs[key]
 			embed, valid = await self.send_melded_cog_help(key, page)
 			if valid: pages.append(embed)
-			
-		for i, embed in enumerate(pages, start = 1):
-			embed.set_author(icon_url = embeds.HELP.icon_url, name = f"Command help ({i}/{len(pages)})")
-			
-		await embeds.paginate(self.context, lambda i: pages[i], len(pages))
+
+		await self.context.send(embed = pages[0], view = views.Navigator(pages))
 	
 	async def send_melded_cog_help(self, title, cogs):
 		embed = embeds.HELP.create(f"{title} commands", "")

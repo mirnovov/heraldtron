@@ -45,38 +45,6 @@ USER_INFO = Theme.USER_INFO
 CHOICE = Theme.CHOICE
 DRAW = Theme.DRAW
 COUNTDOWN = Theme.COUNTDOWN
-
-async def paginate(ctx, embed_function, embeds_size):
-	message = await ctx.send(embed = embed_function(0))		
-	emojis = ("\U000023EE\U0000FE0F", "\U00002B05\U0000FE0F", "\U0001F500", "\U000027A1\U0000FE0F", "\U000023ED\U0000FE0F")
-	index = 0
-	await responses.multi_react(message, emojis)
-	
-	while True:
-		try:
-			reaction, user = await ctx.bot.wait_for(
-				"reaction_add", 
-				check = responses.button_check(ctx, message, emojis),
-				timeout = responses.SHORT_TIMEOUT
-			)
-			updated = await message.channel.fetch_message(message.id)
-			
-			if reaction.emoji == emojis[0]: index = 0
-			elif reaction.emoji == emojis[1] and index > 0: index -= 1
-			elif reaction.emoji == emojis[2]: index = random.randrange(0, embeds_size - 1)
-			elif reaction.emoji == emojis[3] and index < embeds_size - 1: index += 1
-			elif reaction.emoji == emojis[4]: index = embeds_size - 1
-			
-			await message.edit(embed = embed_function(index))
-			
-			if isinstance(ctx.channel, discord.abc.GuildChannel):
-				await message.remove_reaction(reaction, ctx.author)
-			
-		except asyncio.TimeoutError:
-			await message.edit(content=":x: | The paged command has timed out.")
-			if isinstance(ctx.channel, discord.abc.GuildChannel): 
-				await message.clear_reactions()
-			return
 			
 def countdown(time):
 	now = datetime.now(tz = timezone.utc)

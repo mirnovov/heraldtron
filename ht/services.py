@@ -1,6 +1,6 @@
 import discord, asyncio, urllib, io, base64
 from xml.etree import ElementTree
-from . import utils, embeds
+from . import embeds, utils, views
 
 async def gis(ctx, query):
 	IMAGE_NUM = 10
@@ -25,19 +25,22 @@ async def gis(ctx, query):
 		"The search returned no images. Check that what you are looking for exists."
 	)
 	
-	def image_result(index):
-		item = search["items"][index]
+	def image_result(item):
 		url = discord.utils.escape_markdown(item["image"]["contextLink"])
 		embed = embeds.SEARCH_RESULT.create(
 			f"Results for \"{query}\"",
 			f"[{item['title']}]({url})",
-			heading = f"Google image search ({index + 1}/{IMAGE_NUM})"
+			heading = "Google image search"
 		)
-		embed.set_image(url=item["link"])
-		embed.set_footer(text=f"Search conducted using the Google Custom Search API in {search['searchInformation']['formattedSearchTime']}s.")
+		embed.set_image(url = item["link"])
+		embed.set_footer(
+			text = "Search conducted using the Google Custom Search API "
+				  f"in {search['searchInformation']['formattedSearchTime']}s."
+		)
 		return embed
 	
-	await embeds.paginate(ctx, image_result, IMAGE_NUM)
+	pages = tuple(image_result(page) for page in search["items"])
+	await ctx.send(embed = pages[0], view = views.Navigator(pages))
 
 async def ds(session, blazon, drawn_kind):
 	blazon_out = urllib.parse.quote(blazon)

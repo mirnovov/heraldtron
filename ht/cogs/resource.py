@@ -1,6 +1,6 @@
 import asyncio, random, csv, re
 from discord.ext import commands
-from .. import embeds, utils
+from .. import embeds, utils, views
 
 class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldry"):
 	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
@@ -72,30 +72,25 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 		aliases = ("re", "source", "resource", "r")
 	)
 	async def resources(self, ctx):
-		embed_list = []
-		embed_size = self.PAGE_SIZE + 1
+		pages = []
+		current_size = self.PAGE_SIZE + 1
 		
 		for command, name, url in self.resources:
-			if embed_size > self.PAGE_SIZE:
-				embed = embeds.GENERIC.create("All resources", "")
-				embed_list.append(embed)
-				embed_size = 0
+			if current_size > self.PAGE_SIZE:
+				embed = embeds.GENERIC.create(
+					"All resources", "", heading = "Heraldic resources collection"
+				)
+				pages.append(embed)
+				current_size = 0
 				
 			embed.add_field(
 				name = name, 
 				value = f"`{ctx.clean_prefix}{command.name}` - {command.help} [\u2139\uFE0E]({url})", 
 				inline = False
 			)
-			embed_size += 1
-			
-		for i, embed in enumerate(embed_list, start = 1):
-			embed.set_author(
-				icon_url = embeds.GENERIC.icon_url, 
-				name = f"Heraldic resources collection ({i}/{len(embed_list)})"
-			)
-			
-		await embeds.paginate(ctx, lambda i: embed_list[i], len(embed_list))
-	
+			current_size += 1
+		
+		await ctx.send(embed = pages[0], view = views.Navigator(pages))		
 		
 def setup(bot):
 	bot.add_cog(HeraldryResources(bot))
