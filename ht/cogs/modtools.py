@@ -114,8 +114,12 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 	)
 	async def modmessage(self, ctx, channel : typing.Optional[discord.TextChannel] = None, *, message_content):
 		channel = channel or ctx.channel
+		prompt = "This will be posted in this DM. To specify a channel, try again and mention it before your message."
 		
-		await responses.confirm(ctx, f"This will be posted to {channel.mention} in **{channel.guild.name}**.")
+		if isinstance(ctx.channel, discord.abc.GuildChannel): 
+			prompt = f"This will be posted to {channel.mention} in **{channel.guild.name}**."
+		
+		await responses.confirm(ctx, prompt)
 	
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
