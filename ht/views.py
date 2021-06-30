@@ -13,60 +13,42 @@ class Navigator(ui.View):
 		
 		self.index = 0
 		self.embeds = embeds
-		self.size = len(self.embeds) - 1
-	
-	@ui.button(emoji = "<:first:859371978612015136>", style = discord.ButtonStyle.primary, disabled = True)
-	async def first_button(self, button, interaction):
-		await self.modify(0, interaction)
-	
-	@ui.button(emoji = "<:prev:859371979035377694>", style = discord.ButtonStyle.primary, disabled = True)
-	async def prev_button(self, button, interaction):
-		await self.modify(self.index - 1, interaction)
 		
-	@ui.button(emoji = "<:random:859371979093442580>")
-	async def random_button(self, button, interaction):
-		await self.modify(random.randrange(0, self.size + 1), interaction)
-	
-	@ui.button(emoji = "<:next:859371979026071582>", style = discord.ButtonStyle.primary)
-	async def next_button(self, button, interaction):
-		await self.modify(self.index + 1, interaction)
+		self.add_nav("<:first:859371978612015136>", lambda: 0, disabled = True)
+		self.add_nav("<:prev:859371979035377694>", lambda: self.index - 1, disabled = True)
+		self.add_nav("<:random:859371979093442580>", lambda: random.randrange(0, len(self.embeds)), False)
+		self.add_nav("<:next:859371979026071582>", lambda: self.index + 1)
+		self.add_nav("<:last:859371979026464778>", lambda: len(self.embeds) - 1)
 		
-	@ui.button(emoji = "<:last:859371979026464778>", style = discord.ButtonStyle.primary)
-	async def last_button(self, button, interaction):
-		await self.modify(self.size, interaction)
-		
-	async def modify(self, index, interaction):
-		self.index = index
-		
-		if index == 0:
-			self.prev_button.disabled = True
-			self.first_button.disabled = True
-		else: 
-			self.prev_button.disabled = False
-			self.first_button.disabled = False
+	def add_nav(self, emoji, index, primary = True, **kwargs):
+		async def switch(interaction):
+			self.index = index()
 			
-		if index == self.size:
-			self.next_button.disabled = True
-			self.last_button.disabled = True
-		else: 
-			self.next_button.disabled = False
-			self.last_button.disabled = False
+			for child in self.children[:2]:
+				child.disabled = self.index == 0
+				
+			for child in self.children[-2:]:
+				child.disabled = self.index == len(self.embeds) - 1
+			
+			await interaction.response.edit_message(embed = self.embeds[self.index], view = self)
 		
-		await interaction.response.edit_message(embed = self.embeds[self.index], view = self)
+		style = discord.ButtonStyle.primary if primary else discord.ButtonStyle.secondary
+		button = ui.Button(emoji = emoji, style = style, **kwargs)
+		button.callback = switch
+		
+		self.add_item(button)
 		
 	async def on_timeout(self):
 		self.clear_items()
 		
 class HelpSwitcher(ui.View):
-	def __init__(self, embeds, logger):
+	def __init__(self, embeds):
 		super().__init__()
-		
-		for name, embed in embeds.items():
-			self.add_item(self.help_button(name, embed))
+		tuple(self.add_help(name, embed) for name, embed in embeds.items())
 			
 		self.children[0].disabled = True
 		
-	def help_button(self, name, embed):
+	def add_help(self, name, embed):
 		async def switch(interaction):
 			for child in self.children:
 				child.disabled = child.label == name
@@ -75,7 +57,8 @@ class HelpSwitcher(ui.View):
 		
 		button = ui.Button(label = name, style = discord.ButtonStyle.primary)
 		button.callback = switch
-		return button
+		
+		self.add_item(button)
 		
 	async def on_timeout(self):
 		self.clear_items()
