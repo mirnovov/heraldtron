@@ -1,4 +1,5 @@
 import discord, asyncio, typing, re
+from discord import ui
 from discord.ext import commands
 from datetime import datetime
 from .. import converters, embeds, responses, utils, views
@@ -218,17 +219,16 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 			f" is currently not operational. Turn it on with `{ctx.clean_prefix}messages yes`."
 		)
 			
-		result = await responses.respond_or_react(
+		result = await views.RespondOrReact.run(
 			ctx,
-			"Either type your message below, react with :leftwards_arrow_with_hook:"
-			" to revert to the default, or with :x: to cancel.\n"
-			"To include details, use `GUILD_NAME`, `MENTION`, or `MEMBER_NAME`.",
-			["\U000021A9\U0000FE0F"]
+			"Type your message below. To add details, include `GUILD_NAME`,"
+			" `MENTION`, or `MEMBER_NAME` in the message.",
+			(ui.Button(label = "Reset to default", style = discord.ButtonStyle.secondary),)
 		)
 		
-		if isinstance(result, discord.Message) or result[0].emoji == "\U000021A9\U0000FE0F":
+		if result == "Reset to default" or isinstance(result, discord.Message):
 			message_type = "welcome_text" if not leave else "leave_text"
-			new = None if isinstance(result, tuple) else result.content
+			new = None if isinstance(result, str) else result.content
 			
 			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;", (new, guild.id))
 			await ctx.bot.dbc.commit()

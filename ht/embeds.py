@@ -2,7 +2,7 @@ import discord, asyncio, random
 from discord.ext import commands
 from enum import Enum
 from datetime import datetime, timezone, timedelta
-from . import responses, utils
+from . import utils
 
 DEFAULT = 0x444850
 

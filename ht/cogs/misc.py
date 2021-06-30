@@ -1,6 +1,6 @@
 import discord, asyncio, typing, random, os, html
 from discord.ext import commands
-from .. import converters, embeds, services, responses, utils
+from .. import converters, embeds, services, responses, utils, views
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
 	COUNTDOWN_LIMIT = 3
@@ -49,10 +49,10 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				"The date that you entered is in the past."
 			)
 		
-		desc = (await responses.respond_or_react(
+		desc = (await views.RespondOrReact.run(
 			ctx,
-			f"Your countdown will expire at **{utils.stddatetime(elapsed)}**. Now,"
-			" give it a name by responding below, or react with :x: to cancel."
+			f"Your countdown will expire at **{utils.stddatetime(elapsed)}**."
+			" Give it a name by responding below."
 		)).content
 		
 		embed.description = desc	
@@ -70,14 +70,13 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	)
 	async def distribute(self, ctx, size : converters.Range(3, 50) = None):
 		if not size:
-			message = await responses.respond_or_react(
+			message = await views.RespondOrReact.run(
 				ctx,
-				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)"
-				", or react with :x: to cancel.",
-				timeout = reponses.LONG_TIMEOUT
+				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)",
+				timeout = views.LONG_TIMEOUT
 			)
 			names = dict(enumerate(message.content.split("\n"), start = 1))
-			size = converters.Range(3, 50).convert(len(names))
+			size = await converters.Range(3, 50).convert(ctx, len(names))
 		else: names = None
 					
 		def distribution(keysize):

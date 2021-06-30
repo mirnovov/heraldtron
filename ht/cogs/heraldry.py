@@ -1,6 +1,6 @@
 import discord, csv, json, random, re
 from discord.ext import commands
-from .. import converters, embeds, services, utils
+from .. import converters, embeds, services, utils, views
 from ..artifacts import Source
 
 class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
@@ -138,9 +138,9 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 					if letter.upper() in letters: return value
 				raise utils.BadMessageResponse("Invalid value")
 			
-			message = await responses.respond_or_react(
+			message = await views.RespondOrReact.run(
 				ctx,
-				"This command generates a blazon from a few details. React with :x: to cancel.\n"
+				"This command generates a blazon from a few details.\n"
 				"To start with, give me a short name of a **day**, then a **month**, like 8 Apr.",
 				added_check = lambda m: m.content in parts["charge"].keys()
 			)

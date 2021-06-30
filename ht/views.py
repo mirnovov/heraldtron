@@ -1,6 +1,8 @@
-import discord, random
+import discord, asyncio, random
 from discord import ui
 from . import utils
+
+LONG_TIMEOUT = 1000
 
 class Navigator(ui.View):
 	def __init__(self, embeds):
@@ -101,3 +103,52 @@ class Confirm(ui.View):
 		await interaction.response.pong()
 		self.result = result
 		self.stop()
+		
+class RespondOrReact(ui.View):
+	def __init__(self, ctx, **kwargs):
+		super().__init__(**kwargs)
+		
+		self.pressed = None
+		self.ctx = ctx		
+		self.add_button(ui.Button(label = "Cancel", style = discord.ButtonStyle.danger))
+		
+	async def interaction_check(self, interaction):
+		return True if not self.ctx.author else interaction.user == self.ctx.author
+	
+	@staticmethod
+	async def run(ctx, info, additional = tuple(), added_check = None, **kwargs):
+		def check_message(message):
+			if ctx.author != message.author: return False
+			elif added_check: return added_check(message)
+			return True
+			
+		view = RespondOrReact(ctx, **kwargs)
+		tuple(view.add_button(item) for item in additional)			
+		
+		message = await ctx.send(info, view = view)
+		done, pending = await asyncio.wait(
+			(view.wait(), ctx.bot.wait_for("message", check = check_message, timeout = view.timeout)), 
+			return_when = asyncio.FIRST_COMPLETED
+		)
+		
+		for future in pending: future.cancel()	#ignore anything else
+		for future in done: future.exception() #retrieve and ignore any other completed future's exception
+		
+		await message.edit(view = None)
+		
+		if view.pressed == "Cancel":
+			raise await utils.CommandCancelled.create("Command cancelled", ctx)
+			
+		try:
+			return view.pressed or done.pop().result()
+		except asyncio.TimeoutError:
+			raise await utils.CommandCancelled.create("Command timed out", ctx)
+			
+	def add_button(self, button):
+		async def primitive(interaction):
+			await interaction.response.pong()
+			self.pressed = button.label
+			self.stop()
+		
+		button.callback = primitive
+		self.add_item(button)

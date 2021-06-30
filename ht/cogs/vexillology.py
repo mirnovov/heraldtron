@@ -1,7 +1,7 @@
 import discord, asyncio, csv, random 
 from discord.ext import commands
 from ..ext import OnlineSeych
-from .. import embeds, responses, services, utils
+from .. import embeds, services, utils, views
 
 class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 	def __init__(self, bot):
@@ -62,10 +62,10 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 	)
 	@utils.trigger_typing	
 	async def seychelles(self,ctx):
-		result = await responses.respond_or_react(
+		result = await views.RespondOrReact.run(
 			ctx,
 			"What image would you like me to seychelles-ize?\n"
-			"Respond with your image below, or react with :x: to cancel.\n",
+			"Respond with a picture of a flag below.\n",
 			added_check = lambda m: len(m.attachments) > 0 and m.attachments[0].content_type.startswith("image") 
 		)
 				
