@@ -74,10 +74,10 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				ctx,
 				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)"
 				", or react with :x: to cancel.",
-				timeout = reponses.LONG_TIMEOUT
+				timeout = responses.LONG_TIMEOUT
 			)
 			names = dict(enumerate(message.content.split("\n"), start = 1))
-			size = converters.Range(3, 50).convert(len(names))
+			size = await converters.Range(3, 50).convert(ctx, len(names))
 		else: names = None
 					
 		def distribution(keysize):

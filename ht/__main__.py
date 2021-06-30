@@ -42,6 +42,7 @@ class Heraldtron(commands.Bot):
 		
 		self.ready_flag = asyncio.Event()
 		self.loop.create_task(self.refresh_cache())
+		self.active_dms = set()
 		
 		if self.conf["OWNER_ONLY"]:
 			self.add_check(utils.check_is_owner)
@@ -146,7 +147,7 @@ class Heraldtron(commands.Bot):
 	async def get_prefix(self, message):
 		list = (self.command_prefix, f"<@{bot.user.id}> ", f"<@!{bot.user.id}> ")
 		
-		if not message.guild:
+		if not message.guild and message.channel.id not in self.active_dms:
 			return (*list, "")
 			
 		return list

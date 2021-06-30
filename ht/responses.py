@@ -6,6 +6,23 @@ LONG_TIMEOUT = 1000
 TIMEOUT = 300
 SHORT_TIMEOUT = 150
 
+def disable_dm_commands(func): 
+	#Unprefixed commands must be disabled for certain responses
+	
+	async def wrapper(*args, **kwargs):
+		ctx = args[0]
+		
+		if not isinstance(ctx.channel, discord.abc.GuildChannel):
+			ctx.bot.active_dms.add(ctx.channel.id)
+			result = await func(*args, **kwargs)
+			ctx.bot.active_dms.discard(ctx.channel.id)
+		else:
+			result = await func(*args, **kwargs)  
+		return result
+		
+	return wrapper
+
+@disable_dm_commands
 async def respond_or_react(ctx, message, emojis = [], timeout = TIMEOUT, added_check = None):
 	emojis.append("\U0000274C")
 	
@@ -35,7 +52,8 @@ async def respond_or_react(ctx, message, emojis = [], timeout = TIMEOUT, added_c
 		raise await utils.CommandCancelled.create("Command cancelled", ctx)
 		
 	return result
-	
+
+@disable_dm_commands	
 async def check(ctx, added_check, timeout = TIMEOUT):
 	#"hard" wait for that raises error on failure
 	try:
