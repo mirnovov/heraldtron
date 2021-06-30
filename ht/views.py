@@ -4,6 +4,22 @@ from . import utils
 
 LONG_TIMEOUT = 1000
 
+def disable_dm_commands(func): 
+	#Unprefixed commands must be disabled for certain responses
+	
+	async def wrapper(*args, **kwargs):
+		ctx = args[0]
+		
+		if not isinstance(ctx.channel, discord.abc.GuildChannel):
+			ctx.bot.active_dms.add(ctx.channel.id)
+			result = await func(*args, **kwargs)
+			ctx.bot.active_dms.discard(ctx.channel.id)
+		else:
+			result = await func(*args, **kwargs)  
+		return result
+		
+	return wrapper
+
 class Navigator(ui.View):
 	def __init__(self, embeds):
 		super().__init__()
@@ -116,6 +132,7 @@ class RespondOrReact(ui.View):
 		return True if not self.ctx.author else interaction.user == self.ctx.author
 	
 	@staticmethod
+	@disable_dm_commands
 	async def run(ctx, info, additional = tuple(), added_check = None, **kwargs):
 		def check_message(message):
 			if ctx.author != message.author: return False
