@@ -1,5 +1,6 @@
 import discord, random
 from discord import ui
+from . import utils
 
 class Navigator(ui.View):
 	def __init__(self, embeds):
@@ -62,3 +63,41 @@ class HelpSwitcher(ui.View):
 		
 	async def on_timeout(self):
 		self.clear_items()
+		
+class Confirm(ui.View):
+	def __init__(self, action, author = None):
+		super().__init__()
+		
+		self.result = None
+		self.author = author
+		
+		confirm = ui.Button(label = action, style = discord.ButtonStyle.success)
+		confirm.callback = lambda i: self.interact(True, i)
+		self.add_item(confirm)
+		
+		cancel = ui.Button(label = "Cancel", style = discord.ButtonStyle.danger)
+		cancel.callback = lambda i: self.interact(False, i)
+		self.add_item(cancel)
+		
+	async def interaction_check(self, interaction):
+		return True if not self.author else interaction.user == self.author
+		
+	@staticmethod
+	async def run(ctx, info, action = "Continue"):
+		view = Confirm(action, author = ctx.author)
+		message = await ctx.send(info, view = view)
+		
+		await view.wait()
+		await message.edit(view = None)
+		
+		if view.result == None:
+			raise await utils.CommandCancelled.create("Command timed out", ctx)
+		elif not view.result:
+			raise await utils.CommandCancelled.create("Command cancelled", ctx)
+		else:
+			await message.edit(content = ":white_check_mark: | Confirmed.")
+	
+	async def interact(self, result, interaction):
+		await interaction.response.pong()
+		self.result = result
+		self.stop()

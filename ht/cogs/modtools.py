@@ -1,7 +1,7 @@
 import discord, asyncio, typing, re
 from discord.ext import commands
 from datetime import datetime
-from .. import converters, embeds, responses, utils
+from .. import converters, embeds, responses, utils, views
 
 class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderation", limit = False):
 	MAX_FEEDS = 3
@@ -74,7 +74,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 			user: discord.PermissionOverwrite(manage_channels = True) 
 		}
 		
-		await responses.confirm(ctx, f"A new channel will be created for {user.name}#{user.discriminator}.")
+		await views.Confirm.run(ctx, f"Make a new channel for {user.name}#{user.discriminator}?", "Create")
 		
 		channel = await guild.create_text_channel(user.name, category = category, overwrites = overwrites)
 		await ctx.send(f":scroll: | {channel.mention} created for {user.mention}.")
@@ -114,13 +114,17 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 	)
 	async def modmessage(self, ctx, channel : typing.Optional[discord.TextChannel] = None, *, message_content):
 		channel = channel or ctx.channel
+		prompt = f"Send a message to this DM? To specify a channel, try again and mention it before your message."
 		
-		await responses.confirm(ctx, f"This will be posted to {channel.mention} in **{channel.guild.name}**.")
+		if isinstance(ctx.channel, discord.abc.GuildChannel): 
+			prompt = f"Send a message in {channel.mention} of **{channel.guild.name}**?"			
+		
+		await views.Confirm.run(ctx, prompt, "Post")
 	
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
-			text=f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
-			icon_url=ctx.author.avatar_url_as(size=256)
+			text = f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
+			icon_url = ctx.author.avatar.with_size(256).url
 		)
 
 		await channel.send(embed=embed)
