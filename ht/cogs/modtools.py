@@ -2,7 +2,7 @@ import discord, asyncio, typing, re
 from discord import ui
 from discord.ext import commands
 from datetime import datetime
-from .. import converters, embeds, responses, utils, views
+from .. import converters, embeds, utils, views
 
 class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderation", limit = False):
 	MAX_FEEDS = 3
@@ -91,18 +91,10 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		
 		values = []
 		for feed in feeds:
-			channel = getattr(await utils.get_channel(self.bot, feed[2]), "mention", "**invalid**")
-			values.append(f"**r/{feed[3]}** to {channel} (query: *{feed[5]}*)")
+			channel = getattr(await utils.get_channel(self.bot, feed[2]), "name", "invalid")
+			values.append(f"{feed[5]} sr:{feed[3]} | #{channel}")
 			
-		indice = await responses.choice(
-			ctx,
-			values,
-			("\U0001F98A", "\U0001F428", "\U0001F42E"), 
-			embeds.FEED, 
-			"",
-			f"Feeds for {guild.name}",
-			"delete a feed"
-		)
+		indice = await views.Chooser.run(ctx, "Choose a feed to delete:", values)
 		await self.bot.dbc.execute("DELETE FROM reddit_feeds WHERE id = ?;", (feeds[indice][0],))
 		
 		await self.bot.dbc.commit()
@@ -183,17 +175,12 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		if len(possible) == 1: 
 			await ctx.send(f"Executing command in **{possible[0].name}**...")
 			return possible[0]
-				
-		indice = await responses.choice(
-			ctx,
-			tuple(guild.name for guild in possible),
-			("\U0001F3DB", "\U0001F3E2", "\U0001F3ED", "\U0001F3F0", "\U0001F3EF"), 
-			embeds.CHOICE,
-			"Multiple servers are available",
-			None,
-			"select a server to use the command in"
-		) 
 		
+		indice = await views.Chooser.run(
+			ctx, 
+			"**Multiple servers are available.** Select a server to use the command in:", 
+			tuple(guild.name for guild in possible)
+		)		
 		return possible[indice]
 	
 	@staticmethod	

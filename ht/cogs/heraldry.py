@@ -147,21 +147,21 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 			results["charge"] = parts["charge"][message.content]
 			
 			await ctx.send("Okay. Now tell me the **first letter** of a **first name**.")
-			message = await responses.check(ctx, lambda m: len(m.content) == 1 and m.content.isalpha())
+			message = await utils.hard_check(ctx, lambda m: len(m.content) == 1 and m.content.isalpha())
 			results["ordinary"] = get_letter_val(message.content, parts["ordinary"])
 				
 			await ctx.send("Great. Now tell me the **amount** of letters in that person's **last name**.")
-			message = await responses.check(ctx, lambda m: m.content.isnumeric())
+			message = await utils.hard_check(ctx, lambda m: m.content.isnumeric())
 			
 			if int(message.content) % 2 == 0: 
 				tinctures = tinctures[::-1]
 				
 			await ctx.send("Thanks! Now, give me the **first three letters** of that **last name**.")
-			message = await responses.check(ctx, lambda m: len(m.content) == 3 and m.content.isalpha())
+			message = await utils.hard_check(ctx, lambda m: len(m.content) == 3 and m.content.isalpha())
 			letters = message.content
 			
 			await ctx.send("And finally, give me the **last two letters** of the **first name**.")
-			message = await responses.check(ctx, lambda m: len(m.content) == 2 and m.content.isalpha())
+			message = await utils.hard_check(ctx, lambda m: len(m.content) == 2 and m.content.isalpha())
 			letters += message.content
 			pos = -1
 			

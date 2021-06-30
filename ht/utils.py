@@ -83,6 +83,17 @@ async def unqualify_name(bot, name, discriminator):
 		bot.users, name = name
 	)
 	
+async def hard_check(ctx, added_check, timeout = 300):
+	#"hard" wait for that raises error on failure
+	try:
+		part = await ctx.bot.wait_for("message", timeout = timeout, check = lambda m: m.author == ctx.author)
+	except asyncio.TimeoutError: 
+		raise await utils.CommandCancelled.create("Command timed out", ctx)
+	if not added_check(part):
+		raise utils.BadMessageResponse("Content given internally is of invalid form")
+		
+	return part
+	
 async def check_is_owner(ctx):
 	if not await ctx.bot.is_owner(ctx.author):
 		raise commands.NotOwner("Owner-only mode is enabled")

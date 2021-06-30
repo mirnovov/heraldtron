@@ -80,6 +80,9 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 	async def on_command_error(self, ctx, error):
 		mention, warn = None, False
 		
+		if not isinstance(ctx.channel, discord.abc.GuildChannel):
+			ctx.bot.active_dms.discard(ctx.channel.id)
+		
 		if (
 			(isinstance(error, commands.CommandNotFound) and re.match(BotErrors.IGNORE_PAT, ctx.message.content)) 
 			or isinstance(error, utils.CommandCancelled)

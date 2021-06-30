@@ -120,16 +120,50 @@ class Confirm(ui.View):
 		self.result = result
 		self.stop()
 		
-class RespondOrReact(ui.View):
-	def __init__(self, ctx, **kwargs):
+class Chooser(ui.View):
+	def __init__(self, ctx, choices):
 		super().__init__(**kwargs)
 		
 		self.pressed = None
-		self.ctx = ctx		
-		self.add_button(ui.Button(label = "Cancel", style = discord.ButtonStyle.danger))
+		self.ctx = ctx
+
+		for i, choice in enumerate(choices):
+			self.add_button(ui.Button(label = choice, style = discord.ButtonStyle.primary), i)
 		
+		self.add_button(ui.Button(label = "Cancel", style = discord.ButtonStyle.danger), "Cancel")
+			
 	async def interaction_check(self, interaction):
 		return True if not self.ctx.author else interaction.user == self.ctx.author
+			
+	@staticmethod
+	@disable_dm_commands
+	async def run(ctx, info, choices, **kwargs):
+		view = Chooser(ctx, choices, **kwargs)
+		
+		message = await ctx.send(info, view = view)
+		await view.wait()
+		await message.edit(view = None)
+		
+		return await view.get_result()
+			
+	async def get_result(self):
+		if self.pressed == "Cancel":
+			raise await utils.CommandCancelled.create("Command cancelled", self.ctx)
+		
+		return self.pressed
+			
+	def add_button(self, button, indice):
+		async def primitive(interaction):
+			await interaction.response.pong()
+			self.pressed = indice
+			self.stop()
+		
+		button.callback = primitive
+		self.add_item(button)
+		
+class RespondOrReact(Chooser):
+	def __init__(self, ctx, **kwargs):
+		super().__init__(ctx, tuple(), **kwargs)
 	
 	@staticmethod
 	@disable_dm_commands
@@ -140,7 +174,7 @@ class RespondOrReact(ui.View):
 			return True
 			
 		view = RespondOrReact(ctx, **kwargs)
-		tuple(view.add_button(item) for item in additional)			
+		tuple(view.add_button(item, item.label) for item in additional)			
 		
 		message = await ctx.send(info, view = view)
 		done, pending = await asyncio.wait(
@@ -153,19 +187,36 @@ class RespondOrReact(ui.View):
 		
 		await message.edit(view = None)
 		
-		if view.pressed == "Cancel":
-			raise await utils.CommandCancelled.create("Command cancelled", ctx)
-			
 		try:
-			return view.pressed or done.pop().result()
+			return await view.get_result() or done.pop().result()
 		except asyncio.TimeoutError:
-			raise await utils.CommandCancelled.create("Command timed out", ctx)
+			raise await utils.CommandCancelled.create("Command timed out", self.ctx)
 			
-	def add_button(self, button):
-		async def primitive(interaction):
-			await interaction.response.pong()
-			self.pressed = button.label
-			self.stop()
+class TriviaButton(ui.Button):
+	def __init__(self, label, users):
+		super().__init__(label = label, style = discord.ButtonStyle.primary)
+		self.users = users
+	
+	async def callback(self, interaction):
+		mention = interaction.user.mention
 		
-		button.callback = primitive
-		self.add_item(button)
+		if mention not in self.users:
+			self.users[mention]	= self.label		
+			await interaction.response.pong()
+		else:
+			subview = ui.View()
+			undo_button = ui.Button(label = "Undo", style = discord.ButtonStyle.danger)
+			undo_button.callback = self.undo
+			subview.add_item(undo_button)
+			
+			await interaction.response.send_message(
+				content = ":x: | You've already responded.", ephemeral = True, view = subview
+			)	
+			
+	async def undo(self, interaction):
+		del self.users[interaction.user.mention]
+		await interaction.response.pong()
+		
+		await interaction.response.edit_message(
+			content = ":leftwards_arrow_with_hook: | Your response has been undone.", view = None
+		)

@@ -1,6 +1,8 @@
 import discord, asyncio, typing, random, os, html
+from discord import ui
 from discord.ext import commands
-from .. import converters, embeds, services, responses, utils, views
+from collections import defaultdict
+from .. import converters, embeds, services, utils, views
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
 	COUNTDOWN_LIMIT = 3
@@ -171,56 +173,35 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		result = result["results"][0]
 		info = f"**{result['category']}** | {result['difficulty'].capitalize()}\n\n"
 		embed = embeds.GENERIC.create(html.unescape(result["question"]), info, heading = "Trivia")
-		
-		if result["type"] == "boolean":
-			emojis = ("\U0001F438", "\U0001F430")
-			correct = random.randrange(0,2)
-		else:
-			emojis = ("\U0001F431", "\U0001F436", "\U0001F434", "\U0001F43B")
-			correct = random.randrange(0,4)
+		correct = random.randrange(0,2 if result["type"] == "boolean" else 4)
 			
 		answers = result["incorrect_answers"]
-		answers.insert(correct,result["correct_answer"])
-		
-		for num, answer in enumerate(answers):
-			embed.description += f"- {emojis[num]} {html.unescape(answer)}\n\n"
-			
-		embed.description += f"React to respond. The correct answer will appear in **one minute.**"
-		
+		answers.insert(correct, result["correct_answer"])
+					
+		embed.description += f"The correct answer will appear in **one minute.**"
 		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
-		message = await ctx.send(embed = embed)
-		await responses.multi_react(message, emojis)
+		
+		view = ui.View()
+		users = {}
+		tuple(view.add_item(views.TriviaButton(answer, users)) for answer in answers)
+		
+		message = await ctx.send(embed = embed, view = view)
 		await asyncio.sleep(60)
 		
-		embed.description = f"{info}The correct answer is: {emojis[correct]}"\
-		 					f" **{html.unescape(answers[correct])}**"
+		embed.description = f"{info}The correct answer is: **{html.unescape(answers[correct])}**"
 		updated = await message.channel.fetch_message(message.id)
 		
 		if updated is None: return #message deleted
 		
-		response_lines = ""
-
-		for react in updated.reactions:
-			if react.emoji not in emojis or react.count == 1: continue
-			
-			num = emojis.index(react.emoji)
-			respondents = []
-			emoji_str = str(react.emoji)
-			
-			async for user in react.users():
-				if user == ctx.bot.user: continue
-				respondents.append(user.mention)
+		results = defaultdict(list)
+		
+		for user, answer in users.items():
+			results[answer].append(user)
 				
-			response_lines += f"\n- {emoji_str} {answers[num]}: "\
-						   f"{', '.join(respondents)} (**{react.count - 1}**)\n\u200b"
-						   
-		if response_lines:
-			embed.description += f"\n\n**Responses:**\n\u0020{response_lines}"
+		stats = "\n".join(f"- {a}: {','.join(u)} (**{len(u)}**)" for a, u in results.items())
+		if stats: embed.description += f"\n\n**Responses:**\n\u0020{stats}"
 		
-		await message.edit(embed = embed)
-		
-		if isinstance(ctx.channel, discord.abc.GuildChannel):
-			await message.clear_reactions()
+		await message.edit(embed = embed, view = None)
 			
 	@trivia.command(help = "Lists all categories.")
 	async def categories(self, ctx):
