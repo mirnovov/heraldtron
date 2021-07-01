@@ -4,7 +4,7 @@ from logging import Formatter
 from textwrap import TextWrapper
 from datetime import timedelta
 from dateutil.tz import gettz
-from . import __version__
+from . import __version__, views
 
 class MeldedCog(commands.Cog):
 	def __init_subclass__(self, *args, **kwargs):
@@ -82,7 +82,8 @@ async def unqualify_name(bot, name, discriminator):
 	) or discord.utils.get(
 		bot.users, name = name
 	)
-	
+
+@views.disable_dm_commands	
 async def hard_check(ctx, added_check, timeout = 300):
 	#"hard" wait for that raises error on failure
 	try:

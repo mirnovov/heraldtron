@@ -121,7 +121,7 @@ class Confirm(ui.View):
 		self.stop()
 		
 class Chooser(ui.View):
-	def __init__(self, ctx, choices):
+	def __init__(self, ctx, choices, **kwargs):
 		super().__init__(**kwargs)
 		
 		self.pressed = None
