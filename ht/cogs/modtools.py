@@ -75,7 +75,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 			user: discord.PermissionOverwrite(manage_channels = True) 
 		}
 		
-		await views.Confirm.run(ctx, f"Make a new channel for {user.name}#{user.discriminator}?", "Create")
+		await views.Confirm(ctx, "Create").run(f"Make a new channel for {user.name}#{user.discriminator}?")
 		
 		channel = await guild.create_text_channel(user.name, category = category, overwrites = overwrites)
 		await ctx.send(f":scroll: | {channel.mention} created for {user.mention}.")
@@ -89,12 +89,17 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		query = await self.bot.dbc.execute("SELECT * FROM reddit_feeds WHERE guild = ?", (guild.id,))
 		feeds = await query.fetchmany(size = self.MAX_FEEDS)
 		
+		if len(feeds) == 0: raise utils.CustomCommandError(
+			"No feeds to delete",
+			"There are currently no active feeds, so none can be deleted."
+		)
+		
 		values = []
 		for feed in feeds:
 			channel = getattr(await utils.get_channel(self.bot, feed[2]), "name", "invalid")
-			values.append(f"{feed[5]} sr:{feed[3]} | #{channel}")
+			values.append(discord.SelectOption(label = f"r/{feed[3]}", description = f"{feed[5]} in #{channel}"))
 			
-		indice = await views.Chooser.run(ctx, "Choose a feed to delete:", values)
+		indice = await views.Chooser(ctx, values, "Delete", discord.ButtonStyle.red).run("Choose a feed to delete:")
 		await self.bot.dbc.execute("DELETE FROM reddit_feeds WHERE id = ?;", (feeds[indice][0],))
 		
 		await self.bot.dbc.commit()
@@ -112,7 +117,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		if isinstance(ctx.channel, discord.abc.GuildChannel): 
 			prompt = f"Send a message in {channel.mention} of **{channel.guild.name}**?"			
 		
-		await views.Confirm.run(ctx, prompt, "Post")
+		await views.Confirm(ctx, "Create").run( prompt)
 	
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
@@ -176,10 +181,9 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 			await ctx.send(f"Executing command in **{possible[0].name}**...")
 			return possible[0]
 		
-		indice = await views.Chooser.run(
-			ctx, 
+		choices = tuple(discord.SelectOption(label = a.name) for a in possible)
+		indice = await views.Chooser(ctx, choices, "Execute").run(
 			"**Multiple servers are available.** Select a server to use the command in:", 
-			tuple(guild.name for guild in possible)
 		)		
 		return possible[indice]
 	
@@ -198,19 +202,18 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 	@staticmethod	
 	async def set_message(ctx, leave):
 		guild = await ModerationTools.choose_guild(ctx)
-		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
+		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;", (guild.id,))
 		
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
 			"Your message cannot be set, as the welcome and leave message functionality"
 			f" is currently not operational. Turn it on with `{ctx.clean_prefix}messages yes`."
 		)
-			
-		result = await views.RespondOrReact.run(
-			ctx,
+		
+		reset = ui.Button(label = "Reset to default", style = discord.ButtonStyle.secondary)	
+		result = await views.RespondOrReact(ctx, additional = (reset,)).run(
 			"Type your message below. To add details, include `GUILD_NAME`,"
 			" `MENTION`, or `MEMBER_NAME` in the message.",
-			(ui.Button(label = "Reset to default", style = discord.ButtonStyle.secondary),)
 		)
 		
 		if result == "Reset to default" or isinstance(result, discord.Message):

@@ -138,11 +138,10 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 					if letter.upper() in letters: return value
 				raise utils.BadMessageResponse("Invalid value")
 			
-			message = await views.RespondOrReact.run(
-				ctx,
+			added_check = lambda m: m.content in parts["charge"].keys()
+			message = await views.RespondOrReact(ctx, added_check = added_check).run(
 				"This command generates a blazon from a few details.\n"
-				"To start with, give me a short name of a **day**, then a **month**, like 8 Apr.",
-				added_check = lambda m: m.content in parts["charge"].keys()
+				"To start with, give me a short name of a **day**, then a **month**, like 8 Apr."
 			)
 			results["charge"] = parts["charge"][message.content]
 			

@@ -1,14 +1,14 @@
 import discord, asyncio, random
 from discord import ui
+from discord.ext import commands
 from . import utils
 
 LONG_TIMEOUT = 1000
 
 def disable_dm_commands(func): 
 	#Unprefixed commands must be disabled for certain responses
-	
 	async def wrapper(*args, **kwargs):
-		ctx = args[0]
+		ctx = args[0] if type(args[0]) == commands.Context else args[0].ctx
 		
 		if not isinstance(ctx.channel, discord.abc.GuildChannel):
 			ctx.bot.active_dms.add(ctx.channel.id)
@@ -81,104 +81,93 @@ class HelpSwitcher(ui.View):
 		
 	async def on_timeout(self):
 		self.clear_items()
-		
-class Confirm(ui.View):
-	def __init__(self, action, author = None):
-		super().__init__()
-		
-		self.result = None
-		self.author = author
-		
-		confirm = ui.Button(label = action, style = discord.ButtonStyle.success)
-		confirm.callback = lambda i: self.interact(True, i)
-		self.add_item(confirm)
-		
-		cancel = ui.Button(label = "Cancel", style = discord.ButtonStyle.danger)
-		cancel.callback = lambda i: self.interact(False, i)
-		self.add_item(cancel)
-		
-	async def interaction_check(self, interaction):
-		return True if not self.author else interaction.user == self.author
-		
-	@staticmethod
-	async def run(ctx, info, action = "Continue"):
-		view = Confirm(action, author = ctx.author)
-		message = await ctx.send(info, view = view)
-		
-		await view.wait()
-		await message.edit(view = None)
-		
-		if view.result == None:
-			raise await utils.CommandCancelled.create("Command timed out", ctx)
-		elif not view.result:
-			raise await utils.CommandCancelled.create("Command cancelled", ctx)
-		else:
-			await message.edit(content = ":white_check_mark: | Confirmed.")
-	
-	async def interact(self, result, interaction):
-		await interaction.response.pong()
-		self.result = result
-		self.stop()
-		
-class Chooser(ui.View):
-	def __init__(self, ctx, choices, **kwargs):
-		super().__init__(**kwargs)
-		
-		self.pressed = None
-		self.ctx = ctx
 
-		for i, choice in enumerate(choices):
-			self.add_button(ui.Button(label = choice, style = discord.ButtonStyle.primary), i)
+class UserSelector(ui.View):
+	def __init__(self, ctx, **kwargs):
+		super().__init__(**kwargs)
+		self.ctx = ctx
+		self.chosen = None
 		
-		self.add_button(ui.Button(label = "Cancel", style = discord.ButtonStyle.danger), "Cancel")
-			
+		self.add_button(ui.Button(label = "Cancel", style = discord.ButtonStyle.red), -1)
+		
 	async def interaction_check(self, interaction):
 		return True if not self.ctx.author else interaction.user == self.ctx.author
-			
-	@staticmethod
-	@disable_dm_commands
-	async def run(ctx, info, choices, **kwargs):
-		view = Chooser(ctx, choices, **kwargs)
 		
-		message = await ctx.send(info, view = view)
-		await view.wait()
-		await message.edit(view = None)
-		
-		return await view.get_result()
-			
-	async def get_result(self):
-		if self.pressed == "Cancel":
-			raise await utils.CommandCancelled.create("Command cancelled", self.ctx)
-		
-		return self.pressed
-			
 	def add_button(self, button, indice):
 		async def primitive(interaction):
-			await interaction.response.pong()
-			self.pressed = indice
+			self.chosen = indice
 			self.stop()
 		
 		button.callback = primitive
+		button.row = 2
 		self.add_item(button)
-		
-class RespondOrReact(Chooser):
-	def __init__(self, ctx, **kwargs):
-		super().__init__(ctx, tuple(), **kwargs)
-	
-	@staticmethod
+			
+	async def get_choice(self):
+		if self.chosen == -1:
+			raise await utils.CommandCancelled.create("Command cancelled", self.ctx) 
+		try:
+			return self.chosen
+		except asyncio.TimeoutError:
+			raise await utils.CommandCancelled.create("Command timed out", self.ctx)
+			
 	@disable_dm_commands
-	async def run(ctx, info, additional = tuple(), added_check = None, **kwargs):
+	async def run(self, info):
+		self.message = await self.ctx.send(info, view = self)
+		await self.wait()
+		await self.message.edit(view = None)
+		return await self.get_choice()
+		
+class Confirm(UserSelector):
+	def __init__(self, ctx, action = "Continue"):
+		super().__init__(ctx)
+		self.add_button(ui.Button(label = action, style = discord.ButtonStyle.success), "OK")
+	
+	async def run(self, info):
+		result = await super().run(info)
+		await self.message.edit(content = ":white_check_mark: | Confirmed.")
+		return result
+		
+class Chooser(UserSelector):
+	def __init__(self, ctx, choices, action, style = discord.ButtonStyle.success, **kwargs):
+		super().__init__(ctx, **kwargs)
+		self.chosen = 0
+		
+		self.select = ui.Select()
+		self.add_item(self.select)
+		
+		for i, choice in enumerate(choices):
+			choice.value = str(i)
+			choice.default = i == 0
+			self.select.append_option(choice) 
+		
+		confirm = ui.Button(label = action, style = style)
+		confirm.callback = self.choose
+		confirm.row = 2
+		self.add_item(confirm)
+		
+	async def choose(self, interaction):
+		if self.select.values:
+			self.chosen = int(self.select.values[0])
+		
+		self.stop()
+		
+class RespondOrReact(UserSelector):
+	def __init__(self, ctx, additional = tuple(), added_check = None, **kwargs):
+		super().__init__(ctx, **kwargs)
+		
+		self.added_check = added_check
+		tuple(self.add_button(item, item.label) for item in additional)	
+	
+	@disable_dm_commands
+	async def run(self, info):
 		def check_message(message):
-			if ctx.author != message.author: return False
-			elif added_check: return added_check(message)
+			if self.ctx.author != message.author: return False
+			elif self.added_check: return self.added_check(message)
 			return True
 			
-		view = RespondOrReact(ctx, **kwargs)
-		tuple(view.add_button(item, item.label) for item in additional)			
-		
-		message = await ctx.send(info, view = view)
+		message = await self.ctx.send(info, view = self)
 		done, pending = await asyncio.wait(
-			(view.wait(), ctx.bot.wait_for("message", check = check_message, timeout = view.timeout)), 
+			(self.wait(), self.ctx.bot.wait_for("message", check = check_message, timeout = self.timeout)), 
 			return_when = asyncio.FIRST_COMPLETED
 		)
 		
@@ -186,11 +175,7 @@ class RespondOrReact(Chooser):
 		for future in done: future.exception() #retrieve and ignore any other completed future's exception
 		
 		await message.edit(view = None)
-		
-		try:
-			return await view.get_result() or done.pop().result()
-		except asyncio.TimeoutError:
-			raise await utils.CommandCancelled.create("Command timed out", self.ctx)
+		return await self.get_choice() or done.pop().result()
 			
 class TriviaButton(ui.Button):
 	def __init__(self, label, users):

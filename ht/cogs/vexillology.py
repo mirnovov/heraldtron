@@ -61,12 +61,11 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 		aliases = ("sy", "seych")
 	)
 	@utils.trigger_typing	
-	async def seychelles(self,ctx):
-		result = await views.RespondOrReact.run(
-			ctx,
+	async def seychelles(self, ctx):
+		img_check = lambda m: len(m.attachments) > 0 and m.attachments[0].content_type.startswith("image") 
+		result = await views.RespondOrReact(ctx, added_check = img_check).run(
 			"What image would you like me to seychelles-ize?\n"
 			"Respond with a picture of a flag below.\n",
-			added_check = lambda m: len(m.attachments) > 0 and m.attachments[0].content_type.startswith("image") 
 		)
 				
 		image_url = result.attachments[0].url

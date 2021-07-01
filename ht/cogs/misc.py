@@ -51,8 +51,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				"The date that you entered is in the past."
 			)
 		
-		desc = (await views.RespondOrReact.run(
-			ctx,
+		desc = (await views.RespondOrReact(ctx).run(
 			f"Your countdown will expire at **{utils.stddatetime(elapsed)}**."
 			" Give it a name by responding below."
 		)).content
@@ -72,10 +71,8 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	)
 	async def distribute(self, ctx, size : converters.Range(3, 50) = None):
 		if not size:
-			message = await views.RespondOrReact.run(
-				ctx,
+			message = await views.RespondOrReact(ctx, timeout = views.LONG_TIMEOUT).run(
 				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)",
-				timeout = views.LONG_TIMEOUT
 			)
 			names = dict(enumerate(message.content.split("\n"), start = 1))
 			size = await converters.Range(3, 50).convert(ctx, len(names))
