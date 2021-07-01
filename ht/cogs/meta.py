@@ -55,7 +55,7 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		
 		view = discord.ui.View()
 		view.add_item(discord.ui.Button(
-			emoji = "\U0001F6E1",
+			emoji = "\U0001F6E1\uFE0F",
 			label = "Visit the Heraldry Discord", 
 			style = discord.ButtonStyle.secondary, 
 			url = "https://discord.gg/Wvsz2M36nt"
