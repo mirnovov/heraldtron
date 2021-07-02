@@ -21,7 +21,7 @@ def disable_dm_commands(func):
 	return wrapper
 
 class Navigator(ui.View):
-	def __init__(self, embeds):
+	def __init__(self, ctx, embeds):
 		super().__init__()
 		
 		for i, embed in enumerate(embeds, start = 1):
@@ -30,6 +30,7 @@ class Navigator(ui.View):
 				icon_url = embed.author.icon_url
 			)
 		
+		self.ctx = ctx
 		self.index = 0
 		self.embeds = embeds
 		
@@ -57,13 +58,16 @@ class Navigator(ui.View):
 		
 		self.add_item(button)
 		
+	async def run(self):
+		self.message = await self.ctx.send(embed = self.embeds[0], view = self)
+		
 	async def on_timeout(self):
-		self.clear_items()
+		await self.message.edit(embed = self.embeds[self.index], view = None)
 		
 class HelpSwitcher(ui.View):
 	def __init__(self, embeds):
 		super().__init__()
-		tuple(self.add_help(name, embed) for name, embed in embeds.items())
+		[self.add_help(name, embed) for name, embed in embeds]
 			
 		self.children[0].disabled = True
 		
@@ -80,7 +84,8 @@ class HelpSwitcher(ui.View):
 		self.add_item(button)
 		
 	async def on_timeout(self):
-		self.clear_items()
+		if not hasattr(self, "message"): return
+		await self.message.edit(embed = self.message.embeds[0], view = None)
 
 class UserSelector(ui.View):
 	def __init__(self, ctx, **kwargs):

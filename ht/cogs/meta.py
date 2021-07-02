@@ -7,7 +7,7 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 	
 	def __init__(self, bot):
 		self.bot = bot
-		bot.help_command = NvHelpCommand()
+		bot.help_command = MeldedHelpCommand()
 		bot.help_command.cog = self
 		
 	@commands.command(
@@ -83,7 +83,7 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		dedup = uname.release.removesuffix(f".{uname.machine}")
 		return f"{uname.system} {dedup} ({uname.machine})"
 
-class NvHelpCommand(commands.DefaultHelpCommand):
+class MeldedHelpCommand(commands.DefaultHelpCommand):
 	def __init__(self,**options):
 		super().__init__(**options)
 		self.command_attrs.update({
@@ -100,16 +100,17 @@ class NvHelpCommand(commands.DefaultHelpCommand):
 	
 	async def send_bot_help(self, mapping):
 		bot = self.context.bot
-		pages = {}
+		pages = []
 		
 		for key in sorted(self.context.bot.melded_cogs, key = self.sort_melded_cogs):
 			page = self.context.bot.melded_cogs[key]
 			embed, valid = await self.send_melded_cog_help(key, page)
-			if valid: pages[key] = embed
-			
+			if valid: pages.append((key, embed))
 
-		first = next(iter(pages.values()))
-		await self.context.send(embed = first, view = views.HelpSwitcher(pages, self.context.bot.logger))
+		view = views.HelpSwitcher(pages)
+		message = await self.context.send(embed = pages[0][1], view = view)
+		
+		view.message = message
 	
 	async def send_melded_cog_help(self, title, cogs):
 		embed = embeds.HELP.create(f"{title} commands", "")

@@ -40,7 +40,7 @@ async def gis(ctx, query):
 		return embed
 	
 	pages = tuple(image_result(page) for page in search["items"])
-	await ctx.send(embed = pages[0], view = views.Navigator(pages))
+	await views.Navigator(ctx, pages).run()
 
 async def ds(session, blazon, drawn_kind):
 	blazon_out = urllib.parse.quote(blazon)

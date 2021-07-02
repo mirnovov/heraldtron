@@ -90,7 +90,7 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 			)
 			current_size += 1
 		
-		await ctx.send(embed = pages[0], view = views.Navigator(pages))		
+		await views.Navigator(ctx, pages).run()	
 		
 def setup(bot):
 	bot.add_cog(HeraldryResources(bot))
