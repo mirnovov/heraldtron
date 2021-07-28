@@ -210,7 +210,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 	@staticmethod	
 	async def set_message(ctx, leave):
 		guild = await ModerationTools.choose_guild(ctx)
-		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;",(ctx.guild.id,))
+		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;", (guild.id,))
 		
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
