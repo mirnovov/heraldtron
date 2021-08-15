@@ -123,13 +123,21 @@ class UserSelector(ui.View):
 		return await self.get_choice()
 		
 class Confirm(UserSelector):
-	def __init__(self, ctx, action = "Continue"):
+	def __init__(self, ctx, action = "Continue", delete = False):
+		self.delete = delete
+		
 		super().__init__(ctx)
 		self.add_button(ui.Button(label = action, style = discord.ButtonStyle.success), "OK")
 	
 	async def run(self, info):
 		result = await super().run(info)
-		await self.message.edit(content = ":white_check_mark: | Confirmed.")
+		
+		if self.delete and isinstance(self.ctx.channel, discord.abc.GuildChannel): 
+			await self.message.delete()
+			await self.ctx.message.delete()
+		else:
+			await self.message.edit(content = ":white_check_mark: | Confirmed.")
+			
 		return result
 		
 class Chooser(UserSelector):

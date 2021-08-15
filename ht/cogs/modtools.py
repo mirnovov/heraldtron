@@ -117,7 +117,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		if isinstance(ctx.channel, discord.abc.GuildChannel): 
 			prompt = f"Send a message in {channel.mention} of **{channel.guild.name}**?"			
 		
-		await views.Confirm(ctx, "Create").run( prompt)
+		await views.Confirm(ctx, "Create", delete = True).run(prompt)
 	
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
