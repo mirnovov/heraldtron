@@ -119,7 +119,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		if isinstance(ctx.channel, discord.abc.GuildChannel): 
 			prompt = f"This will be posted to {channel.mention} in **{channel.guild.name}**."
 		
-		await responses.confirm(ctx, prompt)
+		await responses.confirm(ctx, prompt, delete = True)
 	
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
@@ -127,7 +127,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 			icon_url=ctx.author.avatar_url_as(size=256)
 		)
 
-		await channel.send(embed=embed)
+		await channel.send(embed = embed)
 	
 	@commands.guild_only()
 	@commands.command(help = "Locks a channel, disabling the ability to send messages from it.", aliases = ("l",))	

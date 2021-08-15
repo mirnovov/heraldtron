@@ -65,7 +65,7 @@ async def check(ctx, added_check, timeout = TIMEOUT):
 		
 	return part
 	
-async def confirm(ctx, info, timeout = TIMEOUT):
+async def confirm(ctx, info, timeout = TIMEOUT, delete = False):
 	emojis = ("\U0000274C", "\U00002705") 
 	
 	message = await ctx.send(f"{info} React with :white_check_mark: to confirm or :x: to cancel.")
@@ -86,7 +86,11 @@ async def confirm(ctx, info, timeout = TIMEOUT):
 	if reaction.emoji == "\U0000274C":
 		raise await utils.CommandCancelled.create("Command cancelled", ctx)
 	else:
-		await message.edit(content = ":white_check_mark: | Confirmed.")
+		if delete and isinstance(ctx.channel, discord.abc.GuildChannel): 
+			await message.delete()
+			await ctx.message.delete()
+		else:
+			await message.edit(content = ":white_check_mark: | Confirmed.")
 		return True
 		
 async def choice(ctx, values, emojis, embed_type, embed_title, embed_heading, action_description):
