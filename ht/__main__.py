@@ -79,7 +79,7 @@ class Heraldtron(commands.Bot):
 			self.logger.info(f"Cog \"{cog}\" loaded successfully")
 			
 		if self.conf.get("USE_JISHAKU"):
-			self.load_extension("jishaku")
+			self.load_extension("ht.cogs.debug")
 			coglist.append("jishaku")
 			
 		return coglist

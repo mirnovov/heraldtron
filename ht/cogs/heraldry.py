@@ -42,7 +42,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	@commands.command(
 		name = "catalog",
 		help = "Looks up a term in DrawShield's repository of charges.\nCode © Karl Wilcox",
-		aliases = ("charge", "cat")
+		aliases = ("charge", "ca")
 	)
 	@utils.trigger_typing
 	async def ds_catalog(self, ctx, *, charge):			
