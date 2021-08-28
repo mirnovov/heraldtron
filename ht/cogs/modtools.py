@@ -122,7 +122,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", category = "Moderati
 		embed = embeds.MOD_MESSAGE.create(message_content, "")
 		embed.set_footer(
 			text = f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
-			icon_url = ctx.author.avatar.with_size(256).url
+			icon_url = ctx.author.display_avatar.with_size(256).url
 		)
 
 		await channel.send(embed=embed)

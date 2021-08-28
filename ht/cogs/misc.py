@@ -225,7 +225,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		if user.bot:
 			embed.description += " | **Bot**"
 			
-		embed.set_thumbnail(url = user.avatar.with_size(512).url)
+		embed.set_thumbnail(url = user.display_avatar.with_size(512).url)
 		embed.add_field(name = "Created", value = utils.stddate(user.created_at), inline = True)
 		embed.description += "\n\u200b"
 		
