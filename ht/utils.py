@@ -9,7 +9,7 @@ from . import __version__, views
 class MeldedCog(commands.Cog):
 	def __init_subclass__(self, *args, **kwargs):
 		super().__init_subclass__()
-		self.category = kwargs.pop("category", None)
+		self.category = kwargs.pop("category", self.__cog_name__)
 		self.limit = kwargs.pop("limit", True)
 		
 		async def cog_check(self, ctx):

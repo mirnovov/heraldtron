@@ -1,4 +1,3 @@
-
 from jishaku.features.baseclass import Feature
 from jishaku.cog import STANDARD_FEATURES, OPTIONAL_FEATURES
 from .. import utils
@@ -15,7 +14,7 @@ for cmd in (c for f in FEATURES for c in f.__dict__.values()):
 		elif cmd.kwargs["name"] == "rtt":
 			cmd.kwargs.pop("aliases")
 
-class DebugTools(*FEATURES, utils.MeldedCog, name = "Debug", category = "Debug", limit = False):
+class DebugTools(*FEATURES, utils.MeldedCog, name = "Debug", limit = False):
 	def __init__(self, bot):
 		super().__init__(bot = bot)
 		self.jsk.description = self.jsk.help = "Displays basic Jishaku info."
