@@ -1,4 +1,4 @@
-discord.py >= 2.0.0
+git+git://github.com/Rapptz/discord.py@41d22f4#egg=discord.py
 aiohttp >= 3.7.0
 Pillow >= 8.0
 aiosqlite >= 0.17.0
