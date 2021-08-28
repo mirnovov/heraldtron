@@ -2,10 +2,10 @@ import discord, asyncio, typing, random, os, html
 from discord import ui
 from discord.ext import commands
 from collections import defaultdict
+from datetime import datetime, timezone, timedelta
 from .. import converters, embeds, services, utils, views
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
-	COUNTDOWN_LIMIT = 3
 	ACTIVITIES = {
 		-1: "",
 		0: "Playing",
@@ -32,18 +32,10 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		help = "Generates a continuously updated countdown post.", 
 		aliases = ("time", "cd")
 	)
-	async def countdown(self, ctx, *, elapsed : converters.Date):		
-		amount = await self.bot.dbc.execute_fetchone(
-			"SELECT COUNT(*) FROM countdowns WHERE user_id == ?;", (ctx.author.id,)
-		)
-		
-		if amount[0] > self.COUNTDOWN_LIMIT:
-			raise utils.CustomCommandError(
-				"Too many active countdowns",
-				f"A user can only have {self.COUNTDOWN_LIMIT} countdowns active at once."
-			)
-		
-		embed, delta = embeds.countdown(elapsed)
+	async def countdown(self, ctx, *, elapsed : converters.Date):	
+		delta = (elapsed - datetime.now(tz = timezone.utc)) + timedelta(minutes = 1)
+		embed = embeds.COUNTDOWN.create(f"<t:{elapsed.timestamp():.0f}:R>", "")
+		embed.add_field(name = "End time", value = f"<t:{elapsed.timestamp():.0f}:F>")
 		
 		if delta.total_seconds() < 0:
 			raise utils.CustomCommandError(
@@ -52,18 +44,12 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 			)
 		
 		desc = (await views.RespondOrReact(ctx).run(
-			f"Your countdown will expire at **{utils.stddatetime(elapsed)}**."
+			f"Your countdown will expire <t:{elapsed.timestamp():.0f}:R>."
 			" Give it a name by responding below."
 		)).content
 		
 		embed.description = desc	
 		message = await ctx.send(embed = embed)
-		
-		await self.bot.dbc.execute(
-			"INSERT INTO countdowns (timestamp, user_id, channel_id, message_id, name) VALUES (?, ?, ?, ?, ?);",
-			(elapsed.timestamp(), ctx.author.id, ctx.channel.id, message.id, desc)
-		)
-		await self.bot.dbc.commit()
 		
 	@commands.command(
 		help = "Generates a competition distribution.\n If no number is specified, asks for a list of names.", 

@@ -1,7 +1,6 @@
 import discord, asyncio, random
 from discord.ext import commands
 from enum import Enum
-from datetime import datetime, timezone, timedelta
 from . import utils
 
 DEFAULT = 0x444850
@@ -45,29 +44,3 @@ USER_INFO = Theme.USER_INFO
 CHOICE = Theme.CHOICE
 DRAW = Theme.DRAW
 COUNTDOWN = Theme.COUNTDOWN
-			
-def countdown(time):
-	now = datetime.now(tz = timezone.utc)
-	delta = (time - now) + timedelta(minutes = 1)
-	
-	embed = COUNTDOWN.create(utils.stddelta(delta), "")
-	endsat = "\n".join((
-		utils.stddatetime(time, "America/Vancouver"),
-		utils.stddatetime(time, "America/Mexico_City"),
-		utils.stddatetime(time, "America/New_York"),
-		utils.stddatetime(time), #UTC
-		utils.stddatetime(time, "Europe/London"),
-		utils.stddatetime(time, "Europe/Berlin"),
-		utils.stddatetime(time, "Europe/Helsinki"),
-		utils.stddatetime(time, "Asia/Jerusalem"),
-		utils.stddatetime(time, "Asia/Kolkata"),
-		utils.stddatetime(time, "Asia/Manila"),
-		utils.stddatetime(time, "Asia/Tokyo"),
-		utils.stddatetime(time, "Australia/Melbourne"),
-		utils.stddatetime(time, "Pacific/Auckland")
-	))
-	
-	embed.add_field(name = "Ends at", value = f"`{endsat}`")
-	embed.set_footer(text = f"Last updated: {utils.stddatetime(now)}.")
-	
-	return embed, delta
