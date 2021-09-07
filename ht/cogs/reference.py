@@ -84,12 +84,10 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		)
 		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
 		
-		thumb = (await services.ds_catalog(self.bot.session, term))[0]
-		if thumb: embed.set_thumbnail(url = thumb)
+		thumb = await services.ds_catalog(self.bot.session, term)
+		if thumb: embed.set_thumbnail(url = thumb[0])
 		
 		await ctx.send(embed = embed)
-		
-	
 		
 	@commands.command(
 		help = "Displays an entry from the Sourced Blazons Wiki.",
