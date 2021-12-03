@@ -3,7 +3,7 @@ from discord.ext import commands
 from .. import utils, views, embeds, __version__
 
 class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = False):
-	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=(.+)")
+	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=\"?(.+?)\"?\n")
 	
 	def __init__(self, bot):
 		self.bot = bot

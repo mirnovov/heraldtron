@@ -1,2 +1,2 @@
-cchardet >= 2.1.7
 aiodns >= 2.0.0
+git+git://github.com/PyYoshi/cChardet@bd1cc39#egg=cchardet
