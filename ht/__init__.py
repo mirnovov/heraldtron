@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-__version__ = "4.4.1"
+__version__ = "4.4.2"
 __author__ = "novov"
 __license__ = "MIT"
 __copyright__ = "(c) 2021 novov"

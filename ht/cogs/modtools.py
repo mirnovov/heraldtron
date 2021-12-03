@@ -7,6 +7,7 @@ from .. import converters, embeds, utils, views
 class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 	MAX_FEEDS = 3
 	SR_VAL = re.compile("(r\/|\/|r\/)+")
+	SHORT_MESSAGE = 200
 	
 	def __init__(self, bot):
 		self.bot = bot
@@ -118,14 +119,18 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 			prompt = f"Send a message in {channel.mention} of **{channel.guild.name}**?"			
 		
 		await views.Confirm(ctx, "Create", delete = True).run(prompt)
-	
-		embed = embeds.MOD_MESSAGE.create(message_content, "")
+		
+		if len(message_content) < self.SHORT_MESSAGE:
+			embed = embeds.MOD_MESSAGE.create(message_content, "")
+		else:
+			embed = embeds.MOD_MESSAGE.create("", message_content)
+		
 		embed.set_footer(
 			text = f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
 			icon_url = ctx.author.display_avatar.with_size(256).url
 		)
 
-		await channel.send(embed=embed)
+		await channel.send(embed = embed)
 	
 	@commands.guild_only()
 	@commands.command(help = "Locks a channel, disabling the ability to send messages from it.", aliases = ("l",))	
