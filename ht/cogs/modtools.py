@@ -27,7 +27,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 	
 	@staticmethod	
 	def is_mod(perms):
-		return perms.manage_channels or perms.manage_guild or perms.administrator
+		return perms.ban_members or perms.administrator
 	
 	@commands.command(
 		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"
@@ -137,7 +137,8 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 	async def lock(self, ctx, channel : typing.Optional[discord.TextChannel] = None):
 		channel = channel or ctx.channel
 		
-		await channel.set_permissions(ctx.guild.default_role, send_messages = False)
+		overwrite = discord.PermissionOverwrite(send_messages = False)
+		await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite)
 		await ctx.send(f":lock: | **{ctx.channel.mention} has been locked.**")
 		
 	@commands.command(help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
@@ -165,7 +166,8 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 	async def unlock(self, ctx, channel : discord.TextChannel = None):
 		channel = channel or ctx.channel
 		
-		await channel.set_permissions(ctx.guild.default_role, send_messages = True)
+		overwrite = discord.PermissionOverwrite(send_messages = True)
+		await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite)
 		await ctx.send(f":unlock: | **{ctx.channel.mention} has been unlocked.**")
 		
 	@staticmethod		
