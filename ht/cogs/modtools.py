@@ -7,6 +7,7 @@ from .. import converters, embeds, utils, views
 class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 	MAX_FEEDS = 3
 	SR_VAL = re.compile("(r\/|\/|r\/)+")
+	HAS_MARKDOWN = re.compile(r"<@!?|<#|<&|\*{1,2}\w")
 	SHORT_MESSAGE = 200
 	
 	def __init__(self, bot):
@@ -120,7 +121,7 @@ class ModerationTools(utils.MeldedCog, name = "Moderation", limit = False):
 		
 		await views.Confirm(ctx, "Create", delete = True).run(prompt)
 		
-		if len(message_content) < self.SHORT_MESSAGE:
+		if len(message_content) < self.SHORT_MESSAGE and not re.search(self.HAS_MARKDOWN, message_content):
 			embed = embeds.MOD_MESSAGE.create(message_content, "")
 		else:
 			embed = embeds.MOD_MESSAGE.create("", message_content)
