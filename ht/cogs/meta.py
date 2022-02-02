@@ -51,7 +51,7 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 			value = "- Will\n- Ensix\n- GreiiEquites",
 			inline = False
 		)
-		embed.set_footer(text="© novov 2021. This is an open source project available under the MIT license.")
+		embed.set_footer(text="© novov 2021-2022. This is an open source project available under the MIT license.")
 		
 		view = discord.ui.View()
 		view.add_item(discord.ui.Button(
