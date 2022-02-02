@@ -30,6 +30,11 @@ CREATE TABLE "misc_store" (
 INSERT INTO "misc_store" (key, value) VALUES 
 	("book_timestamp", "0"), 
 	("last_avatar", "0");
+	
+CREATE TABLE "proposal_channels" (
+	"discord_id" INTEGER PRIMARY KEY,
+	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL
+);
 
 CREATE TABLE "reddit_feeds" (
 	"id" INTEGER PRIMARY KEY ASC AUTOINCREMENT,

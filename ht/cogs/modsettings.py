@@ -1,0 +1,201 @@
+import discord, asyncio, typing, re
+from discord import ui
+from discord.ext import commands
+from .. import converters, embeds, utils, views
+
+class ModerationSettings(utils.ModCog, name = "Settings"):
+	MAX_FEEDS = 3
+	SR_VAL = re.compile("(r\/|\/|r\/)+")
+	
+	def __init__(self, bot):
+		self.bot = bot
+	
+	@commands.command(
+		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"
+			   " for instance, `flair:novov` gets posts flaired `novov`."
+			   " Feeds get the newest 8 posts every 2 hours.", 
+		aliases = ("af", "feed")
+	)	
+	async def addfeed(
+		self, ctx, 
+		subreddit : str, 
+		channel : discord.TextChannel, 
+		ping : typing.Optional[bool], 
+		search_query : str
+	):
+		ping = ping or False
+		rowcount = await self.bot.dbc.execute_fetchone("SELECT COUNT(*) FROM reddit_feeds")
+		
+		if rowcount[0] > self.MAX_FEEDS:
+			raise utils.CustomCommandError("Excessive feed count", f"A server cannot have more than {self.MAX_FEEDS} feeds.")
+		
+		subreddit = re.sub(self.SR_VAL, "", subreddit)
+		validate = await utils.get_json(self.bot.session, f"https://www.reddit.com/r/{subreddit}/new.json?limit=1")
+		
+		if validate.get("error"): raise utils.CustomCommandError(
+			"Invalid subreddit",
+			f"**r/{subreddit}** either does not exist or is inaccessible."
+		)
+		elif validate["data"]["dist"] > 0:
+			newest = validate["data"]["children"][0]["data"]["name"] #json can be a nightmare
+		else: newest = None
+		
+		await self.bot.dbc.execute(
+			"INSERT INTO reddit_feeds VALUES (?, ?, ?, ?, ?, ?, ?);",
+			(None, (await self.choose_guild(ctx)).id, channel.id, subreddit, int(ping), search_query, newest)
+		)
+		await self.bot.dbc.commit()
+		await ctx.send(":white_check_mark: | Subreddit feed created.")
+		
+	@commands.command(
+		help = "Sets up a channel for proposals.", 
+		aliases = ("ap", "proposals")
+	)	
+	async def addproposals(self, ctx, channel : discord.TextChannel):
+		await self.bot.dbc.execute(
+			"INSERT INTO proposal_channels VALUES (?, ?);",
+			(channel.id, (await self.choose_guild(ctx)).id)
+		)
+		await self.bot.dbc.commit()
+		self.bot.proposal_cache.add(channel.id)
+		await ctx.send(f":white_check_mark: | {channel.mention} set up for proposals.")
+		
+	@commands.command(help = "Creates a new roll channel.", aliases = ("c", "create", "new"))	
+	async def channel(self, ctx, user : converters.MemberOrUser, info : converters.RollVariant):
+		sorting = self.bot.get_cog("Roll Sorting")
+		guild = await self.choose_guild(ctx)
+		category = await sorting.get_last_category(guild, info)
+		overwrites = { 
+			guild.default_role: discord.PermissionOverwrite(send_messages = False),
+			user: discord.PermissionOverwrite(manage_channels = True) 
+		}
+		
+		await views.Confirm(ctx, "Create").run(f"Make a new channel for {user.name}#{user.discriminator}?")
+		
+		channel = await guild.create_text_channel(user.name, category = category, overwrites = overwrites)
+		await ctx.send(f":scroll: | {channel.mention} created for {user.mention}.")
+	
+	@commands.command(
+		help = "Shows current Reddit feeds and allows deleting them.", 
+		aliases = ("managefeed", "mf", "feeds")
+	)	
+	async def delfeed(self, ctx):
+		guild = await self.choose_guild(ctx)
+		query = await self.bot.dbc.execute("SELECT * FROM reddit_feeds WHERE guild = ?", (guild.id,))
+		feeds = await query.fetchmany(size = self.MAX_FEEDS)
+		
+		if len(feeds) == 0: raise utils.CustomCommandError(
+			"No feeds to delete",
+			"There are currently no active feeds, so none can be deleted."
+		)
+		
+		values = []
+		for feed in feeds:
+			channel = getattr(await utils.get_channel(self.bot, feed[2]), "name", "invalid")
+			values.append(discord.SelectOption(label = f"r/{feed[3]}", description = f"{feed[5]} in #{channel}"))
+			
+		indice = await views.Chooser(ctx, values, "Delete", discord.ButtonStyle.red).run("Choose a feed to delete:")
+		await self.bot.dbc.execute("DELETE FROM reddit_feeds WHERE id = ?;", (feeds[indice][0],))
+		
+		await self.bot.dbc.commit()
+		await ctx.send(":x: | Subreddit feed deleted.")
+		
+	@commands.command(
+		help = "Disables proposal functionality in a channel.", 
+		aliases = ("dp",)
+	)	
+	async def delproposals(self, ctx, channel : discord.TextChannel):
+		guild = await self.choose_guild(ctx)
+		query = await self.bot.dbc.execute_fetchone(
+			"SELECT * FROM proposal_channels WHERE guild = ? AND discord_id = ?", (guild.id, channel.id))
+		
+		if query == None: raise utils.CustomCommandError(
+			"Invalid proposal channel",
+			"The channel you specified does not have proposals enabled."
+		)
+		
+		await self.bot.dbc.execute("DELETE FROM proposal_channels WHERE discord_id = ?;", (channel.id,))
+		await self.bot.dbc.commit()
+		self.bot.proposal_cache.discard(channel.id)
+		
+		await ctx.send(f":x: | Proposals removed from {channel.mention}.")
+	
+	@commands.command(help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
+	async def limit(self, ctx, enabled : bool):
+		await self.set_flag(ctx, enabled, "limit_commands", ":stop_sign:", "Command limits have")
+		
+	@commands.command(help = "Enables/disables welcome and leave messages for a server.", aliases = ("wl", "welcome", "ms", "message"))	
+	async def messages(self, ctx, enabled : bool):
+		await self.set_flag(ctx, enabled, "welcome_users", ":envelope_with_arrow:", "Welcome and leave messages have")
+	
+	@commands.command(help = "Sets the leave message for this server.", aliases = ("sl", "setl"))	
+	async def setleave(self, ctx):
+		await self.set_message(ctx, True)
+		
+	@commands.command(help = "Sets the welcome message for this server.", aliases = ("sw", "setw"))	
+	async def setwelcome(self, ctx):
+		await self.set_message(ctx, False)
+		
+	@staticmethod		
+	async def choose_guild(ctx):
+		if isinstance(ctx.channel, discord.abc.GuildChannel): return ctx.guild
+		
+		possible = []
+		for guild in ctx.author.mutual_guilds:
+			if await ctx.bot.is_owner(ctx.author):
+				possible.append(guild)
+				continue
+			
+			perms = guild.get_member(ctx.author.id).guild_permissions
+			if perms.manage_guild or perms.administrator:
+				possible.append(guild)
+				
+		if len(possible) == 1: 
+			await ctx.send(f"Executing command in **{possible[0].name}**...")
+			return possible[0]
+		
+		choices = tuple(discord.SelectOption(label = a.name) for a in possible)
+		indice = await views.Chooser(ctx, choices, "Execute").run(
+			"**Multiple servers are available.** Select a server to use the command in:", 
+		)		
+		return possible[indice]
+	
+	@staticmethod	
+	async def set_flag(ctx, enabled, db_col, emoji, desc):
+		guild = await ModerationTools.choose_guild(ctx)
+		enabled_int = int(enabled)
+		enabled_text = "enabled" if enabled else "disabled"
+		 
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ? WHERE discord_id = ?", (enabled_int, guild.id))
+		await ctx.bot.dbc.commit()
+		await ctx.send(f"{emoji} | {desc} been **{enabled_text}** for this server.")
+		
+		await ctx.bot.refresh_cache_guild(guild.id)
+	
+	@staticmethod	
+	async def set_message(ctx, leave):
+		guild = await ModerationTools.choose_guild(ctx)
+		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;", (guild.id,))
+		
+		if enabled == 0: raise utils.CustomCommandError(
+			"Welcome and leave messages disabled",
+			"Your message cannot be set, as the welcome and leave message functionality"
+			f" is currently not operational. Turn it on with `{ctx.clean_prefix}messages yes`."
+		)
+		
+		reset = ui.Button(label = "Reset to default", style = discord.ButtonStyle.secondary)	
+		result = await views.RespondOrReact(ctx, additional = (reset,)).run(
+			"Type your message below. To add details, include `GUILD_NAME`,"
+			" `MENTION`, or `MEMBER_NAME` in the message.",
+		)
+		
+		if result == "Reset to default" or isinstance(result, discord.Message):
+			message_type = "welcome_text" if not leave else "leave_text"
+			new = None if isinstance(result, str) else result.content
+			
+			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;", (new, guild.id))
+			await ctx.bot.dbc.commit()
+			await ctx.send(":white_check_mark: | Message changed.")
+		
+def setup(bot):
+	bot.add_cog(ModerationSettings(bot))

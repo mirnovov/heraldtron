@@ -1,7 +1,9 @@
-import sqlite3
+import discord, sqlite3
 from discord.ext import commands
 
 class BotEvents(commands.Cog, name = "Bot events"):
+	THREAD_TITLE_LENGTH = 90
+	
 	def __init__(self, bot):
 		self.bot = bot
 		self.bot.loop.create_task(self.update_guilds())
@@ -29,6 +31,23 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		await self.bot.dbc.execute("DELETE FROM guilds WHERE discord_id = ?;",(guild.id,))
 		await self.bot.dbc.commit()
 		del self.bot.guild_cache[guild.id]
+		
+	@commands.Cog.listener()
+	async def on_message(self, message):
+		if message.channel.id not in self.bot.proposal_cache: return
+		
+		await message.add_reaction("\U0001F44D")
+		await message.add_reaction("\U0001F44E")
+		await message.add_reaction("\U0001F937")
+		
+		thread_title = message.content.split(".")[-1] #get last sentence
+		
+		if len(thread_title) > self.THREAD_TITLE_LENGTH:
+			thread_title = message.content[:self.THREAD_TITLE_LENGTH] + "..."
+			
+		await message.create_thread(
+			name = discord.utils.remove_markdown(thread_title)
+		)
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):

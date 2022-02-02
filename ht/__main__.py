@@ -5,9 +5,9 @@ from . import db, utils
 
 class Heraldtron(commands.Bot):
 	DEFAULT_COGS = [
-		"errors", "events", "modtools", "heraldry", 
-		"misc", "reference", "resource", "roll",
-		"sort", "tasks", "vexillology", "meta"
+		"errors", "events", "modsettings",  "modtools", 
+		"heraldry", "misc", "reference", "resource", 
+		"roll", "sort", "tasks", "vexillology", "meta"
 	]
 	
 	REQUISITES = [
@@ -131,6 +131,9 @@ class Heraldtron(commands.Bot):
 			
 			if not guild or not record: continue
 			self.guild_cache[record[0]] = (guild, record)
+			
+		async for proposal in await self.dbc.execute("SELECT * FROM proposal_channels"):
+			self.proposal_cache.add(proposal[0])
 		
 		self.ready_flag.set()	
 		
@@ -155,6 +158,7 @@ class Heraldtron(commands.Bot):
 	def reset_cache(self):
 		self.ready_flag.clear()
 		self.guild_cache = {}
+		self.proposal_cache = set()
 		
 	async def on_message(self, message):
 		await self.ready_flag.wait()
