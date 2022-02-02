@@ -1,8 +1,9 @@
-import discord, sqlite3
+import discord, re, sqlite3
 from discord.ext import commands
 
 class BotEvents(commands.Cog, name = "Bot events"):
-	THREAD_TITLE_LENGTH = 90
+	FIND_SENTENCES = re.compile(r"(?m)\w.*?(?:\.|\?)")
+	THREAD_MAX = 90
 	
 	def __init__(self, bot):
 		self.bot = bot
@@ -40,14 +41,14 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		await message.add_reaction("\U0001F44E")
 		await message.add_reaction("\U0001F937")
 		
-		thread_title = message.content.split(".")[-1] #get last sentence
+		content = discord.utils.remove_markdown(message.content)
+		bits = re.findall(self.FIND_SENTENCES, content) or [content]
+		thread_title = next(filter(lambda b: b.endswith("?"), bits), bits[0])
 		
-		if len(thread_title) > self.THREAD_TITLE_LENGTH:
-			thread_title = message.content[:self.THREAD_TITLE_LENGTH] + "..."
+		if len(thread_title) > self.THREAD_MAX:
+			thread_title = thread_title[:self.THREAD_MAX] + "..."
 			
-		await message.create_thread(
-			name = discord.utils.remove_markdown(thread_title)
-		)
+		await message.create_thread(name = thread_title)
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
