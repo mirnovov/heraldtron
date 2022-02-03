@@ -6,8 +6,8 @@ from . import db, utils
 class Heraldtron(commands.Bot):
 	DEFAULT_COGS = [
 		"errors", "events", "modsettings",  "modtools", 
-		"heraldry", "misc", "reference", "resource", 
-		"roll", "sort", "tasks", "vexillology", "meta"
+		"heraldry", "misc", "reference", "resource", "roll", 
+		"rollchannels", "tasks", "vexillology", "meta"
 	]
 	
 	REQUISITES = [

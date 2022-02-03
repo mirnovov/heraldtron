@@ -43,7 +43,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			if not channel: continue
 			mentions.append(channel.mention)
 			
-		if mentions: embed.add_field(name = "Rolls of arms", value = ','.join(mentions))
+		if mentions: embed.add_field(name = "Rolls of arms", value = ", ".join(mentions))
 		
 		await ctx.send(embed = embed)
 		

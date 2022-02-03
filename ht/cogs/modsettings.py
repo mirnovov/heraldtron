@@ -60,21 +60,6 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 		self.bot.proposal_cache.add(channel.id)
 		await ctx.send(f":white_check_mark: | {channel.mention} set up for proposals.")
 		
-	@commands.command(help = "Creates a new roll channel.", aliases = ("c", "create", "new"))	
-	async def channel(self, ctx, user : converters.MemberOrUser, info : converters.RollVariant):
-		sorting = self.bot.get_cog("Roll Sorting")
-		guild = await self.choose_guild(ctx)
-		category = await sorting.get_last_category(guild, info)
-		overwrites = { 
-			guild.default_role: discord.PermissionOverwrite(send_messages = False),
-			user: discord.PermissionOverwrite(manage_channels = True) 
-		}
-		
-		await views.Confirm(ctx, "Create").run(f"Make a new channel for {user.name}#{user.discriminator}?")
-		
-		channel = await guild.create_text_channel(user.name, category = category, overwrites = overwrites)
-		await ctx.send(f":scroll: | {channel.mention} created for {user.mention}.")
-	
 	@commands.command(
 		help = "Shows current Reddit feeds and allows deleting them.", 
 		aliases = ("managefeed", "mf", "feeds")
@@ -120,13 +105,17 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 		
 		await ctx.send(f":x: | Proposals removed from {channel.mention}.")
 	
-	@commands.command(help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
-	async def limit(self, ctx, enabled : bool):
+	@commands.command(name = "limit", help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
+	async def limitmessages(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "limit_commands", ":stop_sign:", "Command limits have")
 		
 	@commands.command(help = "Enables/disables welcome and leave messages for a server.", aliases = ("wl", "welcome", "ms", "message"))	
 	async def messages(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "welcome_users", ":envelope_with_arrow:", "Welcome and leave messages have")
+		
+	@commands.command(help = "Enables/disables roll functionality for this server.", aliases = ("rl",))	
+	async def rollserver(self, ctx, enabled : bool):
+		await self.set_flag(ctx, enabled, "roll", ":scroll:", "Roll functionaliy has")
 	
 	@commands.command(help = "Sets the leave message for this server.", aliases = ("sl", "setl"))	
 	async def setleave(self, ctx):
@@ -162,7 +151,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	
 	@staticmethod	
 	async def set_flag(ctx, enabled, db_col, emoji, desc):
-		guild = await ModerationTools.choose_guild(ctx)
+		guild = await ModerationSettings.choose_guild(ctx)
 		enabled_int = int(enabled)
 		enabled_text = "enabled" if enabled else "disabled"
 		 
@@ -174,7 +163,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	
 	@staticmethod	
 	async def set_message(ctx, leave):
-		guild = await ModerationTools.choose_guild(ctx)
+		guild = await ModerationSettings.choose_guild(ctx)
 		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;", (guild.id,))
 		
 		if enabled == 0: raise utils.CustomCommandError(
