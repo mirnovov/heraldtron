@@ -49,7 +49,8 @@ CREATE TABLE "reddit_feeds" (
 CREATE TABLE "roll_channels" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"user_id" INTEGER REFERENCES "armigers"("discord_id"),
-	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id")
+	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id"),
+	"personal" INTEGER DEFAULT 0
 );
 
 CREATE VIEW "armigers_e" AS 

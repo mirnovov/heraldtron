@@ -5,37 +5,41 @@ from datetime import datetime, timedelta
 from .. import utils
 
 class RollChannels(commands.Cog, name = "Roll Sorting"):
-	VARIANTS = ["Market", "Artist Gallery", "Roll of Arms"]
+	VARIANTS = ["market", "artist", "roll of arms"]
 	
 	def __init__(self, bot):
 		self.bot = bot
 		self.bot.loop.create_task(self.initialise())
-		#archive is started in initialise()
-		
-	def cog_unload(self):
-		self.archive.stop()
 		
 	async def initialise(self):
 		await self.bot.wait_until_ready()
 		
 		async for guild in await self.bot.dbc.execute("SELECT discord_id FROM guilds WHERE roll = 1"):
-			if not (reified := self.bot.get_guild(guild[0])): continue
+			reified = self.bot.get_guild(guild[0])
+			if not reified: continue
 			
-			for category in reified.categories:				
-				for channel in category.channels:
+			for category in reified.categories:					
+				if not self.valid_category(category): continue
+				personal = self.is_personal(category)
+							
+				for channel in category.channels:					
 					owner = await self.get_owner(channel)
 					await self.bot.dbc.execute(
-						"INSERT INTO roll_channels (discord_id, user_id, guild_id) VALUES (?, ?, ?)"
+						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal) VALUES (?, ?, ?, ?)"
 						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?;",
-						(channel.id, owner, guild[0], owner)
+						(channel.id, owner, guild[0], int(personal), owner)
 					)
 					await self.bot.dbc.commit()
+					
+					if personal:
+						await self.add_emblazon(channel, owner)
 		
 		self.bot.logger.info(f"Successfully prepared roll information.")
 			
 	@commands.Cog.listener()
 	async def on_guild_channel_update(self, before, after):
-		if not self.is_roll(after): return
+		if not isinstance(channel, discord.TextChannel) or not self.valid_category(after.category): 
+			return
 		
 		if before.overwrites.items() != after.overwrites.items():
 			await self.bot.dbc.execute(
@@ -46,7 +50,7 @@ class RollChannels(commands.Cog, name = "Roll Sorting"):
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_create(self, channel):
-		if not self.is_roll(channel) or not (info := self.get_info(channel.category)):
+		if not isinstance(channel, discord.TextChannel) or not self.valid_category(channel.category):
 			return
 			
 		await self.bot.dbc.execute(
@@ -61,6 +65,23 @@ class RollChannels(commands.Cog, name = "Roll Sorting"):
 		await self.bot.dbc.execute(
 			"DELETE FROM roll_channels WHERE discord_id = ?;", (channel.id,)
 		)
+		await self.bot.dbc.commit()
+		
+	async def add_emblazon(self, channel, owner):
+		if await self.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?", (owner,)):
+			return #has emblazon
+		
+		pinned = list(filter(
+			lambda p: len(p.attachments) > 0, await channel.pins()
+		)).reverse()
+		
+		if not pinned or not owner: return
+		
+		await self.bot.dbc.execute(
+			"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT DO NOTHING;",
+			(owner, url)
+		)
+		await self.bot.dbc.commit()
 
 	@staticmethod
 	async def get_owner(channel):
@@ -69,23 +90,21 @@ class RollChannels(commands.Cog, name = "Roll Sorting"):
 			elif overwrite.pair()[0].manage_channels: return member.id 
 		return None
 		
-	def is_roll(self, channel):
-		if not isinstance(channel, discord.TextChannel): 
+	def valid_category(self, category):
+		if category.guild.id not in {
+			id: g[0] for (id, g) in self.bot.guild_cache.items() if g[1][3]
+		}:
 			return False
 		
-		return channel.guild.id in self.roll_guilds()
-	
-	@staticmethod	
-	def is_roll_channel(category):
 		name = category.name.lower()
 		
-		for v in RollSort.VARIANTS:
+		for v in RollChannels.VARIANTS:
 			if v in name: return True
 				
-		return None
+		return False
 		
-	def roll_guilds(self):
-		return {id: g[0] for (id, g) in self.bot.guild_cache.items() if g[1][3]}
+	def is_personal(self, category):
+		return self.VARIANTS[2] in category.name.lower()
 		
 def setup(bot):
 	bot.add_cog(RollChannels(bot))
