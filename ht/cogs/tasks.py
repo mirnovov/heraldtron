@@ -31,7 +31,6 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		self.bot = bot
 		self.update_info.start()
 		self.sync_book.start()
-		self.get_reddit_posts.start()
 		
 		if not os.path.isdir("data/book"):
 			os.mkdir("data/book")
@@ -39,7 +38,6 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	def cog_unload(self):
 		self.update_info.stop()
 		self.sync_book.stop()
-		self.get_reddit_posts.stop()
 		
 	@tasks.loop(hours = 12)
 	async def update_info(self):
@@ -134,54 +132,9 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			
 		await self.bot.dbc.store_set("book_timestamp", f"{timestamp:.0f}")
 		self.bot.logger.info(f"Successfully refreshed armiger database.")
-			
-	@tasks.loop(hours = 2)
-	async def get_reddit_posts(self):
-		bot = self.bot
-
-		async for feed in await self.bot.dbc.execute("SELECT * FROM reddit_feeds"):
-			query = urllib.parse.quote(feed[5])
-			posts = await utils.get_json(
-				self.bot.session,
-				f"https://www.reddit.com/r/{feed[3]}/search.json?q={query}&restrict_sr=on&sort=new&limit=8"
-			)
-			
-			if posts.get("error"): 
-				bot.logger.warning(f"Cannot access Reddit:\n{posts}")
-				continue #necessary as reddit can be down
-			
-			posts = posts["data"]["children"]
-			channel = await utils.get_channel(self.bot, feed[2])
-			
-			if len(posts) == 0: continue
-			
-			for post in posts:
-				post = post["data"]
-				if post["name"] == feed[6]: break
-				
-				desc = "" if not post.get("selftext") else post["selftext"].split("\n#")[0]
-				
-				embed = embeds.FEED.create(post["title"], desc)
-				embed.url = f"https://old.reddit.com{post['permalink']}"
-				embed.set_footer(text = f"posted to r/{post['subreddit']} by u/{post['author']}")
-				
-				if post.get("preview"):
-					embed.set_thumbnail(url = post["preview"]["images"][0]["source"]["url"].replace("&amp;","&"))
-				
-				await channel.send(None if not bool(feed[4]) else "@everyone", embed = embed)
-			
-			if posts[0]["data"]["name"] != feed[6]:	
-				await bot.dbc.execute(
-					"UPDATE reddit_feeds SET last_post = ? WHERE id = ?", 
-					(posts[0]["data"]["name"], feed[0])
-				)
-				await bot.dbc.commit()
-				
-		bot.logger.info(f"Successfully fetched Reddit posts.")
-	
+		
 	@update_info.before_loop
 	@sync_book.before_loop			
-	@get_reddit_posts.before_loop
 	async def wait_before_loop(self):
 		await self.bot.wait_until_ready()
 		

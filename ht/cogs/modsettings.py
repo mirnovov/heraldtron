@@ -9,44 +9,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	
 	def __init__(self, bot):
 		self.bot = bot
-	
-	@commands.command(
-		help = "Adds a Reddit feed for the given query and channel.\nSearches use Reddit syntax;"
-			   " for instance, `flair:novov` gets posts flaired `novov`."
-			   " Feeds get the newest 8 posts every 2 hours.", 
-		aliases = ("af", "feed")
-	)	
-	async def addfeed(
-		self, ctx, 
-		subreddit : str, 
-		channel : discord.TextChannel, 
-		ping : typing.Optional[bool], 
-		search_query : str
-	):
-		ping = ping or False
-		rowcount = await self.bot.dbc.execute_fetchone("SELECT COUNT(*) FROM reddit_feeds")
-		
-		if rowcount[0] > self.MAX_FEEDS:
-			raise utils.CustomCommandError("Excessive feed count", f"A server cannot have more than {self.MAX_FEEDS} feeds.")
-		
-		subreddit = re.sub(self.SR_VAL, "", subreddit)
-		validate = await utils.get_json(self.bot.session, f"https://www.reddit.com/r/{subreddit}/new.json?limit=1")
-		
-		if validate.get("error"): raise utils.CustomCommandError(
-			"Invalid subreddit",
-			f"**r/{subreddit}** either does not exist or is inaccessible."
-		)
-		elif validate["data"]["dist"] > 0:
-			newest = validate["data"]["children"][0]["data"]["name"] #json can be a nightmare
-		else: newest = None
-		
-		await self.bot.dbc.execute(
-			"INSERT INTO reddit_feeds VALUES (?, ?, ?, ?, ?, ?, ?);",
-			(None, (await self.choose_guild(ctx)).id, channel.id, subreddit, int(ping), search_query, newest)
-		)
-		await self.bot.dbc.commit()
-		await ctx.send(":white_check_mark: | Subreddit feed created.")
-		
+			
 	@commands.command(help = "Sets up a channel for proposals.", aliases = ("ap", "proposals"))	
 	async def addproposals(self, ctx, channel : discord.TextChannel):
 		await self.set_channel(ctx, channel, "proposal", False, "proposals")
@@ -54,31 +17,6 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	@commands.command(help = "Sets up a channel for OC.", aliases = ("ao", "oc"))	
 	async def addoc(self, ctx, channel : discord.TextChannel):
 		await self.set_channel(ctx, channel, "oc", False, "OC")
-		
-	@commands.command(
-		help = "Shows current Reddit feeds and allows deleting them.", 
-		aliases = ("managefeed", "mf", "feeds")
-	)	
-	async def delfeed(self, ctx):
-		guild = await self.choose_guild(ctx)
-		query = await self.bot.dbc.execute("SELECT * FROM reddit_feeds WHERE guild = ?", (guild.id,))
-		feeds = await query.fetchmany(size = self.MAX_FEEDS)
-		
-		if len(feeds) == 0: raise utils.CustomCommandError(
-			"No feeds to delete",
-			"There are currently no active feeds, so none can be deleted."
-		)
-		
-		values = []
-		for feed in feeds:
-			channel = getattr(await utils.get_channel(self.bot, feed[2]), "name", "invalid")
-			values.append(discord.SelectOption(label = f"r/{feed[3]}", description = f"{feed[5]} in #{channel}"))
-			
-		indice = await views.Chooser(ctx, values, "Delete", discord.ButtonStyle.red).run("Choose a feed to delete:")
-		await self.bot.dbc.execute("DELETE FROM reddit_feeds WHERE id = ?;", (feeds[indice][0],))
-		
-		await self.bot.dbc.commit()
-		await ctx.send(":x: | Subreddit feed deleted.")
 		
 	@commands.command(help = "Disables proposal functionality in a channel.", aliases = ("dp",))	
 	async def delproposals(self, ctx, channel : discord.TextChannel):

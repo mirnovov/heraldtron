@@ -149,39 +149,6 @@ def pluralise(word, count):
 def stddate(value):
 	return f"{value.day} {value:%B} {value.year}"
 	
-@functools.cache
-def stddatetime(value, timezone = None):
-	if timezone:
-		value = value.astimezone(gettz(timezone))
-		tzsuffix = timezone.split("/")[-1].replace("_"," ")
-	else: 
-		tzsuffix = value.tzname()
-		
-	if value.utcoffset():
-		tzsuffix += f" (+{value.utcoffset().seconds // 60 / 60:g})"
-	
-	time = value.strftime("%I:%M %p").lower()
-	return f"{time} {value.day} {value:%B} {value.year} {tzsuffix}"
-	
-@functools.cache
-def stddelta(value):
-	if value.total_seconds() < 0:
-		inverse = -value + timedelta(minutes = 1)
-		return f"-{stddelta(inverse)}"
-	
-	minutes = value.seconds // 60
-	hours = minutes // 60
-	days = value.days
-	
-	if days != 0 and hours != 0:
-		return f"{pluralise('day', days)}, {pluralise('hour', hours)}"
-	elif days != 0:
-		return pluralise("day", days)
-	elif hours != 0:
-		return pluralise("hour", hours)
-	else:
-		return pluralise("minute", minutes)	
-
 async def _typing(self, ctx): 
 	await ctx.trigger_typing()
 	
