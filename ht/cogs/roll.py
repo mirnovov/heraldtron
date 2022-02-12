@@ -55,23 +55,20 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				"You do not have an emblazon to remove."
 			)
 		
-		await self.bot.dbc.execute(
-			"DELETE FROM emblazons WHERE id = ?;",
-			(ctx.author.id,)
-		)
+		await self.bot.dbc.execute("UPDATE emblazons SET url = NULL WHERE id = ?;", (ctx.author.id,))
 		await self.bot.dbc.commit()
+		
 		await ctx.send(":x: | Emblazon removed.")
 		
 	@commands.command(
 		help = "Looks up a user-defined emblazon of a coat of arms.",
 		aliases = ("e",)
 	)
-	@utils.trigger_typing
 	async def emblazon(self, ctx, user : converters.MemberOrUser = None):
 		user = user or ctx.author
 		emblazon = await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
 		
-		if emblazon: 
+		if emblazon and emblazon[1]: 
 			embed = embeds.GENERIC.create(f"{user.name}#{user.discriminator}", "", heading = "Emblazon")
 			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
 			
