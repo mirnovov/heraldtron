@@ -36,15 +36,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;", 
 			(user[1],)
 		)
-		mentions = []
 		
-		for record in channels:
-			channel = await utils.get_channel(ctx.bot, record[0])
-			if not channel: continue
-			mentions.append(channel.mention)
-			
-		if mentions: embed.add_field(name = "Rolls of arms", value = ", ".join(mentions))
-		
+		await self.add_rolls(embed, "AND personal", user, "User roll")
+		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
 		await ctx.send(embed = embed)
 		
 	@commands.command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
@@ -102,6 +96,17 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Emblazon updated.")
+		
+	async def add_rolls(self, embed, query, user, name):
+		records = await self.bot.dbc.execute_fetchall(
+			f"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL {query};", 
+			(user[1],)
+		)
+		
+		mentions = ", ".join(f"<#{record[0]}>" for record in records)
+		if not mentions: return
+		
+		embed.add_field(name = name, value = mentions)		
 		
 def setup(bot):
 	bot.add_cog(HeraldryRoll(bot))
