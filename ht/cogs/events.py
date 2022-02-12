@@ -35,19 +35,32 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		if message.channel.id not in self.bot.proposal_cache: return
+		if message.channel.id not in self.bot.channel_cache: return
 		
-		await message.add_reaction("\U0001F44D")
-		await message.add_reaction("\U0001F44E")
-		await message.add_reaction("\U0001F937")
-		
+		channel = self.bot.channel_cache[message.channel.id]
 		content = discord.utils.remove_markdown(message.content)
-		bits = re.findall(self.FIND_SENTENCES, content) or [content]
-		thread_title = next(filter(lambda b: b.endswith("?"), bits), bits[0])
+		thread_title = content
 		
+		if channel[2]: #proposal post
+			await message.add_reaction("\U0001F44D")
+			await message.add_reaction("\U0001F44E")
+			await message.add_reaction("\U0001F937")
+			
+			bits = re.findall(self.FIND_SENTENCES, content) or [content]
+			thread_title = next(filter(lambda b: b.endswith("?"), bits), bits[0])	
+					
+		elif channel[3]: #oc post
+			if len(message.attachments) < 1: 
+				return
+			elif not thread_title:
+				time = message.created_at.strftime("%d %B %Y")
+				thread_title = f"{message.author.name} on {time}"
+		
+		else: return
+			
 		if len(thread_title) > self.THREAD_MAX:
 			thread_title = thread_title[:self.THREAD_MAX] + "..."
-			
+				
 		thread = await message.create_thread(name = thread_title)
 		await thread.edit(locked = True)
 	

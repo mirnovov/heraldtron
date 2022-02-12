@@ -47,18 +47,13 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Subreddit feed created.")
 		
-	@commands.command(
-		help = "Sets up a channel for proposals.", 
-		aliases = ("ap", "proposals")
-	)	
+	@commands.command(help = "Sets up a channel for proposals.", aliases = ("ap", "proposals"))	
 	async def addproposals(self, ctx, channel : discord.TextChannel):
-		await self.bot.dbc.execute(
-			"INSERT INTO proposal_channels VALUES (?, ?);",
-			(channel.id, (await self.choose_guild(ctx)).id)
-		)
-		await self.bot.dbc.commit()
-		self.bot.proposal_cache.add(channel.id)
-		await ctx.send(f":white_check_mark: | {channel.mention} set up for proposals.")
+		await self.set_channel(ctx, channel, "proposal", False, "proposals")
+		
+	@commands.command(help = "Sets up a channel for OC.", aliases = ("ao", "oc"))	
+	async def addoc(self, ctx, channel : discord.TextChannel):
+		await self.set_channel(ctx, channel, "oc", False, "OC")
 		
 	@commands.command(
 		help = "Shows current Reddit feeds and allows deleting them.", 
@@ -85,25 +80,13 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 		await self.bot.dbc.commit()
 		await ctx.send(":x: | Subreddit feed deleted.")
 		
-	@commands.command(
-		help = "Disables proposal functionality in a channel.", 
-		aliases = ("dp",)
-	)	
+	@commands.command(help = "Disables proposal functionality in a channel.", aliases = ("dp",))	
 	async def delproposals(self, ctx, channel : discord.TextChannel):
-		guild = await self.choose_guild(ctx)
-		query = await self.bot.dbc.execute_fetchone(
-			"SELECT * FROM proposal_channels WHERE guild = ? AND discord_id = ?", (guild.id, channel.id))
+		await self.set_channel(ctx, channel, "proposal", True, "proposals")
 		
-		if query == None: raise utils.CustomCommandError(
-			"Invalid proposal channel",
-			"The channel you specified does not have proposals enabled."
-		)
-		
-		await self.bot.dbc.execute("DELETE FROM proposal_channels WHERE discord_id = ?;", (channel.id,))
-		await self.bot.dbc.commit()
-		self.bot.proposal_cache.discard(channel.id)
-		
-		await ctx.send(f":x: | Proposals removed from {channel.mention}.")
+	@commands.command(help = "Disables OC functionality in a channel.", aliases = ("do",))	
+	async def deloc(self, ctx, channel : discord.TextChannel):
+		await self.set_channel(ctx, channel, "oc", True, "OC")
 	
 	@commands.command(name = "limit", help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
 	async def limitmessages(self, ctx, enabled : bool):
@@ -148,6 +131,32 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 			"**Multiple servers are available.** Select a server to use the command in:", 
 		)		
 		return possible[indice]
+		
+	async def set_channel(self, ctx, channel, column, remove, purpose):
+		guild = await self.choose_guild(ctx)
+		value = int(not remove)
+		
+		await self.bot.dbc.execute(
+			f"INSERT INTO channels (discord_id, guild, {column}) VALUES " +
+			f"(?, ?, ?) ON CONFLICT(discord_id) DO UPDATE SET {column} = ?;",
+			(channel.id, guild.id, value, column)
+		)
+		await ctx.bot.dbc.commit()
+		
+		if guild != channel.guild:
+			raise utils.CustomCommandError(
+				"Incorrect server", "The channel specified does not belong to this server."
+			)
+		
+		self.bot.channel_cache[channel.id] = await self.bot.dbc.execute_fetchone(
+			"SELECT * FROM channels WHERE discord_id = ?;", (channel.id,)
+		)
+		
+		await ctx.send(
+			f":white_check_mark: | {channel.mention} set up for {purpose}." 
+			if not remove else 
+			f":x: | Functionality for {purpose} removed from {channel.mention}."
+		)
 	
 	@staticmethod	
 	async def set_flag(ctx, enabled, db_col, emoji, desc):

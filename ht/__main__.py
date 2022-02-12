@@ -132,8 +132,8 @@ class Heraldtron(commands.Bot):
 			if not guild or not record: continue
 			self.guild_cache[record[0]] = (guild, record)
 			
-		async for proposal in await self.dbc.execute("SELECT * FROM proposal_channels"):
-			self.proposal_cache.add(proposal[0])
+		async for record in await self.dbc.execute("SELECT * FROM channels"):
+			self.channel_cache[record[0]] = record
 		
 		self.ready_flag.set()	
 		
@@ -158,7 +158,7 @@ class Heraldtron(commands.Bot):
 	def reset_cache(self):
 		self.ready_flag.clear()
 		self.guild_cache = {}
-		self.proposal_cache = set()
+		self.channel_cache = {}
 		
 	async def on_message(self, message):
 		await self.ready_flag.wait()
