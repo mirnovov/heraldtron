@@ -61,8 +61,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		if len(thread_title) > self.THREAD_MAX:
 			thread_title = thread_title[:self.THREAD_MAX] + "..."
 				
-		thread = await message.create_thread(name = thread_title)
-		await thread.edit(locked = True)
+		await message.create_thread(name = thread_title)
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
