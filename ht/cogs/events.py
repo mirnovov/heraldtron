@@ -6,6 +6,9 @@ class BotEvents(commands.Cog, name = "Bot events"):
 	FIND_MENTIONS = re.compile(r"(?m)(<(#|@|:\w+:)(\d+)>)")
 	FIND_SENTENCES = re.compile(r"(?m)(\w.*?)(\.|\?|\n)")
 	THREAD_MAX = 90
+	THUMBS_UP = "\U0001F44D"
+	THUMBS_DOWN = "\U0001F44E"
+	SHRUG = "\U0001F937"
 	
 	def __init__(self, bot):
 		self.bot = bot
@@ -14,12 +17,17 @@ class BotEvents(commands.Cog, name = "Bot events"):
 	async def update_guilds(self):
 		await self.bot.wait_until_ready()
 		for guild in self.bot.guilds:
+			if guild.id == self.bot.HERALDRY_GUILD:
+				#in heraldry server, so can use custom reacts
+				self.THUMBS_UP = "<:a_thumbs_up:961787184891973672>"
+				self.THUMBS_DOWN = "<:a_thumbs_down:961787184489316386>"
+			
 			await self.bot.dbc.execute(
 				"INSERT OR IGNORE INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?);",
 				(guild.id, guild.name, 0, 0, 1, None, None)
 			)
-			await self.bot.dbc.commit()		
-		
+			await self.bot.dbc.commit()	
+			
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
 		await self.bot.dbc.execute(
@@ -53,12 +61,14 @@ class BotEvents(commands.Cog, name = "Bot events"):
 				result = (await lookup(self.bot, id)).name
 			
 			title = title.replace(match[0], result, 1)
+			
+		title = discord.utils.escape_markdown(title)
 		
 		if channel[2]: 
 			#proposal post
-			await message.add_reaction("\U0001F44D")
-			await message.add_reaction("\U0001F44E")
-			await message.add_reaction("\U0001F937")
+			await message.add_reaction(self.THUMBS_UP)
+			await message.add_reaction(self.THUMBS_DOWN)
+			await message.add_reaction(self.SHRUG)
 
 			if match := re.search(self.FIND_SENTENCES, title):
 				title = match.group(1)

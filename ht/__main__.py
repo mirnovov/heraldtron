@@ -21,6 +21,8 @@ class Heraldtron(commands.Bot):
 		"USE_JISHAKU": False
 	}
 	
+	HERALDRY_GUILD = 272117928298676225
+	
 	def __init__(self, *args, **kwargs):
 		self.conf = self.load_conf()
 		self.root_logger = self.setup_root_logger() 
