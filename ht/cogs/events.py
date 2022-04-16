@@ -1,8 +1,10 @@
 import discord, re, sqlite3
 from discord.ext import commands
+from .. import utils
 
 class BotEvents(commands.Cog, name = "Bot events"):
-	FIND_SENTENCES = re.compile(r"(?m)\w.*?(?:\.|\?)")
+	FIND_MENTIONS = re.compile(r"(?m)(<(#|@|:\w+:)(\d+)>)")
+	FIND_SENTENCES = re.compile(r"(?m)(\w.*?)(\.|\?|\n)")
 	THREAD_MAX = 90
 	
 	def __init__(self, bot):
@@ -36,32 +38,42 @@ class BotEvents(commands.Cog, name = "Bot events"):
 	@commands.Cog.listener()
 	async def on_message(self, message):
 		if message.channel.id not in self.bot.channel_cache: return
-		
+		 
 		channel = self.bot.channel_cache[message.channel.id]
-		content = discord.utils.remove_markdown(message.content)
-		thread_title = content
+		title = message.content
 		
-		if channel[2]: #proposal post
+		for match in re.findall(self.FIND_MENTIONS, message.content): 
+			#replace mentions and emojis
+			
+			if match[1][0] == ":": #emoji
+				result = match[1][1:-1]
+			else: #user or channel mention
+				lookup = utils.get_channel if match[1] == "#" else utils.get_user
+				id = int(match[2])
+				result = (await lookup(self.bot, id)).name
+			
+			title = title.replace(match[0], result, 1)
+		
+		if channel[2]: 
+			#proposal post
 			await message.add_reaction("\U0001F44D")
 			await message.add_reaction("\U0001F44E")
 			await message.add_reaction("\U0001F937")
-			
-			bits = re.findall(self.FIND_SENTENCES, content) or [content]
-			thread_title = next(filter(lambda b: b.endswith("?"), bits), bits[0])	
+
+			if match := re.search(self.FIND_SENTENCES, title):
+				title = match.group(1)
 					
-		elif channel[3]: #oc post
-			if len(message.attachments) < 1: 
-				return
-			elif not thread_title:
-				time = message.created_at.strftime("%d %B %Y")
-				thread_title = f"{message.author.name} on {time}"
-		
-		else: return
+		elif not channel[3] or len(message.attachments) < 1: 
+			#not oc post or no attachments
+			return
 			
-		if len(thread_title) > self.THREAD_MAX:
-			thread_title = thread_title[:self.THREAD_MAX] + "..."
+		if len(title) > self.THREAD_MAX:
+			title = title[:self.THREAD_MAX] + "..."
+		elif not title:
+			time = message.created_at.strftime("%d %B %Y")
+			title = f"{message.author.name} on {time}"
 				
-		await message.create_thread(name = thread_title)
+		await message.create_thread(name = title)
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
