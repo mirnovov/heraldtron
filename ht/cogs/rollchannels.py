@@ -38,7 +38,7 @@ class RollChannels(commands.Cog, name = "Roll Sorting"):
 			
 	@commands.Cog.listener()
 	async def on_guild_channel_update(self, before, after):
-		if not isinstance(channel, discord.TextChannel) or not self.valid_category(after.category): 
+		if not isinstance(after, discord.TextChannel) or not self.valid_category(after.category): 
 			return
 		
 		if before.overwrites.items() != after.overwrites.items():

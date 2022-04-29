@@ -23,8 +23,8 @@ class BotEvents(commands.Cog, name = "Bot events"):
 				self.THUMBS_DOWN = "<:a_thumbs_down:961787184489316386>"
 			
 			await self.bot.dbc.execute(
-				"INSERT OR IGNORE INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?);",
-				(guild.id, guild.name, 0, 0, 1, None, None)
+				"INSERT OR IGNORE INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+				(guild.id, guild.name, 0, 0, 1, None, None, 0)
 			)
 			await self.bot.dbc.commit()	
 			
@@ -72,6 +72,8 @@ class BotEvents(commands.Cog, name = "Bot events"):
 
 			if match := re.search(self.FIND_SENTENCES, title):
 				title = match.group(1)
+				
+			self.bot.proposal_cache[message.id] = message
 					
 		elif not channel[3] or len(message.attachments) < 1: 
 			#not oc post or no attachments
@@ -84,6 +86,35 @@ class BotEvents(commands.Cog, name = "Bot events"):
 			title = f"{message.author.name} on {time}"
 				
 		await message.create_thread(name = title)
+	
+	@commands.Cog.listener("on_raw_reaction_add")	
+	@commands.Cog.listener("on_raw_reaction_remove")
+	async def reaction_update(self, payload):
+		if payload.message_id in self.bot.proposal_cache:
+			channel = await utils.get_channel(self.bot, payload.channel_id)
+			self.bot.proposal_cache[payload.message_id] = await channel.fetch_message(payload.message_id)
+		
+	@commands.Cog.listener()
+	async def on_raw_message_delete(self, payload):
+		record = self.bot.channel_cache.get(payload.channel_id)
+		if not record or not record[2]: return
+		
+		#On proposal delete99
+		message = self.bot.proposal_cache.get(payload.message_id)
+		channel = await utils.get_channel(self.bot, payload.channel_id)
+		thread = channel.get_thread(payload.message_id)
+		if not message or not thread: return
+		
+		content = message.content[:200].replace("\n", "\n> ")
+		reactions = "  ".join(f"{reaction.emoji} {reaction.count}" for reaction in message.reactions)
+		response = f"**Proposal closed**\n> {content}\n\n{reactions}"
+		
+		await thread.send(response)
+		await thread.edit(archived = True)
+		
+		if log_channel := self.bot.guild_cache[payload.guild_id][1][7]:
+			log = await utils.get_channel(self.bot, log_channel)
+			await log.send(response + f"\n{thread.mention}")
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):

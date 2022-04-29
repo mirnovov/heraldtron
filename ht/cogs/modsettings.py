@@ -25,6 +25,14 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	@commands.command(help = "Disables OC functionality in a channel.", aliases = ("do",))	
 	async def deloc(self, ctx, channel : discord.TextChannel):
 		await self.set_channel(ctx, channel, "oc", True, "OC")
+		
+	@commands.command(help = "Disables bot logging functions.", aliases = ("dl",))	
+	async def dellog(self, ctx):
+		guild = await ModerationSettings.choose_guild(ctx)		 
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET log = 0 WHERE discord_id = ?", (guild.id,))
+		await ctx.bot.dbc.commit()
+		await ctx.send(f":spy: | Logging has been **disabled** for this server.")
+		await ctx.bot.refresh_cache_guild(guild.id)
 	
 	@commands.command(name = "limit", help = "Enables/disables non-essential commands for this server.", aliases = ("li",))	
 	async def limitmessages(self, ctx, enabled : bool):
@@ -37,6 +45,14 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	@commands.command(help = "Enables/disables roll functionality for this server.", aliases = ("rl",))	
 	async def rollserver(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "roll", ":scroll:", "Roll functionaliy has")
+		
+	@commands.command(help = "Sets up bot logging functions in a channel.", aliases = ("lc",))	
+	async def log(self, ctx, channel : discord.TextChannel):
+		guild = await ModerationSettings.choose_guild(ctx)		 
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET log = ? WHERE discord_id = ?", (channel.id, guild.id))
+		await ctx.bot.dbc.commit()
+		await ctx.send(f":spy: | Logging has been **enabled** for this server in {channel.mention}.")
+		await ctx.bot.refresh_cache_guild(guild.id)
 	
 	@commands.command(help = "Sets the leave message for this server.", aliases = ("sl", "setl"))	
 	async def setleave(self, ctx):

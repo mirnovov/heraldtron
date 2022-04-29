@@ -10,7 +10,7 @@ CREATE TABLE "channels" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
 	"proposal" INTEGER DEFAULT 0 NOT NULL,
-	"oc" INTEGER DEFAULT O NOT NULL
+	"oc" INTEGER DEFAULT 0 NOT NULL,
 );
 
 CREATE TABLE "emblazons" (
@@ -25,7 +25,8 @@ CREATE TABLE "guilds" (
 	"roll" INTEGER DEFAULT 0 NOT NULL,
 	"welcome_users" INTEGER DEFAULT 0 NOT NULL,
 	"welcome_text" TEXT,
-	"leave_text" TEXT
+	"leave_text" TEXT,
+	"log" INTEGER DEFAULT 0 NOT NULL
 );
 
 CREATE TABLE "misc_store" (

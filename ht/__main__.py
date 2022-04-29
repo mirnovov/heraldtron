@@ -136,8 +136,16 @@ class Heraldtron(commands.Bot):
 			
 		async for record in await self.dbc.execute("SELECT * FROM channels"):
 			self.channel_cache[record[0]] = record
+			
+			if not record[2]: continue
+			channel = await utils.get_channel(self, record[0])
+			
+			async for message in channel.history():
+				if not message.flags.has_thread: continue
+				self.proposal_cache[message.id] = message
 		
-		self.ready_flag.set()	
+		self.ready_flag.set()
+		self.logger.info(f"Successfully cached data.")	
 		
 	def add_cog(self, cog):
 		super().add_cog(cog)
@@ -161,6 +169,7 @@ class Heraldtron(commands.Bot):
 		self.ready_flag.clear()
 		self.guild_cache = {}
 		self.channel_cache = {}
+		self.proposal_cache = {}
 		
 	async def on_message(self, message):
 		await self.ready_flag.wait()
