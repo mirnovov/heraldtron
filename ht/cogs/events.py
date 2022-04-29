@@ -107,7 +107,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		
 		content = message.content[:200].replace("\n", "\n> ")
 		reactions = "  ".join(f"{reaction.emoji} {reaction.count}" for reaction in message.reactions)
-		response = f"**Proposal closed**\n> {content}\n\n{reactions}"
+		response = f"**Closed proposal by {message.author.mention}**\n> {content}\n\n{reactions}"
 		
 		await thread.send(response)
 		await thread.edit(archived = True)
