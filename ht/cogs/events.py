@@ -118,7 +118,6 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		
 		if log_channel := self.bot.guild_cache[payload.guild_id][1][7]:
 			log = await utils.get_channel(self.bot, log_channel)
-			embed.description = f"{thread.mention}\n{reactions}"
 			await log.send(embed = embed)
 	
 	@commands.Cog.listener()
