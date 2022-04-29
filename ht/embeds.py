@@ -18,6 +18,7 @@ class Theme(Enum):
 	CHOICE = (DEFAULT, "d/df/OOjs_UI_icon_next-ltr-invert.svg/240px-OOjs_UI_icon_next-ltr-invert.svg.png", "Choice required")
 	DRAW = (DEFAULT, "d/d2/OOjs_UI_icon_edit-rtl-invert.svg/240px-OOjs_UI_icon_edit-rtl-invert.svg.png", "Drawn!")
 	COUNTDOWN = (DEFAULT, "b/bb/OOjs_UI_icon_clock-invert.svg/240px-OOjs_UI_icon_clock-invert.svg.png", "Countdown")
+	PROPOSAL = (DEFAULT, "1/13/OOjs_UI_icon_check-invert.svg/240px-OOjs_UI_icon_check-invert.svg.png", "Proposal closed")
 	
 	def __init__(self, colour, icon_url, heading):
 		self.colour = colour
@@ -44,3 +45,4 @@ USER_INFO = Theme.USER_INFO
 CHOICE = Theme.CHOICE
 DRAW = Theme.DRAW
 COUNTDOWN = Theme.COUNTDOWN
+PROPOSAL = Theme.PROPOSAL

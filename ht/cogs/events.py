@@ -1,6 +1,6 @@
 import discord, re, sqlite3
 from discord.ext import commands
-from .. import utils
+from .. import embeds, utils
 
 class BotEvents(commands.Cog, name = "Bot events"):
 	FIND_MENTIONS = re.compile(r"(?m)(<(#|@|:\w+:)(\d+)>)")
@@ -99,22 +99,27 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		record = self.bot.channel_cache.get(payload.channel_id)
 		if not record or not record[2]: return
 		
-		#On proposal delete99
+		#On proposal deletion
 		message = self.bot.proposal_cache.get(payload.message_id)
 		channel = await utils.get_channel(self.bot, payload.channel_id)
 		thread = channel.get_thread(payload.message_id)
 		if not message or not thread: return
 		
-		content = message.content[:200].replace("\n", "\n> ")
-		reactions = "  ".join(f"{reaction.emoji} {reaction.count}" for reaction in message.reactions)
-		response = f"**Closed proposal by {message.author.mention}**\n> {content}\n\n{reactions}"
+		reactions = "\u3000".join(f"{reaction.emoji} {reaction.count}" for reaction in message.reactions)
+		quote = message.content[:400].replace("\n", "\n> ")
+		embed = embeds.PROPOSAL.create("", f"> {quote}\n\n{reactions}")
+		embed.set_footer(
+			text = f"Original post by {message.author.name}#{message.author.discriminator}",
+			icon_url = message.author.display_avatar.with_size(256).url
+		)
 		
-		await thread.send(response)
+		await thread.send(embed = embed)
 		await thread.edit(archived = True)
 		
 		if log_channel := self.bot.guild_cache[payload.guild_id][1][7]:
 			log = await utils.get_channel(self.bot, log_channel)
-			await log.send(response + f"\n{thread.mention}")
+			embed.description = f"{thread.mention}\n{reactions}"
+			await log.send(embed = embed)
 	
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
