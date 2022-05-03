@@ -13,6 +13,7 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * [aiosqlite](https://pypi.org/project/aiosqlite/)
 * [docx2python](https://pypi.org/project/docx2python/)
 * [python-dateutil](https://pypi.org/project/python-dateutil/)
+* [jishaku](https://github.com/Gorialis/jishaku)
 * Developer credentials (see below)
 
 [cchardet](https://pypi.org/project/cchardet/) and [aiodns](https://pypi.org/project/aiodns/) are also recommended to improve performance.
@@ -42,7 +43,6 @@ This is adequate for most use cases, but for a few commands, additional informat
 
 Additionally, there are a number of optional settings that can be specified:
 
-* `USE_JISHAKU`: If `true`, load the [jishaku](https://github.com/Gorialis/jishaku) debugger (must be installed separately). 
 * `OWNER_ONLY`: If `true`, disable usage of the bot for members that are not the owner. 
 * `LOG_LEVEL`: The numeric [logging level](https://docs.python.org/3/library/logging.html#levels) for the bot. Defaults to 20 (`INFO`).
 * `DB_PATH`: An alternate path for the SQLite file to use, instead of the default `data/db/heraldtron.db`.

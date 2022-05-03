@@ -5,7 +5,7 @@ from . import db, utils
 
 class Heraldtron(commands.Bot):
 	DEFAULT_COGS = [
-		"errors", "events", "modsettings",  "modtools", 
+		"debug", "errors", "events", "modsettings",  "modtools", 
 		"heraldry", "misc", "reference", "resource", "roll", 
 		"rollchannels", "tasks", "vexillology", "meta"
 	]
@@ -17,8 +17,7 @@ class Heraldtron(commands.Bot):
 	DEFAULT_CONF = {
 		"DB_PATH": "./data/db/heraldtron.db",
 		"LOG_LEVEL": 20,
-		"OWNER_ONLY": False,
-		"USE_JISHAKU": False
+		"OWNER_ONLY": False
 	}
 	
 	HERALDRY_GUILD = 272117928298676225
@@ -79,10 +78,6 @@ class Heraldtron(commands.Bot):
 		for cog in coglist:
 			self.load_extension(f"ht.cogs.{cog}")
 			self.logger.info(f"Cog \"{cog}\" loaded successfully")
-			
-		if self.conf.get("USE_JISHAKU"):
-			self.load_extension("ht.cogs.debug")
-			coglist.append("jishaku")
 			
 		return coglist
 		
