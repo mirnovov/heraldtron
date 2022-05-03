@@ -10,7 +10,7 @@ CREATE TABLE "channels" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"guild" INTEGER REFERENCES "guilds"("discord_id") NOT NULL,
 	"proposal" INTEGER DEFAULT 0 NOT NULL,
-	"oc" INTEGER DEFAULT 0 NOT NULL,
+	"oc" INTEGER DEFAULT 0 NOT NULL
 );
 
 CREATE TABLE "emblazons" (
@@ -53,7 +53,8 @@ CREATE TABLE "roll_channels" (
 	"discord_id" INTEGER PRIMARY KEY,
 	"user_id" INTEGER REFERENCES "armigers"("discord_id"),
 	"guild_id" INTEGER NOT NULL REFERENCES "guilds"("discord_id"),
-	"personal" INTEGER DEFAULT 0
+	"personal" INTEGER DEFAULT 0,
+	"name" TEXT
 );
 
 CREATE VIEW "armigers_e" AS 

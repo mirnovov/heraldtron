@@ -4,7 +4,7 @@ from collections import deque
 from datetime import datetime, timedelta
 from .. import utils
 
-class RollChannels(commands.Cog, name = "Roll Sorting"):
+class RollChannels(commands.Cog, name = "Roll Channels"):
 	VARIANTS = ["market", "artist", "roll of arms"]
 	
 	def __init__(self, bot):
@@ -25,9 +25,9 @@ class RollChannels(commands.Cog, name = "Roll Sorting"):
 				for channel in category.channels:					
 					owner = await self.get_owner(channel)
 					await self.bot.dbc.execute(
-						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal) VALUES (?, ?, ?, ?)"
-						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?;",
-						(channel.id, owner, guild[0], int(personal), owner)
+						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?, ?, ?, ?, ?)"
+						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?, name = ?;",
+						(channel.id, owner, guild[0], int(personal), channel.name, owner, channel.name)
 					)
 					await self.bot.dbc.commit()
 					
@@ -54,11 +54,10 @@ class RollChannels(commands.Cog, name = "Roll Sorting"):
 			return
 			
 		await self.bot.dbc.execute(
-			"INSERT INTO roll_channels (discord_id, user_id, guild_id) VALUES (?, ?, ?);",
-			(channel.id, await self.get_owner(channel), channel.guild.id)
+			"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?, ?, ?, ?, ?);",
+			(channel.id, await self.get_owner(channel), channel.guild.id, self.is_personal(channel.category), channel.name)
 		)
 		await self.bot.dbc.commit()
-		await self.sort(channel.guild, info)
 		
 	@commands.Cog.listener()
 	async def on_guild_channel_delete(self, channel):

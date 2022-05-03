@@ -31,12 +31,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			embed.set_footer(text = embed.footer.text + " Image specified by user.")
 		elif user[1] == ctx.author.id:
 			embed.description += f"\n**To set an image, use `{ctx.clean_prefix}setemblazon your_url`.**"
-			
-		channels = await ctx.bot.dbc.execute_fetchall(
-			"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;", 
-			(user[1],)
-		)
-		
+				
 		await self.add_rolls(embed, "AND personal", user, "User roll")
 		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
 		await ctx.send(embed = embed)
