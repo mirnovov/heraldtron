@@ -25,9 +25,9 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 				for channel in category.channels:					
 					owner = await self.get_owner(channel)
 					await self.bot.dbc.execute(
-						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?, ?, ?, ?, ?)"
-						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?, name = ? WHERE ? IS NOT NULL;",
-						(channel.id, owner, guild[0], int(personal), channel.name, owner, channel.name, owner)
+						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?1, ?2, ?3, ?4, ?5)"
+						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?2, name = ?5 WHERE ?2 IS NOT NULL;",
+						(channel.id, owner, guild[0], int(personal), channel.name)
 					)
 					await self.bot.dbc.commit()
 					
@@ -43,7 +43,7 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 		
 		if before.overwrites.items() != after.overwrites.items():
 			await self.bot.dbc.execute(
-				"UPDATE roll_channels SET user_id = ? WHERE discord_id = ?;",
+				"UPDATE roll_channels SET user_id = ?1 WHERE discord_id = ?2;",
 				(await self.get_owner(after), after.id)
 			)
 			await self.bot.dbc.commit()
@@ -54,7 +54,7 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 			return
 			
 		await self.bot.dbc.execute(
-			"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?, ?, ?, ?, ?);",
+			"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?1, ?2, ?3, ?4, ?5);",
 			(channel.id, await self.get_owner(channel), channel.guild.id, self.is_personal(channel.category), channel.name)
 		)
 		await self.bot.dbc.commit()
@@ -77,7 +77,7 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 		if not pinned or not owner: return
 		
 		await self.bot.dbc.execute(
-			"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT DO NOTHING;",
+			"INSERT INTO emblazons (id, url) VALUES (?1, ?2) ON CONFLICT DO NOTHING;",
 			(owner, url)
 		)
 		await self.bot.dbc.commit()

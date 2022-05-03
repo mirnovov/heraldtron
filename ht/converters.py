@@ -24,12 +24,12 @@ class Armiger(commands.Converter):
 		elif "#" in argument:
 			parts = argument.split("#")
 			result = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE qualified_name LIKE ? AND qualified_id == ?;",
+				"SELECT * FROM armigers_e WHERE qualified_name LIKE ?1 AND qualified_id == ?2;",
 				(parts[0], parts[1])
 			)
 		else:
 			result = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE qualified_name LIKE ?",
+				"SELECT * FROM armigers_e WHERE qualified_name LIKE ?;",
 				(f"%{argument}%",)
 			)
 			

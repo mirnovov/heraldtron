@@ -49,7 +49,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	@commands.command(help = "Sets up bot logging functions in a channel.", aliases = ("lc",))	
 	async def log(self, ctx, channel : discord.TextChannel):
 		guild = await ModerationSettings.choose_guild(ctx)		 
-		await ctx.bot.dbc.execute(f"UPDATE guilds SET log = ? WHERE discord_id = ?", (channel.id, guild.id))
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET log = ?1 WHERE discord_id = ?2", (channel.id, guild.id))
 		await ctx.bot.dbc.commit()
 		await ctx.send(f":spy: | Logging has been **enabled** for this server in {channel.mention}.")
 		await ctx.bot.refresh_cache_guild(guild.id)
@@ -92,8 +92,8 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 		
 		await self.bot.dbc.execute(
 			f"INSERT INTO channels (discord_id, guild, {column}) VALUES " +
-			f"(?, ?, ?) ON CONFLICT(discord_id) DO UPDATE SET {column} = ?;",
-			(channel.id, guild.id, value, column)
+			f"(?1, ?2, ?3) ON CONFLICT(discord_id) DO UPDATE SET {column} = ?3;",
+			(channel.id, guild.id, value)
 		)
 		await ctx.bot.dbc.commit()
 		
@@ -118,7 +118,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 		enabled_int = int(enabled)
 		enabled_text = "enabled" if enabled else "disabled"
 		 
-		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ? WHERE discord_id = ?", (enabled_int, guild.id))
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET {db_col} = ?1 WHERE discord_id = ?2", (enabled_int, guild.id))
 		await ctx.bot.dbc.commit()
 		await ctx.send(f"{emoji} | {desc} been **{enabled_text}** for this server.")
 		
@@ -127,7 +127,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	@staticmethod	
 	async def set_message(ctx, leave):
 		guild = await ModerationSettings.choose_guild(ctx)
-		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?;", (guild.id,))
+		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?1;", (guild.id,))
 		
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
@@ -145,7 +145,7 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 			message_type = "welcome_text" if not leave else "leave_text"
 			new = None if isinstance(result, str) else result.content
 			
-			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ? WHERE discord_id = ?;", (new, guild.id))
+			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ?1 WHERE discord_id = ?2;", (new, guild.id))
 			await ctx.bot.dbc.commit()
 			await ctx.send(":white_check_mark: | Message changed.")
 		

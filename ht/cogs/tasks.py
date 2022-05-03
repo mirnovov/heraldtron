@@ -113,8 +113,8 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		for greii_n, entry in book.items():
 			await self.bot.dbc.execute(
 				"INSERT INTO armigers (greii_n, qualified_name, qualified_id, blazon) VALUES"
-				" (?, ?, ?, ?) ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?, qualified_id = ?, blazon = ?;",
-				(greii_n, entry[1], entry[2], entry[3], entry[1], entry[2], entry[3])
+				" (?1, ?2, ?3, ?4) ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?2, qualified_id = ?3, blazon = ?4;",
+				(greii_n, entry[1], entry[2], entry[3])
 			)
 			
 			if await self.bot.dbc.execute(
@@ -124,7 +124,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				
 				if user:
 					await self.bot.dbc.execute(
-						"UPDATE armigers SET discord_id = ? WHERE greii_n = ?;",
+						"UPDATE armigers SET discord_id = ?1 WHERE greii_n = ?2;",
 						(user.id, greii_n)
 					)
 			

@@ -86,8 +86,8 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			)
 			
 		await self.bot.dbc.execute(
-			"INSERT INTO emblazons (id, url) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET url = ?;",
-			(ctx.author.id, url, url)
+			"INSERT INTO emblazons (id, url) VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET url = ?2;",
+			(ctx.author.id, url)
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Emblazon updated.")
