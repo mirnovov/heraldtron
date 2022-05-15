@@ -141,8 +141,8 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 			" :blue_circle: Azure, :black_circle: Sable, :purple_circle: Purpure\n\n"
 			"- **Metals**: :yellow_circle: Or, :white_circle: Argent\n\n"
 			"- **Furs**: Ermine, Vair, etc.\n\nThe *rule of tincture* states that colour"
-			" cannot touch metal, except for minor details and field divisions; furs can touch both."
-			"Keep in mind that the exact shades can vary. Various rarer tinctures also exist,"
+			" can only touch metal, except for minor details and field divisions; furs can touch both."
+			" Keep in mind that the exact shades can vary. Various rarer tinctures also exist,"
 			" but many dislike them; use with caution."
 		)
 	
