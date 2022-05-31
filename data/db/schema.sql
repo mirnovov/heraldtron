@@ -3,7 +3,7 @@ CREATE TABLE "armigers" (
 	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
-	"blazon" TEXT,
+	"blazon" TEXT
 );
 
 CREATE TABLE "channels" (
