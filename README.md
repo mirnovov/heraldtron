@@ -18,11 +18,11 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 
 [cchardet](https://pypi.org/project/cchardet/) and [aiodns](https://pypi.org/project/aiodns/) are also recommended to improve performance.
 
-For convenience, these can all be installed with `pip install -r requirements/main.txt`. 
+For convenience, these can all be installed with `pip install -r requirements/main.txt`.
 
 ## Setup
 
-As one may expect, this bot requires a *bot account* to run. Refer to the discord.py [instructions on creating one](https://discordpy.readthedocs.io/en/stable/discord.html) for more information. 
+As one may expect, this bot requires a *bot account* to run. Refer to the discord.py [instructions on creating one](https://discordpy.readthedocs.io/en/stable/discord.html) for more information.
 
 For some functionality, a [Google Cloud Platform](https://cloud.google.com) account is required, with the Custom Search and Google Drive APIs enabled. Custom search features additionally require a [Programmable Search](https://programmablesearchengine.google.com/about/) engine, since Google has discontinued general search APIs. This must have image search enabled, and it is strongly recommended that you enable the "Search the entire web" setting.
 
@@ -43,13 +43,13 @@ This is adequate for most use cases, but for a few commands, additional informat
 
 Additionally, there are a number of optional settings that can be specified:
 
-* `OWNER_ONLY`: If `true`, disable usage of the bot for members that are not the owner. 
+* `OWNER_ONLY`: If `true`, disable usage of the bot for members that are not the owner.
 * `LOG_LEVEL`: The numeric [logging level](https://docs.python.org/3/library/logging.html#levels) for the bot. Defaults to 20 (`INFO`).
 * `DB_PATH`: An alternate path for the SQLite file to use, instead of the default `data/db/heraldtron.db`.
 
 ## Usage
 
-Once your bot is set up, use the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install): 
+Once your bot is set up, use the standard Python package initialisation method (of course, use `python3` if there is an overlapping python2 install):
 
 ```
 cd path/to/heraldtron

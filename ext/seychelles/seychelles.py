@@ -167,7 +167,7 @@ class Seychelles:
 
 	def show(self):
 		if self.img_print is None: raise Exception('No processing done yet')
-		self.img_print.show()	
+		self.img_print.show()
 
 if __name__ == "__main__":
 	# Parse args
