@@ -1,4 +1,4 @@
-import discord, asyncio, urllib, io, base64
+import discord, asyncio, urllib, io, base64, itertools
 from xml.etree import ElementTree
 from . import embeds, utils, views
 
@@ -74,3 +74,102 @@ async def commons(session, loop, filename):
 	get_json = lambda text_string, root: ElementTree.fromstring(text_string).find(root)
 
 	return await loop.run_in_executor(None, get_json, result_text, "file")
+
+def is_option_keyword(s):
+	return s.startswith(":")
+
+def parse_options_and_blazon(query):
+	words = query.split()
+	options = list(itertools.takewhile(is_option_keyword, words))
+	blazon = " ".join(itertools.dropwhile(is_option_keyword, words))
+	return options, blazon
+
+
+async def heraldicon(session, query):
+	options, blazon = parse_options_and_blazon(query)
+	result = await utils.post_json(session, "https://2f1yb829vl.execute-api.eu-central-1.amazonaws.com/api",
+		{
+			"call": "generate-from-blazon",
+			"data": {
+				"blazon": blazon,
+				"options": options,
+			},
+		}
+	)
+	success = result.get("success")
+	if success:
+		png_url = success["png-url"]
+		edit_link = f"[Edit on Heraldicon]({success['edit-url']})"
+		embed = embeds.DRAW.create("", edit_link, heading = "Shield created!")
+		image_data = await utils.get_bytes(session, png_url)
+		image = discord.File(image_data, filename = "heraldicon-arms.png")
+		embed.set_image(url = "attachment://heraldicon-arms.png")
+		embed.add_field(name = "Blazon", value = f"*{blazon}*", inline = True)
+		embed.set_footer(
+			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo.png",
+			text = "Drawn using Heraldicon; licensed under CC BY-SA 4.0 (attribution on https://heraldicon.org)"
+		)
+		return embed, image
+
+	index = result["error"]["data"]["index"]
+	blazon = result["error"]["data"]["blazon"]
+	choices = result["error"]["data"]["auto-complete"]["choices"]
+
+	show_before = 20
+	show_after = 10
+	relevant_chunk = blazon[max(index - show_before, 0):index]
+	bad_words = blazon[index:index + show_after]
+	if index > show_before:
+		relevant_chunk = "... " + relevant_chunk
+	if index + show_after < len(blazon):
+		bad_words += "..."
+	arrow = "-" * (1 + len(relevant_chunk)) + "^"
+	suggestions = [x[0] for x in choices[:20]]
+	error_message = f"""```Got confused by:
+'{relevant_chunk}{bad_words}'
+{arrow}
+
+Suggestions:
+{', '.join(suggestions)}
+	```"""
+	embed = embeds.DRAW.create("", error_message, heading = "Error")
+	embed.add_field(name = "blazon", value = f"*{blazon}*", inline = True)
+
+	return embed, None
+
+def add_option_type(embed, source, name):
+	embed.add_field(
+		name = name,
+		value = " ".join(f"`:{x}`" for x in source),
+		inline = False
+	)
+
+async def heraldicon_options(session):
+	result = await utils.post_json(
+		session,
+		"https://2f1yb829vl.execute-api.eu-central-1.amazonaws.com/api",
+		{"call": "blazon-options"}
+	)
+	if "success" in result:
+		embed = embeds.DRAW.create(
+			"",
+			"Put any of these options as first words before the blazon.",
+			heading = "Heraldicon rendering options"
+		)
+
+		add_option_type(embed, result["success"]["options"]["miscellaneous"], "General")
+		add_option_type(embed, result["success"]["options"]["mode"], "Mode")
+		add_option_type(embed, result["success"]["options"]["escutcheon"], "Escutcheons")
+		add_option_type(embed, result["success"]["options"]["theme"], "Themes")
+		add_option_type(embed, result["success"]["options"]["texture"], "Textures")
+
+		embed.set_footer(
+			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo.png",
+			text = "For more info, see https://heraldicon.org"
+		)
+		return embed
+
+	raise utils.CustomCommandError(
+		"Cannot retrieve Heraldicon options",
+		"An unknown error occurred while trying to retrieve the Heraldicon options."
+	)

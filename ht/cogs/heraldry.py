@@ -264,6 +264,24 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		embed, file = await services.ds(self.bot.session, blazon, "Random shield")
 		await ctx.send(embed = embed, file = file)
 
+	@commands.command(
+		help = "Render arms using Heraldicon.",
+		aliases = ("hd",)
+	)
+	@utils.trigger_typing
+	async def heraldicon(self, ctx, *, blazon : str):
+		embed, file = await services.heraldicon(self.bot.session, blazon)
+		await ctx.send(embed = embed, file = file)
+
+	@commands.command(
+		help = "Rendering options that can be used with Heraldicon.",
+		aliases = ("hd-options",)
+	)
+	@utils.trigger_typing
+	async def heraldicon_options(self, ctx):
+		embed = await services.heraldicon_options(self.bot.session)
+		await ctx.send(embed = embed)
+
 
 def setup(bot):
 	bot.add_cog(HeraldryMisc(bot))

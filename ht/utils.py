@@ -85,6 +85,10 @@ async def get_json(session, url, **kwargs):
 	async with session.get(url) as source:
 		return await source.json(**kwargs)
 
+async def post_json(session, url, data, **kwargs):
+	async with session.post(url, json=data, headers={"Accept": "application/json"}) as source:
+		return await source.json(**kwargs)
+
 async def get_text(session, url, **kwargs):
 	async with session.get(url) as source:
 		return await source.text(**kwargs)
