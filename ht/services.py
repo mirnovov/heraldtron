@@ -109,7 +109,7 @@ async def heraldicon(session, query):
 		embed.set_image(url = "attachment://heraldicon-arms.png")
 		embed.add_field(name = "Blazon", value = f"*{blazon}*", inline = True)
 		embed.set_footer(
-			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo.png",
+			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo-discord.png",
 			text = "Drawn using Heraldicon; licensed under CC BY-SA 4.0 (attribution on https://heraldicon.org)"
 		)
 		return embed, image
@@ -167,7 +167,7 @@ async def heraldicon_options(session):
 		add_option_type(embed, result["success"]["options"]["texture"], "Textures")
 
 		embed.set_footer(
-			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo.png",
+			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo-discord.png",
 			text = "For more info, see https://heraldicon.org"
 		)
 		return embed
