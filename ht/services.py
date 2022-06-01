@@ -49,7 +49,10 @@ async def ds(session, blazon, drawn_kind):
 
 	embed = embeds.DRAW.create("", f"*{blazon}*", heading = f"{drawn_kind} drawn!")
 	embed.set_image(url = "attachment://ds.png")
-	embed.set_footer(text = f"Not all blazons can be illustrated with this command.\nDrawn using DrawShield; © Karl Wilcox.")
+	embed.set_footer(
+		icon_url = "https://drawshield.net/img/shop-logo.png",
+		text = f"Not all blazons can be illustrated with this command.\nDrawn using DrawShield; © Karl Wilcox."
+	)
 
 	for message in results["messages"]:
 		if message["category"] != "blazon": continue

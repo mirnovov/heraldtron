@@ -59,7 +59,10 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 			heading = "DrawShield catalog"
 		)
 		embed.set_image(url = catalog[0])
-		embed.set_footer(text=f"Retrieved using DrawShield; © Karl Wilcox. ")
+		embed.set_footer(
+			icon_url = "https://drawshield.net/img/shop-logo.png",
+			text = f"Retrieved using DrawShield; © Karl Wilcox. "
+		)
 
 		await ctx.send(embed=embed)
 
