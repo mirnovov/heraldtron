@@ -7,30 +7,30 @@ from aiohttp.http_parser import HttpResponseParserPy
 class OnlineSeych(seychelles.Seychelles):
 	def __init__(self, url_in, data_in):
 		self.name_in = None
-		self.ext_in = None 
-		
+		self.ext_in = None
+
 		with Image.open(data_in) as img:
 			self.img_raw = img.convert("RGB")
 			self.size_in = self.img_raw.size
 			self.img_in = self.img_raw.transpose(Image.FLIP_TOP_BOTTOM)
-		
+
 		self.name_out = "seych"
 		self.ext_out = "png"
 		self.size_out = self.size_in
 		self.img_out = Image.new("RGB", self.size_out)
 		self.pixels_out = self.img_out.load()
 		self.img_print = None
-		
+
 	def save_bytes(self):
 		if self.img_print is None: raise Exception("No processing done yet")
 		outio = io.BytesIO()
-		
+
 		self.img_print.save(outio, format = "PNG")
 		outio.seek(0)
-		
+
 		return outio
-	
-	@staticmethod	
+
+	@staticmethod
 	def generate(image_url, image):
 		seych = OnlineSeych(image_url, image)
 		seych.seychelles()
@@ -71,13 +71,13 @@ class _SlowResponseHandler(aiohttp.client_proto.ResponseHandler):
 		if self._tail:
 			data, self._tail = self._tail, b""
 			self.data_received(data)
-			
+
 class SlowTCPConnector(aiohttp.connector.TCPConnector):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self._factory = functools.partial(_SlowResponseHandler, loop = kwargs["loop"])
-		
-	@staticmethod		
+
+	@staticmethod
 	def get_slow_session(**kwargs):
 		#a horrendous workaround to stop aiohttp breaking on a perfectly fine http request
 		#basically replaces HttpResponseParser with its Python fallback

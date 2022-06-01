@@ -3,7 +3,7 @@ CREATE TABLE "armigers" (
 	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
 	"qualified_id" INTEGER,
-	"blazon" TEXT,
+	"blazon" TEXT
 );
 
 CREATE TABLE "channels" (
@@ -35,8 +35,8 @@ CREATE TABLE "misc_store" (
 	"value" TEXT DEFAULT NULL
 );
 
-INSERT INTO "misc_store" (key, value) VALUES 
-	("book_timestamp", "0"), 
+INSERT INTO "misc_store" (key, value) VALUES
+	("book_timestamp", "0"),
 	("last_avatar", "0");
 
 CREATE TABLE "reddit_feeds" (
@@ -57,7 +57,7 @@ CREATE TABLE "roll_channels" (
 	"name" TEXT
 );
 
-CREATE VIEW "armigers_e" AS 
-	SELECT * 
-	FROM "armigers" LEFT JOIN "emblazons" 
+CREATE VIEW "armigers_e" AS
+	SELECT *
+	FROM "armigers" LEFT JOIN "emblazons"
 	ON "armigers"."discord_id" == "emblazons"."id";

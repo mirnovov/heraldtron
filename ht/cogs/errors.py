@@ -5,12 +5,12 @@ from .. import utils, embeds
 class BotErrors(commands.Cog, name = "Bot Errors"):
 	ERROR_MESSAGES = {
 		commands.CommandNotFound: (
-			"Command not found", 
+			"Command not found",
 			"The command you entered does not exist. Check your spelling and try again.",
 			False
 		),
 		commands.NoPrivateMessage: (
-			"Command must be public", 
+			"Command must be public",
 			"The command you entered cannot be used during direct messaging.",
 			False
 		),
@@ -20,12 +20,12 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 			False
 		),
 		commands.MissingRequiredArgument: (
-			"Command is missing argument", 
+			"Command is missing argument",
 			"The command you entered requires you to enter `{error.param.name}`. Check that it is entered correctly and try again.",
 			False
 		),
 		commands.UserNotFound: (
-			"Command could not locate user", 
+			"Command could not locate user",
 			"The command you entered requires a valid user. Check that their name is mentioned correctly and try again.",
 			False
 		),
@@ -70,35 +70,35 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		),
 		utils.CustomCommandError: ("{error.title}", "{error.desc}", False)
 	}
-	
+
 	IGNORE_PAT = re.compile(r"!(!|\?)") #ignore "!!!" etc
-	
+
 	def __init__(self, bot):
 		self.bot = bot
-	
+
 	@commands.Cog.listener()
 	async def on_command_error(self, ctx, error):
 		mention, warn = None, False
-		
+
 		if not isinstance(ctx.channel, discord.abc.GuildChannel):
 			ctx.bot.active_dms.discard(ctx.channel.id)
-		
+
 		if (
-			(isinstance(error, commands.CommandNotFound) and re.match(BotErrors.IGNORE_PAT, ctx.message.content)) 
+			(isinstance(error, commands.CommandNotFound) and re.match(BotErrors.IGNORE_PAT, ctx.message.content))
 			or isinstance(error, utils.CommandCancelled)
 		):
 			return
 		elif isinstance(error, commands.CommandInvokeError):
 			error = error.original
 			mention = (await self.bot.application_info()).owner.mention
-		
+
 		if isinstance(error, tuple(BotErrors.ERROR_MESSAGES)):
 			message = tuple(y for x, y in BotErrors.ERROR_MESSAGES.items() if isinstance(error, x))[0]
 			embed = embeds.ERROR.create(
-				message[0].format(error = error), 
+				message[0].format(error = error),
 				message[1].format(error = error, mention = mention)
 			)
-			
+
 			await ctx.send(embed = embed)
 			warn = message[2]
 		else:
@@ -107,11 +107,11 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 				"Heraldtron has encountered an unforseen difficulty. An error report has been sent."
 			))
 			warn = True
-			
+
 		if warn:
 			self.bot.logger.warning(
 				f"{type(error).__name__}: {str(error)}\n {''.join(traceback.format_tb(error.__traceback__))}"
 			)
-			
+
 def setup(bot):
 	bot.add_cog(BotErrors(bot))

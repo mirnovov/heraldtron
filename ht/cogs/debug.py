@@ -5,10 +5,10 @@ from .. import utils
 FEATURES = (*OPTIONAL_FEATURES, *STANDARD_FEATURES)
 
 for cmd in (c for f in FEATURES for c in f.__dict__.values()):
-	if type(cmd) == Feature.Command and cmd.parent == "jsk": 
+	if type(cmd) == Feature.Command and cmd.parent == "jsk":
 		#doesn't have any subclasses, so we are good
 		cmd.parent = None
-		
+
 		if cmd.kwargs["name"] == "source":
 			cmd.kwargs["name"] = "filesource"
 		elif cmd.kwargs["name"] == "rtt":
@@ -18,6 +18,6 @@ class DebugTools(*FEATURES, utils.MeldedCog, name = "Debug", limit = False):
 	def __init__(self, bot):
 		super().__init__(bot = bot)
 		self.jsk.description = self.jsk.help = "Displays basic Jishaku info."
-		
+
 def setup(bot):
 	bot.add_cog(DebugTools(bot))

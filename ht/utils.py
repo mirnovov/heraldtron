@@ -11,93 +11,97 @@ class MeldedCog(commands.Cog):
 		super().__init_subclass__()
 		self.category = kwargs.pop("category", self.__cog_name__)
 		self.limit = kwargs.pop("limit", True)
-		
+
 		async def cog_check(self, ctx):
 			return await check_limited(ctx)
-			
+
 		if self.limit:
 			self.cog_check = cog_check
-		
+
 		return self
 
 class ModCog(MeldedCog, limit = False):
 	def __init_subclass__(self, *args, **kwargs):
-		super().__init_subclass__(category = "Moderation", limit = False)		
-		
+		super().__init_subclass__(category = "Moderation", limit = False)
+
 	async def cog_check(self, ctx):
 		if await ctx.bot.is_owner(ctx.author):
 			return True
 		elif isinstance(ctx.channel, discord.abc.GuildChannel):
 			if self.is_mod(ctx.author.guild_permissions):
-				return True	
+				return True
 		else:
 			for guild in ctx.author.mutual_guilds:
 				perms = guild.get_member(ctx.author.id).guild_permissions
 				if self.is_mod(perms): return True
-		
+
 		raise commands.MissingRole("admin")
-		
+
 	@staticmethod
 	def is_mod(perms):
 		return perms.ban_members or perms.administrator
-	
+
 
 class NvFormatter(Formatter):
 	LINE_WIDTH = 100
 	wrapper = TextWrapper(width = LINE_WIDTH)
-	
+
 	def __init__(self):
 		super().__init__()
-	
+
 	def format(self, record):
 		message = record.getMessage()
-		
+
 		if "\n" not in message[:self.LINE_WIDTH + 80]:
 			lines = self.wrapper.wrap(message)
 		else:
 			lines = message.splitlines()
-			
+
 		message = f"\n{' ' * 7} | {' ' * 15} | ".join(lines)
 		return f"{record.levelname:7} | {record.name:15} | {message}"
-	
+
 class BadMessageResponse(Exception):
 	pass
-		
+
 class CommandCancelled(commands.CommandError):
 	@classmethod
 	async def create(self, message, ctx):
 		await ctx.send(f":x: | {message}.")
 		return CommandCancelled(message)
-		
+
 class CustomCommandError(commands.CommandError):
 	def __init__(self, title, desc, *args, **kwargs):
 		self.title = title
 		self.desc = desc
-		
+
 USER_AGENT = f"{aiohttp.http.SERVER_SOFTWARE} Heraldtron/{__version__} (like Herald 3.0)" #for fun
-	
+
 async def get_bytes(session, url, **kwargs):
 	async with session.get(url) as source:
 		image = await source.read(**kwargs)
 		return io.BytesIO(image)
-	
+
 async def get_json(session, url, **kwargs):
 	async with session.get(url) as source:
 		return await source.json(**kwargs)
-			
+
+async def post_json(session, url, data, **kwargs):
+	async with session.post(url, json=data, headers={"Accept": "application/json"}) as source:
+		return await source.json(**kwargs)
+
 async def get_text(session, url, **kwargs):
 	async with session.get(url) as source:
-		return await source.text(**kwargs)	
-		
+		return await source.text(**kwargs)
+
 async def get_channel(bot, channel):
 	return bot.get_channel(channel) or await bot.fetch_channel(channel)
-	
+
 async def get_guild(bot, guild):
 	return bot.get_guild(guild) or await bot.fetch_guild(guild)
-	
+
 async def get_user(bot, user):
 	return bot.get_user(user) or await bot.fetch_user(user)
-	
+
 async def unqualify_name(bot, name, discriminator):
 	return discord.utils.get(
 		bot.users, name = name, discriminator = discriminator
@@ -105,51 +109,51 @@ async def unqualify_name(bot, name, discriminator):
 		bot.users, name = name
 	)
 
-@views.disable_dm_commands	
+@views.disable_dm_commands
 async def hard_check(ctx, added_check, timeout = 300):
 	#"hard" wait for that raises error on failure
 	try:
 		part = await ctx.bot.wait_for("message", timeout = timeout, check = lambda m: m.author == ctx.author)
-	except asyncio.TimeoutError: 
+	except asyncio.TimeoutError:
 		raise await utils.CommandCancelled.create("Command timed out", ctx)
 	if not added_check(part):
 		raise utils.BadMessageResponse("Content given internally is of invalid form")
-		
+
 	return part
-	
+
 async def check_is_owner(ctx):
 	if not await ctx.bot.is_owner(ctx.author):
 		raise commands.NotOwner("Owner-only mode is enabled")
 		return False
 	return True
-	
+
 async def check_limited(ctx):
 	if not ctx.guild: return True
-	
-	if ctx.bot.guild_cache[ctx.guild.id][1][2]: 
+
+	if ctx.bot.guild_cache[ctx.guild.id][1][2]:
 		raise CustomCommandError(
 			"Command prohibited",
 			"This command is not allowed on this server."
 		)
 		return False
-	
+
 	return True
 
-@functools.cache	
+@functools.cache
 def pronounise(word):
 	pron = "an" if word.strip()[0].upper() in "AEIOU1" else "a"
 	return f"{pron} {word}"
-	
+
 @functools.cache
 def pluralise(word, count):
 	amended = word if count == 1 else f"{word}s"
 	return f"{count} {amended}"
-	
+
 @functools.cache
 def stddate(value):
 	return f"{value.day} {value:%B} {value.year}"
-	
-async def _typing(self, ctx): 
+
+async def _typing(self, ctx):
 	await ctx.trigger_typing()
-	
+
 trigger_typing = commands.before_invoke(_typing)
