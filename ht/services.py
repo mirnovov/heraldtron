@@ -83,7 +83,7 @@ def is_option_keyword(s):
 
 def parse_options_and_blazon(query):
 	words = query.split()
-	options = list(itertools.takewhile(is_option_keyword, words))
+	options = list(x.lower() for x in itertools.takewhile(is_option_keyword, words))
 	blazon = " ".join(itertools.dropwhile(is_option_keyword, words))
 	return options, blazon
 
