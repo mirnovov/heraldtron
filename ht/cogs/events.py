@@ -31,8 +31,8 @@ class BotEvents(commands.Cog, name = "Bot events"):
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
 		await self.bot.dbc.execute(
-			"INSERT INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?);",
-			(guild.id, guild.name, 0, 0, 1, None, None)
+			"INSERT INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+			(guild.id, guild.name, 0, 0, 1, None, None, 0)
 		)
 		await self.bot.dbc.commit()
 		await self.bot.refresh_cache_guild(guild.id)
