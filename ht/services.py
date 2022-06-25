@@ -116,7 +116,7 @@ async def heraldicon(session, query):
 
 	index = result["error"]["data"]["index"]
 	blazon = result["error"]["data"]["blazon"]
-	choices = result["error"]["data"]["auto-complete"]["choices"]
+	choices = result["error"]["data"]["suggestions"]
 
 	show_before = 20
 	show_after = 10
