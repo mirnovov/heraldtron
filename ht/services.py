@@ -79,7 +79,7 @@ async def commons(session, loop, filename):
 	return await loop.run_in_executor(None, get_json, result_text, "file")
 
 def is_option_keyword(s):
-	return s.startswith(":")
+	return s.startswith(":") or s.startswith("+")
 
 def parse_options_and_blazon(query):
 	words = query.split()
@@ -143,7 +143,7 @@ Suggestions:
 def add_option_type(embed, source, name):
 	embed.add_field(
 		name = name,
-		value = " ".join(f"`:{x}`" for x in source),
+		value = " ".join(f"`+{x}`" for x in source),
 		inline = False
 	)
 
