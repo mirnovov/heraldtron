@@ -79,7 +79,7 @@ async def commons(session, loop, filename):
 	return await loop.run_in_executor(None, get_json, result_text, "file")
 
 def is_option_keyword(s):
-	return s.startswith(":")
+	return s.startswith(":") or s.startswith("+")
 
 def parse_options_and_blazon(query):
 	words = query.split()
@@ -116,7 +116,7 @@ async def heraldicon(session, query):
 
 	index = result["error"]["data"]["index"]
 	blazon = result["error"]["data"]["blazon"]
-	choices = result["error"]["data"]["auto-complete"]["choices"]
+	choices = result["error"]["data"]["suggestions"]
 
 	show_before = 20
 	show_after = 10
@@ -143,7 +143,7 @@ Suggestions:
 def add_option_type(embed, source, name):
 	embed.add_field(
 		name = name,
-		value = " ".join(f"`:{x}`" for x in source),
+		value = " ".join(f"`+{x}`" for x in source),
 		inline = False
 	)
 
