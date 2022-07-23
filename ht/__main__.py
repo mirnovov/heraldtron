@@ -17,7 +17,8 @@ class Heraldtron(commands.Bot):
 	DEFAULT_CONF = {
 		"DB_PATH": "./data/db/heraldtron.db",
 		"LOG_LEVEL": 20,
-		"OWNER_ONLY": False
+		"OWNER_ONLY": False,
+		"PREFIX": "!"
 	}
 
 	HERALDRY_GUILD = 272117928298676225
@@ -29,7 +30,7 @@ class Heraldtron(commands.Bot):
 		self.melded_cogs = defaultdict(list)
 
 		super().__init__(
-			command_prefix = "!", #kept for documentation
+			command_prefix = self.conf["PREFIX"], #kept for documentation
 			description = "A heraldry-related bot designed for the Heraldry Community.",
 			intents = self.get_default_intents(),
 			max_messages = 12000,

@@ -46,6 +46,7 @@ Additionally, there are a number of optional settings that can be specified:
 * `OWNER_ONLY`: If `true`, disable usage of the bot for members that are not the owner.
 * `LOG_LEVEL`: The numeric [logging level](https://docs.python.org/3/library/logging.html#levels) for the bot. Defaults to 20 (`INFO`).
 * `DB_PATH`: An alternate path for the SQLite file to use, instead of the default `data/db/heraldtron.db`.
+* `PREFIX`: The bot's prefix, by fefault `!`. Note that as this is primarily designed for testing, changes may not be reflected everywhere.
 
 ## Usage
 
