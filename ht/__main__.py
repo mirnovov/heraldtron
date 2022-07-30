@@ -138,10 +138,10 @@ class Heraldtron(commands.Bot):
 
 			async for message in channel.history():
 				if not message.flags.has_thread: continue
-				self.proposal_cache[message.id] = message
+				self.proposal_cache[message.id] = (message, time.time())
 
 		self.ready_flag.set()
-		self.logger.info(f"Successfully cached data.")
+		self.logger.info("Successfully cached data.")
 
 	def add_cog(self, cog):
 		super().add_cog(cog)

@@ -1,4 +1,4 @@
-import discord, re, sqlite3
+import discord, re, sqlite3, time
 from discord.ext import commands
 from .. import embeds, utils
 
@@ -9,6 +9,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 	THUMBS_UP = "\U0001F44D"
 	THUMBS_DOWN = "\U0001F44E"
 	SHRUG = "\U0001F937"
+	REACT_RATE_LIMIT = 300 #5 minutes
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -72,8 +73,8 @@ class BotEvents(commands.Cog, name = "Bot events"):
 
 			if match := re.search(self.FIND_SENTENCES, title):
 				title = match.group(1)
-
-			self.bot.proposal_cache[message.id] = message
+			
+			self.bot.proposal_cache[message.id] = (message, time.time())
 
 		elif not channel[3] or len(message.attachments) < 1:
 			#not oc post or no attachments
@@ -82,17 +83,26 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		if len(title) > self.THREAD_MAX:
 			title = title[:self.THREAD_MAX] + "..."
 		elif not title:
-			time = message.created_at.strftime("%d %B %Y")
-			title = f"{message.author.name} on {time}"
+			creation = message.created_at.strftime("%d %B %Y")
+			title = f"{message.author.name} on {creation}"
 
 		await message.create_thread(name = title)
 
 	@commands.Cog.listener("on_raw_reaction_add")
 	@commands.Cog.listener("on_raw_reaction_remove")
 	async def reaction_update(self, payload):
-		if payload.message_id in self.bot.proposal_cache:
-			channel = await utils.get_channel(self.bot, payload.channel_id)
-			self.bot.proposal_cache[payload.message_id] = await channel.fetch_message(payload.message_id)
+		if payload.message_id not in self.bot.proposal_cache: return
+		
+		channel = await utils.get_channel(self.bot, payload.channel_id)
+		update_time = self.bot.proposal_cache[payload.message_id][1]
+		
+		if update_time < time.time() + self.REACT_RATE_LIMIT: 
+			return
+		
+		self.bot.proposal_cache[payload.message_id] = (
+			await channel.fetch_message(payload.message_id),
+			time.time()
+		)
 
 	@commands.Cog.listener()
 	async def on_raw_message_delete(self, payload):
@@ -100,7 +110,7 @@ class BotEvents(commands.Cog, name = "Bot events"):
 		if not record or not record[2]: return
 
 		#On proposal deletion
-		message = self.bot.proposal_cache.get(payload.message_id)
+		message = self.bot.proposal_cache.get(payload.message_id)[0]
 		channel = await utils.get_channel(self.bot, payload.channel_id)
 		thread = channel.get_thread(payload.message_id)
 		if not message or not thread: return
