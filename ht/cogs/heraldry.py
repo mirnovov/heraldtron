@@ -286,5 +286,5 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		await ctx.send(embed = embed)
 
 
-def setup(bot):
-	bot.add_cog(HeraldryMisc(bot))
+async def setup(bot):
+	await bot.add_cog(HeraldryMisc(bot))

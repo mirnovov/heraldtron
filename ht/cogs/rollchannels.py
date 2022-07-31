@@ -105,5 +105,5 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 	def is_personal(self, category):
 		return self.VARIANTS[2] in category.name.lower()
 
-def setup(bot):
-	bot.add_cog(RollChannels(bot))
+async def setup(bot):
+	await bot.add_cog(RollChannels(bot))

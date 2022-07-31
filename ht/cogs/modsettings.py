@@ -149,5 +149,5 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 			await ctx.bot.dbc.commit()
 			await ctx.send(":white_check_mark: | Message changed.")
 
-def setup(bot):
-	bot.add_cog(ModerationSettings(bot))
+async def setup(bot):
+	await bot.add_cog(ModerationSettings(bot))

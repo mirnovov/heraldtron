@@ -19,5 +19,5 @@ class DebugTools(*FEATURES, utils.MeldedCog, name = "Debug", limit = False):
 		super().__init__(bot = bot)
 		self.jsk.description = self.jsk.help = "Displays basic Jishaku info."
 
-def setup(bot):
-	bot.add_cog(DebugTools(bot))
+async def setup(bot):
+	await bot.add_cog(DebugTools(bot))

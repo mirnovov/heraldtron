@@ -113,5 +113,5 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 				f"{type(error).__name__}: {str(error)}\n {''.join(traceback.format_tb(error.__traceback__))}"
 			)
 
-def setup(bot):
-	bot.add_cog(BotErrors(bot))
+async def setup(bot):
+	await bot.add_cog(BotErrors(bot))

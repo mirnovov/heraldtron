@@ -103,5 +103,5 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 
 		embed.add_field(name = name, value = mentions)
 
-def setup(bot):
-	bot.add_cog(HeraldryRoll(bot))
+async def setup(bot):
+	await bot.add_cog(HeraldryRoll(bot))

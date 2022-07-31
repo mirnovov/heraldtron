@@ -78,5 +78,5 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 		embed.set_footer(text = "Original script by Akshay Chitale")
 		await ctx.send(embed = embed, file = file)
 
-def setup(bot):
-	bot.add_cog(VexStuff(bot))
+async def setup(bot):
+	await bot.add_cog(VexStuff(bot))

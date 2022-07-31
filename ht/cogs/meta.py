@@ -228,5 +228,5 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 
 		return desc
 
-def setup(bot):
-	bot.add_cog(MetaTools(bot))
+async def setup(bot):
+	await bot.add_cog(MetaTools(bot))

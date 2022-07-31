@@ -83,5 +83,5 @@ class ModerationTools(utils.ModCog, name = "Tools"):
 			await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite)
 			await ctx.send(f":{action_name}: | **{channel.mention} has been {action_name}ed.**")
 
-def setup(bot):
-	bot.add_cog(ModerationTools(bot))
+async def setup(bot):
+	await bot.add_cog(ModerationTools(bot))

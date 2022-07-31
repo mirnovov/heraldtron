@@ -146,5 +146,5 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		with open("media/prose/familycrests.md", "r") as file:
 			await ctx.send(file.read())
 
-def setup(bot):
-	bot.add_cog(HeraldryReference(bot))
+async def setup(bot):
+	await bot.add_cog(HeraldryReference(bot))

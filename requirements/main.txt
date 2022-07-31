@@ -1,7 +1,7 @@
-git+https://github.com/Rapptz/discord.py@41d22f4#egg=discord.py
+git+https://github.com/Rapptz/discord.py@7d11e2a#egg=discord.py
 aiohttp >= 3.7.0
 Pillow >= 8.0
 aiosqlite >= 0.17.0
 docx2python >= 1.27.0
 python-dateutil >= 2.8.0
-jishaku == 2.3.2
+jishaku == 2.5.1

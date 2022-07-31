@@ -169,5 +169,5 @@ class BotEvents(commands.Cog, name = "Bot events"):
 
 		return subst_text
 
-def setup(bot):
-	bot.add_cog(BotEvents(bot))
+async def setup(bot):
+	await bot.add_cog(BotEvents(bot))
