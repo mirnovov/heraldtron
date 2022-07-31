@@ -1,4 +1,4 @@
-import discord, asyncio, aiohttp, logging, json, os, time
+import discord, asyncio, aiohttp, json, logging, os, sys, time, traceback
 from discord.ext import commands
 from collections import defaultdict
 from . import db, utils
@@ -25,9 +25,8 @@ class Heraldtron(commands.Bot):
 
 	def __init__(self, *args, **kwargs):
 		self.conf = self.load_conf()
-		self.root_logger = self.setup_root_logger()
-		self.logger = logging.getLogger("heraldtron")
-		
+		self.setup_logging()
+				
 		self.melded_cogs = defaultdict(list)
 		self.active_dms = set()
 		
@@ -67,15 +66,19 @@ class Heraldtron(commands.Bot):
 		
 		return dict(Heraldtron.DEFAULT_CONF, **conf)
 		
-	def setup_root_logger(self):
-		logger = logging.getLogger()
-		logger.setLevel(self.conf["LOG_LEVEL"])
+	def setup_logging(self):
+		self.default_logger = logging.getLogger()
+		self.dpy_logger = logging.getLogger("discord")
+		self.logger = logging.getLogger("heraldtron")
+
+		level = self.conf["LOG_LEVEL"]
+		
+		self.default_logger.setLevel(level)
+		self.dpy_logger.setLevel(level)
 		
 		handler = logging.StreamHandler()
 		handler.setFormatter(utils.NvFormatter())
-		logger.addHandler(handler)
-		
-		return logger
+		self.default_logger.addHandler(handler)
 		
 	def reset_cache(self):
 		self.ready_flag.clear()
@@ -149,6 +152,12 @@ class Heraldtron(commands.Bot):
 			return (*list, "")
 
 		return list
+		
+	async def on_error(self, *args, **kwargs):
+		error = sys.exc_info()
+		self.dpy_logger.error(
+			f"{error[0].__name__}: {error[1]}\n {''.join(traceback.format_tb(error[2]))}"
+		)
 
 	async def on_message(self, message):
 		await self.ready_flag.wait()
