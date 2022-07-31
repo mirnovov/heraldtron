@@ -154,6 +154,6 @@ def stddate(value):
 	return f"{value.day} {value:%B} {value.year}"
 
 async def _typing(self, ctx):
-	await ctx.trigger_typing()
+	await ctx.typing()
 
 trigger_typing = commands.before_invoke(_typing)
