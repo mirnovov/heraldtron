@@ -10,6 +10,8 @@ class MemberEvents(commands.Cog, name = "Member events"):
 		
 	async def register_timeouts(self):
 		await self.bot.wait_until_ready()
+		if not self.bot.get_guild(self.bot.HERALDRY_GUILD): return
+
 		self.timeout_role = self.bot.get_guild(self.bot.HERALDRY_GUILD).get_role(
 			self.TIMEOUT_ROLE_ID
 		)
