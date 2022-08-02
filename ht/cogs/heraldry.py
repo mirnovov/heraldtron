@@ -1,4 +1,5 @@
 import discord, csv, json, random, re
+from discord import app_commands
 from discord.ext import commands
 from .. import converters, embeds, services, utils, views
 from ..artifacts import Source
@@ -107,6 +108,16 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	async def drawshield(self, ctx, *, blazon : str):
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
 		await ctx.send(embed = embed, file = file)
+		
+	@app_commands.command(
+		description = "Illustrates arms using Karl Wilcox's DrawShield. Note"
+		" that this does not support all blazons."
+	)
+	@discord.app_commands.describe(blazon = "A textual descrition of a heraldic design")
+	async def ds(self, interaction, blazon: str):
+		await interaction.response.defer(thinking = True)
+		embed, file = await services.ds(self.bot.session, blazon, "Shield")
+		await interaction.followup.send(embed = embed, file = file)
 
 	@commands.command(
 		help = "Generates a coat of arms based on personal details.\n If using in a DM, it is based"
