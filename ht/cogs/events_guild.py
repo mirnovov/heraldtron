@@ -116,7 +116,11 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 		message = self.bot.proposal_cache.get(payload.message_id)[0]
 		channel = await utils.get_channel(self.bot, payload.channel_id)
 		thread = channel.get_thread(payload.message_id)
-		if not message or not thread: return
+		
+		if not thread:
+			#works for archived threads and returns a thread object, according to Danny
+			#should be documented though...
+			thread = await self.bot.fetch_channel(payload.message_id)
 	
 		reactions = "\u3000".join(f"{reaction.emoji} {reaction.count}" for reaction in message.reactions)
 		quote = message.content[:400].replace("\n", "\n> ")
