@@ -1,9 +1,9 @@
 from collections import namedtuple
 
-__version__ = "4.12.3"
+__version__ = "4.12.4"
 __author__ = "novov"
 __license__ = "MIT"
 __copyright__ = "(c) 2021-2022 novov"
 
 VersionInfo = namedtuple("VersionInfo", "major minor micro qualified")
-version_info = VersionInfo(major = 4, minor = 12, micro = 3, qualified = "final")
+version_info = VersionInfo(major = 4, minor = 12, micro = 4, qualified = "final")
