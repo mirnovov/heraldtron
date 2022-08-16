@@ -1,4 +1,4 @@
-<img src="media/robot.png" width="250" alt="Heraldtron mascot">
+<img src="media/avatars/generic.png" width="100" alt="Heraldtron mascot">
 
 # Heraldtron
 
