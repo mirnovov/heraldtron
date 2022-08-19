@@ -1,6 +1,6 @@
 import discord, aiohttp, aiosqlite, platform, os, re
 from discord.ext import commands
-from .. import utils, views, embeds, __version__
+from .. import utils, views, embeds, __copyright__, __version__
 
 class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = False):
 	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=\"?(.+?)\"?\n")
@@ -48,10 +48,12 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		)
 		embed.add_field(
 			name = "And special thanks to",
-			value = "- Will\n- Ensix\n- GreiiEquites",
+			value = "- Ensix\n- GreiiEquites",
 			inline = False
 		)
-		embed.set_footer(text="© novov 2021-2022. This is an open source project available under the MIT license.")
+		embed.set_footer(
+			text = f"{__copyright__}. This is an open source project available under the MIT license."
+		)
 
 		view = discord.ui.View()
 		view.add_item(discord.ui.Button(

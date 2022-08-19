@@ -1,2 +1,4 @@
 aiodns >= 2.0.0
-git+git://github.com/PyYoshi/cChardet@bd1cc39#egg=cchardet
+orjson>=3.5.4
+Brotli
+git+https://github.com/PyYoshi/cChardet@bd1cc39#egg=cchardet
