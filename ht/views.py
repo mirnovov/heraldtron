@@ -182,7 +182,7 @@ class TriviaButton(ui.Button):
 
 		if mention not in self.users:
 			self.users[mention]	= self.label
-			await interaction.response.pong()
+			await interaction.response.defer()
 		else:
 			subview = ui.View()
 			undo_button = ui.Button(label = "Undo", style = discord.ButtonStyle.danger)
