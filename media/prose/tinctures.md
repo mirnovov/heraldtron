@@ -6,4 +6,6 @@ In heraldry, *tinctures* are divided into:
 
 - **Furs**: <:ermine:1000259861482840154> Ermine, <:vair:1000259886036299819> Vair, etc.
 
-The *rule of tincture* states that colour can only touch metal, except for minor details and field divisions; furs can touch both. Keep in mind that the exact shades can vary. Various rarer tinctures also exist, but many dislike them; use with caution.
+- **Proper**: :evergreen_tree::european_castle: not a tincture *per se*, but denotes an object in its natural hues.
+
+The *rule of tincture* states that colour can only touch metal, except for minor details and field divisions; furs and proper can touch both. Keep in mind that the exact shades can vary. Various rarer tinctures also exist, but many dislike them; use with caution.
