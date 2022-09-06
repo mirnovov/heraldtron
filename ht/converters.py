@@ -36,7 +36,7 @@ class Armiger(commands.Converter):
 		if result: return result
 		raise utils.CustomCommandError(
 			"Invalid armiger",
-			"The armiger you entered does not exist. Check that you spelled their name correctly."
+			"The armiger you entered does not have arms recorded. Check that you spelled their name correctly."
 		)
 
 class Range(commands.Converter):

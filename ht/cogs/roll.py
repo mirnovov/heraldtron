@@ -17,10 +17,19 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
 			)
 
+			if not user: 
+				await ctx.typing()
+				await self.bot.get_cog("Bot tasks").sync_book()
+				
+				user = await ctx.bot.dbc.execute_fetchone(
+					"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+				)
+				
 			if not user: raise utils.CustomCommandError(
 				"Invalid armiger",
 				"There are no arms associated with your user account. "
 				"To find those of another user, follow the command with their username."
+				"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 			)
 
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
@@ -44,7 +53,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				"You do not have an emblazon to remove."
 			)
 
-		await self.bot.dbc.execute("UPDATE emblazons SET url = NULL WHERE id = ?;", (ctx.author.id,))
+		await self.bot.dbc.execute("UPDATE emblazons SET url = NULLiiWHERE id = ?;", (ctx.author.id,))
 		await self.bot.dbc.commit()
 
 		await ctx.send(":x: | Emblazon removed.")
