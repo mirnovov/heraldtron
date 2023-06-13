@@ -1,10 +1,10 @@
 In heraldry, *tinctures* are divided into:
 
-- **Colours**: :red_circle:<:hatching_gules:1000259867333906483> Gules, :green_circle:<:hatching_vert:1000259880122335342> Vert, :blue_circle:<:hatching_azure:1000259865471631370> Azure, <:sable:1000259882450157739><:hatching_sable:1000259875726688366> Sable, :purple_circle:<:hatching_purpure:1000259873348526201> Purpure
+- **Colours**: <:t_gules:1021207054280556555><:t_gules_hatched:1024688436189352047> Gules, <:t_vert:1021207062438498324><:t_vert_hatched:1024688441184768040> Vert, <:t_azure:1021207052045009016><:t_azure_hatched:1024688434670993408> Azure, <:t_sable:1021207056356745321><:t_sable_hatched:1024688439490248755> Sable, <:t_purpure:1021207057682149458><:t_purpure_hatched:1024688438399746048> Purpure
 
-- **Metals**: :yellow_circle:<:hatching_or:1000259870211194890> Or, :white_circle::white_circle: Argent
+- **Metals**: <:t_or:1021207055098458153><:t_or_hatched:1024688437426659428> Or, <:t_argent:1021207050916745226><:t_argent_hatched:1024688525460902048> Argent
 
-- **Furs**: <:ermine:1000259861482840154> Ermine, <:vair:1000259886036299819> Vair, etc.
+- **Furs**: <:t_ermine:1021207053072617604> Ermine, <:t_vair:1021207061415088179> Vair, etc.
 
 - **Proper**: :evergreen_tree::european_castle: not a tincture *per se*, but denotes an object in its natural hues.
 
