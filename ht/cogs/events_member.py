@@ -65,7 +65,7 @@ class MemberEvents(commands.Cog, name = "Member events"):
 
 		special_vars = {
 			"GUILD_NAME": member.guild.name,
-			"MEMBER_NAME": f"{member.name}#{member.discriminator}",
+			"MEMBER_NAME": str(member),
 			"MENTION": member.mention
 		}
 

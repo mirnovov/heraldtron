@@ -126,7 +126,7 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 		quote = message.content[:400].replace("\n", "\n> ")
 		embed = embeds.PROPOSAL.create("", f"> {quote}\n\n{reactions}")
 		embed.set_footer(
-			text = f"Original post by {message.author.name}#{message.author.discriminator}",
+			text = f"Original post by {message.author}",
 			icon_url = message.author.display_avatar.with_size(256).url
 		)
 	

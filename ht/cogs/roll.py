@@ -32,7 +32,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 			)
 
-		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
+		embed = embeds.GENERIC.create(user, user[4], heading = f"GreiiN:{user[0]:04}")
 		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
 
 		if user[6]:
@@ -67,7 +67,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		emblazon = await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
 
 		if emblazon and emblazon[1]:
-			embed = embeds.GENERIC.create(f"{user.name}#{user.discriminator}", "", heading = "Emblazon")
+			embed = embeds.GENERIC.create(user, "", heading = "Emblazon")
 			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
 
 			embed.set_image(url = emblazon[1])

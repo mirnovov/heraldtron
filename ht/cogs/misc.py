@@ -207,7 +207,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		if not isinstance(user, discord.Member) and ctx.guild:
 			user = ctx.guild.get_member(user.id) or user
 
-		embed = embeds.USER_INFO.create(f"{user.name}#{user.discriminator}", f"{user.mention}")
+		embed = embeds.USER_INFO.create(user, f"{user.mention}")
 		if user.bot:
 			embed.description += " | **Bot**"
 
