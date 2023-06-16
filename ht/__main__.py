@@ -101,7 +101,7 @@ class Heraldtron(commands.Bot):
 
 		if count[0] == 0:
 			with open("data/db/schema.sql", "r") as file:
-				await dbc.executescript(file.read())
+				await self.dbc.executescript(file.read())
 			await self.dbc.commit()
 
 	async def refresh_cache_guild(self, guild_id):
