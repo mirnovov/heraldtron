@@ -131,6 +131,14 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		await ctx.send(embed = embed)
 
 	@commands.command(
+		help = "Shows a short blurb about using supporters",
+		aliases = ("supporter",)
+	)
+	async def supporters(self, ctx):
+		with open("media/prose/supporters.md", "r") as file:
+			await ctx.send(file.read())
+
+	@commands.command(
 		help = "Shows a list of commonly used tinctures.",
 		aliases = ("t", "colours", "colors", "metals", "furs", "tincture")
 	)
