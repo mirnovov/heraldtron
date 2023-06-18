@@ -22,7 +22,8 @@ For convenience, these can all be installed with `pip install -r requirements/ma
 
 ## Setup
 
-As one may expect, this bot requires a *bot account* to run. Refer to the discord.py [instructions on creating one](https://discordpy.readthedocs.io/en/stable/discord.html) for more information.
+As one may expect, this bot requires a *bot account* to run. Refer to the discord.py [instructions on creating one](https://discordpy.readthedocs.io/en/stable/discord.html) for more information. This account requires the **Presence**, **Server Members**, and **Message Contents** [privileged intents](https://discordpy.readthedocs.io/en/stable/intents.html).
+
 
 For some functionality, a [Google Cloud Platform](https://cloud.google.com) account is required, with the Custom Search and Google Drive APIs enabled. Custom search features additionally require a [Programmable Search](https://programmablesearchengine.google.com/about/) engine, since Google has discontinued general search APIs. This must have image search enabled, and it is strongly recommended that you enable the "Search the entire web" setting.
 
