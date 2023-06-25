@@ -20,7 +20,7 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 			if not image: embed.url = url
 			else: embed.set_image(url = url)
 
-			embed.set_footer(text = "Use !resources to view a list of all resources.")
+			embed.set_footer(text = f"Use {ctx.clean_prefix}resources to view a list of all resources.")
 			await ctx.send(embed = embed)
 
 		self.resources.append((resource_command, name, url))
@@ -65,15 +65,21 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 				embed = embeds.GENERIC.create(
 					"All resources", "", heading = "Heraldic resources collection"
 				)
+				embed.set_footer(
+					text = "Use the commands listed here to fetch resources individually for quick reference."
+				)
+				
 				pages.append(embed)
 				current_size = 0
 
 			embed.add_field(
 				name = name,
-				value = f"`{ctx.clean_prefix}{command.name}` - {command.help} [\u2139\uFE0E]({url})",
+				value = f"`{ctx.clean_prefix}{command.name}` - {command.help} [**View**]({url})",
 				inline = False
 			)
+			
 			current_size += 1
+			
 
 		await views.Navigator(ctx, pages).run()
 
