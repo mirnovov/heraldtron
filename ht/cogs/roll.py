@@ -74,22 +74,17 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 			)
 
-		async with SlowTCPConnector.get_slow_session() as slow_session:
-			try:
-				html = await utils.get_text(
-					slow_session,
-					f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}"
-				)
-			except aiohttp.client_exceptions.ClientConnectorError:
-				utils.CustomCommandError(
+		async with self.bot.session.get(f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}") as response:
+			if response.status == 404:
+				raise utils.CustomCommandError(
 					"Armiger is not on roll-of-arms.com",
 					"The arms of the armiger are not on the https://roll-of-arms.com "
 					"website. If you would like to add your arms and related symbolism "
 					"to the website, please fill out the form pinned in the "
 					"#announcements channel of the Roll of Arms server."
 				)
-
-			soup = BeautifulSoup(html, "html.parser")
+			
+			soup = BeautifulSoup(await response.text(), "html.parser")
 			value = soup.select("h2:has(#Symbolism)")[0]
 			next_section = value.next_sibling
 			symbolism_text = ""
