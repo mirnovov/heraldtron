@@ -161,10 +161,12 @@ class RespondOrReact(UserSelector):
 			return True
 
 		message = await self.ctx.send(info, view = self)
-		done, pending = await asyncio.wait(
-			(self.wait(), self.ctx.bot.wait_for("message", check = check_message, timeout = self.timeout)),
-			return_when = asyncio.FIRST_COMPLETED
+		
+		t_wait = asyncio.create_task(self.wait())
+		t_message = asyncio.create_task(
+			self.ctx.bot.wait_for("message", check = check_message, timeout = self.timeout)
 		)
+		done, pending = await asyncio.wait((t_wait, t_message), return_when = asyncio.FIRST_COMPLETED)
 
 		for future in pending: future.cancel()	#ignore anything else
 		for future in done: future.exception() #retrieve and ignore any other completed future's exception
