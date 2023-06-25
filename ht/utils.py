@@ -108,7 +108,7 @@ async def unqualify_name(bot, name, discriminator):
 	) or discord.utils.get(
 		bot.users, name = name
 	)
-
+	
 @views.disable_dm_commands
 async def hard_check(ctx, added_check, timeout = 300):
 	#"hard" wait for that raises error on failure

@@ -15,25 +15,13 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		aliases = ("a", "greiin", "showarms", "arms")
 	)
 	async def armiger(self, ctx, user: converters.Armiger = None):
-		if not user:
-			user = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
-			)
-
-			if not user: 
-				await ctx.typing()
-				await self.bot.get_cog("Bot tasks").sync_book()
-				
-				user = await ctx.bot.dbc.execute_fetchone(
-					"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
-				)
-				
-			if not user: raise utils.CustomCommandError(
-				"Invalid armiger",
-				"There are no arms associated with your user account. "
-				"To find those of another user, follow the command with their username."
-				"If you wish to register your arms, follow the instructions at the Roll of Arms server."
-			)
+		user = user or await self.get_author_roll(
+			ctx,
+			"Invalid armiger",
+			"There are no arms associated with your user account. "
+			"To find those of another user, follow the command with their username."
+			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
+		)
 
 		embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", user[4], heading = f"GreiiN:{user[0]:04}")
 		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
@@ -54,24 +42,13 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	)
 	@utils.trigger_typing
 	async def symbolism(self, ctx, user: converters.Armiger = None):
-		if not user:
-			user = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
-			)
-
-			if not user:
-				await self.bot.get_cog("Bot tasks").sync_book()
-
-				user = await ctx.bot.dbc.execute_fetchone(
-					"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
-				)
-
-			if not user: raise utils.CustomCommandError(
-				"Invalid armiger",
-				"There are no arms associated with your user account. "
-				"To find those of another user, follow the command with their username."
-				"If you wish to register your arms, follow the instructions at the Roll of Arms server."
-			)
+		user = user or await self.get_author_roll(
+			ctx,
+			"Invalid armiger",
+			"There are no arms associated with your user account. "
+			"To find those of another user, follow the command with their username."
+			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
+		)
 
 		async with self.bot.session.get(f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}") as response:
 			if response.status == 404:
@@ -84,8 +61,16 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				)
 			
 			soup = BeautifulSoup(await response.text(), "html.parser")
-			value = soup.select("h2:has(#Symbolism)")[0]
-			next_section = value.next_sibling
+			values = soup.select("h2:has(#Symbolism)")
+			
+			if not values:
+				raise utils.CustomCommandError(
+					"Armiger doesn't have symbolisn roll-of-arms.com",
+					"The armiger has opted not to include symbolism on the "
+					"https://roll-of-arms.com website."
+				)
+			
+			next_section = values[0].next_sibling
 			symbolism_text = ""
 			while next_section is not None and not isinstance(next_section, Comment) and not str(next_section).startswith("<h"):
 				markdown = re.sub(
@@ -167,6 +152,27 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		if not mentions: return
 
 		embed.add_field(name = name, value = mentions)
+		
+	async def get_author_roll(self, ctx, error_title, error_desc):
+		user = await ctx.bot.dbc.execute_fetchone(
+			"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+		)
+		
+		if not user:
+			await self.bot.get_cog("Bot tasks").sync_book()
+		
+			user = await ctx.bot.dbc.execute_fetchone(
+				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+			)
+			
+		if user: return user
+		
+		raise utils.CustomCommandError(
+			"Invalid armiger",
+			"There are no arms associated with your user account. "
+			"To find those of another user, follow the command with their username."
+			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
+		)
 
 async def setup(bot):
 	await bot.add_cog(HeraldryRoll(bot))
