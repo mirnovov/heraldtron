@@ -1,0 +1,269 @@
+[
+	{ 
+		"id": "hubertherald",
+		"title": "Hubert Herald",
+		"href": "http://hubert-herald.nl",
+		"desc": "Detailed knowledge of both historical and modern arms and emblems. Although most articles are in English, a few are in Dutch."
+	},
+	{ 
+		"id": "wappenwiki",
+		"title": "WappenWiki",
+		"href": "http://wappenwiki.org",
+		"desc": "Lists historical shields of European states. Can be a bit historically questionable at times; but due to its distinct illustration style, it's still a great source of assets."
+	},
+	{
+		"id": "software",
+		"title": "A Guide to Software for Heraldry",
+		"href": "https://www.reddit.com/r/heraldry/comments/gi6ml2/",
+		"desc": "My guide to software for heraldry - spanning vector, raster, and specially designed programs."
+	},
+	{
+		"id": "parker",
+		"title": "*A Glossary of Terms Used in Heraldry*",
+		"href": "https://www.heraldsnet.org/saitou/parker/index.htm",
+		"desc": "One of the main heraldic dictionaries of note; has examples for many terms used, and a \"synoptical table\" of categories."
+	},
+	{
+		"id": "elvin",
+		"title": "Elvin's Heraldic Dictionary",
+		"href": "https://drawshield.net/reference/elvin/index.html",
+		"desc": "Another old heraldic dictionary, containing some interesting illustrations and antiquated terms."
+	},
+	{
+		"id": "heraldica",
+		"title": "Heraldica",
+		"href": "https://www.heraldica.org/",
+		"desc": "A very dated-looking but still comprehensive site on heraldry covering a number of topics. Of particular interest is the [Heraldry by Country](https://www.heraldica.org/topics/national/index.html) section."
+	},
+	{
+		"id": "boutell",
+		"title": "*The Handbook to English Heraldry*",
+		"href": "http://www.gutenberg.org/files/23186/23186-h/23186-h.htm",
+		"desc": "A classic, but sometimes inaccurate, book by one [Charles Boutell](https://en.wikipedia.org/wiki/Charles_Boutell), primarily focusing on English heraldry."
+	},
+	{
+		"id": "fox",
+		"title": "*A Complete Guide to Heraldry*",
+		"href": "http://www.gutenberg.org/files/23186/23186-h/23186-h.htm",
+		"desc": "The definitive guide to heraldry in England, by [A. C. Fox-Davies](https://en.wikipedia.org/wiki/Arthur_Charles_Fox-Davies). Although it is for the most part accurate, a few of his opinions (like that on the heraldic white) are best ignored. [The Art of Heraldry](https://archive.org/details/artofheraldryenc00foxd), is a related volume that draws upon some of the same material."
+	},
+	{
+		"id": "rolls",
+		"title": "Links to Online Rolls of Arms",
+		"href": "http://www.vikinganswerlady.com/Stars/Rolls_of_Arms.html",
+		"desc": "A list of rolls of arms available online, hosted by the Viking Answer Lady."
+	},
+	{
+		"id": "vakhushti",
+		"title": "Vakhushti Georgian flags collage",
+		"href": "https://commons.wikimedia.org/wiki/File:Vakhushti_Georgian_flags_collage.PNG",
+		"desc": "An image containing semi-heraldic flags collected by Georgian cartographer [Prince Vakhushti](https://en.wikipedia.org/wiki/Vakhushti_of_Kartli)."
+	},
+	{
+		"id": "rem33",
+		"title": "Heraldic Sources",
+		"href": "http://bridges.rem33.com/Sources.html",
+		"desc": "A massive compendium of heraldic books organised by country, intended as the basis for an armorial project that has, as of this writing, not been started."
+	},
+	{
+		"id": "boak",
+		"title": "Book of all Kingdoms",
+		"href": "https://archive.org/details/s2bookofknowledg29markuoft/",
+		"desc": "An interesting medieval book which contains numerous semi-heraldic banners which... are not very accurate, to say the least."
+	},
+	{
+		"id": "fotw",
+		"title": "Flags of the World",
+		"href": "https://www.crwflags.com/fotw/flags/",
+		"desc": "Although its main remit is flags, as the name implies, and the web design looks rather vintage, it actually contains a bunch of heraldic knowledge. Don't trust the blazons, though."
+	},
+	{
+		"id": "inthe",
+		"title": "International Heraldry",
+		"href": "http://www.internationalheraldry.com",
+		"desc": "Explains the basics of international heraldry; very handy for newcomers to the field."
+	},
+	{
+		"id": "eurhe",
+		"title": "European Heraldry",
+		"href": "https://www.europeanheraldry.org",
+		"desc": "Displays arms of historical European states, similar to WappenWiki. Unlike WappenWiki though, the artstyle is atrocious."
+	},
+	{
+		"id": "heraldicum",
+					 
+					"title": "Heraldicum.ru",
+		"href": "http://www.heraldicum.ru",
+		"desc": "A Russian heraldic website. Although there is an English version available, you might be better of using Google Translate, as it's not very big."
+	},
+	{
+		"id": "vimu",
+		"title": "Postcards with coats of arms",
+		"href": "https://myvimu.com/category/1010-pocztowki-z-herbami",
+		"desc": "A Polish online museum page containing a selection of historical heraldic artifacts from that country."
+	},
+	{
+		"id": "herolink",
+		"title": "Finto HERO",
+		"href": "https://finto.fi/hero/en/",
+		"desc": "Operated by the Finnish government, this is an experimental relational thesaurus for heraldic terms in a vast array of languages, complete with illustrations."
+	},
+	{
+		"id": "archive",
+		"title": "*An encyclopaedic dictionary of heraldry*",
+		"href": "https://archive.org/details/encyclopaedicdic0000fran/page/n9/mode/2up",
+		"desc": "A more recent heraldic dictionary by noted heraldist Julian Franklin."
+	},
+	{
+		"id": "creatures",
+		"title": "*Fictitious and Symbolic Creatures in Art*",
+		"href": "https://www.sacred-texts.com/lcr/fsca/index.htm",
+		"desc": "Not exclusively heraldic, but still very relevant. Deals with mythological beasts of European origin."
+	},
+	{
+		"id": "vah",
+		"title": "Vocabulaire-Atlas Héraldique",
+		"href": "https://archive.org/details/vocabulaireatlasheraldique-stalins/page/n21/mode/2up",
+		"desc": "Gathers a large variety of heraldic terms and provides translations in five languages. An [online version](https://www.heraldica.org/topics/glossary/atlas.htm) is available at Heraldica."
+	},
+	{
+		"id": "mistholme",
+		"title": "Mistholme Pictorial Dictionary of Heraldry",
+		"href": "https://mistholme.com/dictionary/",
+		"desc": "Accurately describes some obscure features, but at the cost of including some glaring mistakes and quirks of the SCA, who the book is intended for."
+	},
+	{
+		"id": "wiktionary",
+		"title": "Category:en:Heraldry",
+		"href": "https://en.wiktionary.org/wiki/Category:en:Heraldry",
+		"desc": "A listing of all heraldic terms mentioned by [Wiktionary](https://en.wiktionary.org/wiki/Wiktionary:Main_Page)"
+	},
+	{
+		"id": "rhsc",
+		"title": "The Canadian Heraldic Dictionary",
+		"href": "https://www.heraldry.ca/content/pp_dictionary.php",
+				"desc": "In the heraldic world, Canada is famous for its unusual, controversial, and creative designs. This dictionary collects many of them."
+	},
+	{
+		"id": "heraldicart",
+		"title": "Book of Traceable Heraldic Art",
+		"href": "http://heraldicart.org",
+		"desc": "A compendium of free-to-use heraldic images from a variety of sources. The Viking Answer Lady hosts a [similar page](http://www.vikinganswerlady.com/Stars/Heraldry_SVG_Images/index.htm), of her own images."
+	},
+	{
+		"id": "drawshieldlink",
+		"title": "DrawShield",
+		"href": "https://drawshield.net",
+		"desc": "An online application that allows you to create designs based on heraldic language. Although not all-encompassing, it allows a surprisingly wide range of possibilities, and the site also hosts a wide array of related resources, including a gallery, heraldic tutorial, and some heraldic dictionaries."
+	},
+	{
+		"id": "portal",
+		"title": "Portal:Heraldry/Web resources",
+		"href": "https://en.wikipedia.org/wiki/Portal:Heraldry/Web_resources",
+		"desc": "Wikipedia's list of external heraldic resources, including heraldic authorities in some countries."
+	},
+	{
+		"id": "chivarlic",
+		"title": "Chivalric & Heraldic Terminology",
+		"href": "http://home.olemiss.edu/~tjray/medieval/chivarlic.htm",
+		"desc": "The misspelling of the URL (*chi**varl**ic*) isn't indicative of the quality of the content: it contains quite a few rare terms that are difficult to find elsewhere."
+	},
+	{
+		"id": "obw",
+		"title": "Official Blazons Wiki",
+		"href": "https://officialblazons.fandom.com/wiki/Official_Blazons_Wiki",
+		"desc": "Official descriptions of national (and some regional) coats of arms and emblems."
+	},
+	{
+		"id": "science",
+		"title": "Escutcheons of Science",
+		"href": "http://www.numericana.com/arms/",
+		"desc": "Arms of notable scientists, explorers, and industrialists, maintained by French engineer Dr. Gerard P. Michon."
+	},
+	{
+		"id": "raneke",
+		"title": "Arkiv Jan Raneke",
+		"href": "https://arkivjanraneke.se/start-arkiv-jan-raneke/",
+		"desc": "A detailed Swedish classification of European noble coats of arms with charming hand-drawn art."
+	},
+	{
+		"id": "stemmatographia",
+		"title": "*Stemmatographia*",
+		"href": "https://commons.wikimedia.org/wiki/File:Pavao_Ritter_Vitezovic_-_Stemmatographia.pdf",
+		"desc": "An armorial combining fictional and historic arms that is influential in the Balkan region."
+	},
+	{
+		"id": "hotw",
+		"title": "Heraldry of the World",
+		"href": "https://www.heraldry-wiki.com/heraldrywiki/wiki/Main_Page",
+		"desc": "Not only a great reference for civic and regional arms, but also a veritable collection of historic artifacts."
+	},
+	{
+		"id": "europeana",
+		"title": "Europeana Heraldica",
+		"href": "https://heraldica.narc.fi/index.html?lang=en",
+		"desc": "The Finnish state records of arms relating to that country's history."
+	},
+	{
+		"id": "frick",
+		"title": "Heraldry in the *Scher Collection*",
+		"href": "https://www.frick.org/scher_blazons",
+		"desc": "A collection of coins with heraldic designs."
+	},
+	{
+		"id": "period",
+		"title": "Period Armorials Online",
+		"href": "https://caerlaverockroll.com/period-armorials-online/",
+		"desc": "A listing of over 150+ period heraldic rolls and miscellaneous records."
+	},
+	{
+		"id": "simple",
+		"title": "Simple Heraldry",
+		"href": "http://uhuhhhhh.blogspot.com/2012/10/simple-heraldy-cheerfully-illustrated.html",
+		"desc": "An excellent heraldic primer characterized by its cheerful illustrations."
+	},
+	{
+		"id": "stroehl",
+		"title": "Ströhl's Heraldischer Atlas",
+		"href": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Hugo_Gerhard_Stroehl_Heraldischer_Atlas.pdf",
+		"desc": "The German counterpart to Fox-Davies' work, beautifully illustrated by its author."
+	},
+	{
+		"id": "rietstap",
+		"title": "Rietstap's Armorial General",
+		"href": "http://coats-of-arms-heraldry.com/armoriaux/rietstap.html",
+		"desc": "A monumental work containing the arms of thousands of European families."
+	},
+	{
+		"id": "burke",
+		"title": "Burke's General Armory",
+		"href": "https://archive.org/stream/generalarmoryofe00burk#page/n143/mode/2up",
+		"desc": "An equivalent focused entirely on Great Britain and Ireland."
+	},
+	{
+		"id": "garcia",
+		"title": "Garcia's Enciclopedia Heráldica y Genealógica Hispano-Americana",
+		"href": "https://archive.org/details/enciclopediaher01garc/page/n7",
+		"desc": "A heraldic and genealogical encyclopedia for Spain and Latin America."
+	},
+	{
+		"id": "costa",
+		"title": "Costa's Tratado Completo de la Ciencia del Blason",
+		"href": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Tratado_completo_de_la_ciencia_del_blason_-_ó_sea%2C_Código_heráldico-histórico%2C_acompañado_de_una_estensa_noticia_de_todas_las_órdenes_de_caballería_existentes_y_abolidas_%28IA_b24878492%29.pdf",
+		"desc": "A Spanish glossary."
+	},
+	{
+		"id": "owlturd",
+		"title": "Owlturd Comic",
+		"href": "https://cdn.discordapp.com/attachments/370401273255559169/510906019581394944/86d.jpg",
+		"desc": "A comic for people who want to make art but don't know how to get started.",
+		"image": true
+	},
+	{
+		"id": "example",
+		"title": "CHA Example Chart",
+		"href": "https://www.gg.ca/sites/default/files/media/Heraldry/images/parts_en.jpg",
+		"desc": "Example arms with their elements labelled.",
+		"image": true
+	}
+]

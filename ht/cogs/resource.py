@@ -1,11 +1,8 @@
-import asyncio, random, csv, re
+import asyncio, json, random, re
 from discord.ext import commands
 from .. import embeds, utils, views
 
 class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldry"):
-	RESOURCE = re.compile("(?s)<li.*?data-key=\"(.+?)\">.*?<a href=\"(.+?)\">(.+?)</a>.*?<p>(.+?)</p>")
-	RES_SUB_A = re.compile("<i>|</i>")
-	RES_SUB_B = re.compile("<[^<]+?>")
 	PAGE_SIZE = 8
 
 	def __init__(self, bot):
@@ -29,27 +26,15 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 		self.resources.append((resource_command, name, url))
 
 	async def load_resources(self):
-		html = await utils.get_text(
-			self.bot.session,
-			"https://novov.me/linkroll/resources.html?bot",
-			encoding = "UTF-8"
-		)
-		results = await self.bot.loop.run_in_executor(None, re.findall, self.RESOURCE, html)
+		with open("data/resources.json") as file:
+			data = json.load(file)
 
-		for resource in results:
+		for resource in data:
 			self.add_resource(
-				resource[0],
-				re.sub(self.RES_SUB_A, "*", resource[2]),
-				re.sub(self.RES_SUB_B, "", resource[3]),
-				resource[1],
-				0
+				resource["id"], resource["title"],
+				resource["desc"], resource["href"],
+				resource.get("image", False)
 			)
-
-		with open("data/resources.csv") as file:
-			supplementary = list(csv.reader(file, delimiter = ";"))
-
-			for resource in supplementary:
-				self.add_resource(*resource)
 
 		self.resource_commands = tuple(resource[0] for resource in self.resources)
 
