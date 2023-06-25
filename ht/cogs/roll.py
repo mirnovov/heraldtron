@@ -1,8 +1,12 @@
-import typing
+import aiohttp, asyncio, re, typing
+from bs4 import BeautifulSoup, Comment
 from discord.ext import commands
 from .. import converters, embeds, utils
+from ..ext import SlowTCPConnector
 
 class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"):
+	FIND_HTML_TAGS = re.compile(r"<[^>]*>")
+
 	def __init__(self, bot):
 		self.bot = bot
 
@@ -44,6 +48,64 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await self.add_rolls(embed, "AND personal", user, "User roll")
 		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
 		await ctx.send(embed = embed)
+
+	@commands.command(
+		help = "Looks up the symbology of a user's coat of arms.\nUses GreiiEquites' https://roll-of-arms.com as a source.",
+		aliases = ("s", "symbols")
+	)
+	@utils.trigger_typing
+	async def symbolism(self, ctx, user: converters.Armiger = None):
+		if not user:
+			user = await ctx.bot.dbc.execute_fetchone(
+				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+			)
+
+			if not user:
+				await self.bot.get_cog("Bot tasks").sync_book()
+
+				user = await ctx.bot.dbc.execute_fetchone(
+					"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+				)
+
+			if not user: raise utils.CustomCommandError(
+				"Invalid armiger",
+				"There are no arms associated with your user account. "
+				"To find those of another user, follow the command with their username."
+				"If you wish to register your arms, follow the instructions at the Roll of Arms server."
+			)
+
+		async with SlowTCPConnector.get_slow_session() as slow_session:
+			try:
+				html = await utils.get_text(
+					slow_session,
+					f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}"
+				)
+			except aiohttp.client_exceptions.ClientConnectorError:
+				utils.CustomCommandError(
+					"Armiger is not on roll-of-arms.com",
+					"The arms of the armiger are not on the https://roll-of-arms.com "
+					"website. If you would like to add your arms and related symbolism "
+					"to the website, please fill out the form pinned in the "
+					"#announcements channel of the Roll of Arms server."
+				)
+
+			soup = BeautifulSoup(html, "html.parser")
+			value = soup.select("h2:has(#Symbolism)")[0]
+			next_section = value.next_sibling
+			symbolism_text = ""
+			while next_section is not None and not isinstance(next_section, Comment) and not str(next_section).startswith("<h"):
+				markdown = re.sub(
+					self.FIND_HTML_TAGS,
+					"",
+					str(next_section).replace("<b>", "**").replace("</b>", "**").replace("<i>", "*").replace("</i>", "*")
+				)
+				symbolism_text += f"{markdown}\n"
+				next_section = next_section.next_sibling
+
+			embed = embeds.GENERIC.create(f"{user[2]}#{user[3]:04}", symbolism_text, heading = f"Symbolism GreiiN:{user[0]:04}")
+			embed.set_footer(text = "Textual content from https://roll-of-arms.com by GreiiEquites.")
+
+			await ctx.send(embed = embed)
 
 	@commands.command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
 	async def delemblazon(self, ctx):

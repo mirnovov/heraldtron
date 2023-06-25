@@ -6,3 +6,5 @@ nvpriv
 .DS_Store
 data/book/book.docx
 data/db/heraldtron.db
+.venv
+.*.swp
