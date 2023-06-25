@@ -7,6 +7,8 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 
 	def __init__(self, bot):
 		self.bot = bot
+		self.commit = self.get_commit_hash()
+
 		bot.help_command = MeldedHelpCommand()
 		bot.help_command.cog = self
 
@@ -22,35 +24,29 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		aliases = ("ab",)
 	)
 	async def about(self, ctx):
-		embed = embeds.ABOUT.create(f"Heraldtron {__version__}", self.bot.description)
-		embed.set_thumbnail(url = str(self.bot.user.display_avatar.with_size(512).url))
-
-		embed.add_field(
-			name="Developed using",
-			value=f"**Python {platform.python_version()}**\n"\
-				  f"`{platform.python_implementation()} ({platform.python_build()[0]}"\
-				  f" {platform.python_build()[1].replace('  ',' ')})`",
-			inline=True
+		embed = embeds.ABOUT.create(
+			"", f"## Heraldtron\n**{__version__}{self.commit}**\n\n{self.bot.description}"
 		)
-		embed.add_field(
-			name = "Running on",
-			value = f"**{self.get_os_name()}**\n`{self.get_os_details()}`",
-			inline = True
+		embed.set_thumbnail(
+			url = str(self.bot.user.display_avatar.with_size(512).url)
 		)
-
-		embed.add_field(
-			name = "Made with the help of",
-			value = f"- [discord.py](https://pypi.org/project/discord.py/) `{discord.__version__}`\n"\
-				    f"- [aiohttp](https://pypi.org/project/aiohttp/) `{aiohttp.__version__}`\n"
-					f"- [aiosqlite](https://pypi.org/project/aiosqlite/) `{aiosqlite.__version__}`"\
-					" and the [SQLite](https://www.sqlite.org/) library",
-			inline = False
+		
+		embed.description += (
+			"\n### Running on\n"
+			f"**Python {platform.python_version()}**\t"
+			f"`{platform.python_implementation()} ({platform.python_build()[0]}"
+			f" {platform.python_build()[1].replace('  ',' ')})`\n"
+			f"**{self.get_os_name()}**\t`{self.get_os_details()}`"
+			"\n### Made with the help of\n"
+			f"**[discord.py](https://pypi.org/project/discord.py/) {discord.__version__}**\n"
+			f"**[aiohttp](https://pypi.org/project/aiohttp/) {aiohttp.__version__}**\n"
+			f"**[aiosqlite](https://pypi.org/project/aiosqlite/) {aiosqlite.__version__}**"
+			" and the [SQLite](https://www.sqlite.org/) library"
+			"\n### And special thanks to\n"
+			"Ensix, GreiiEquites, and every "
+			"[contributor](https://github.com/mirnovov/heraldtron/graphs/contributors) to the project"
 		)
-		embed.add_field(
-			name = "And special thanks to",
-			value = "- Ensix\n- GreiiEquites",
-			inline = False
-		)
+		
 		embed.set_footer(
 			text = f"{__copyright__}. This is an open source project available under the MIT license."
 		)
@@ -84,6 +80,10 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		uname = platform.uname()
 		dedup = uname.release.removesuffix(f".{uname.machine}")
 		return f"{uname.system} {dedup} ({uname.machine})"
+		
+	@staticmethod
+	def get_commit_hash():
+		return os.popen("git rev-parse --short=7 HEAD").read().strip()
 
 class MeldedHelpCommand(commands.DefaultHelpCommand):
 	def __init__(self,**options):

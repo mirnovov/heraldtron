@@ -2,7 +2,6 @@ import aiohttp, asyncio, re, typing
 from bs4 import BeautifulSoup, Comment
 from discord.ext import commands
 from .. import converters, embeds, utils
-from ..ext import SlowTCPConnector
 
 class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"):
 	FIND_HTML_TAGS = re.compile(r"<[^>]*>")

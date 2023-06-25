@@ -42,7 +42,7 @@ class Heraldtron(commands.Bot):
 
 		super().__init__(
 			command_prefix = self.conf["PREFIX"], #kept for documentation
-			description = "A heraldry-related bot designed for the Heraldry Community.",
+			description = "A heraldic bot designed for the Heraldry Community.",
 			intents = discord.Intents(
 				guilds = True, members = True, messages = True,
 				reactions = True, presences = True, message_content = True
