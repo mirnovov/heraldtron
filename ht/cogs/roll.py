@@ -65,7 +65,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			
 			if not values:
 				raise utils.CustomCommandError(
-					"Armiger doesn't have symbolisn roll-of-arms.com",
+					"Armiger doesn't have symbolism roll-of-arms.com",
 					"The armiger has opted not to include symbolism on the "
 					"https://roll-of-arms.com website."
 				)
