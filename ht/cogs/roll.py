@@ -49,8 +49,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			"To find those of another user, follow the command with their username."
 			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 		)
+		url = f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}"
 
-		async with self.bot.session.get(f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}") as response:
+		async with self.bot.session.get(url) as response:
 			if response.status == 404:
 				raise utils.CustomCommandError(
 					"Armiger is not on roll-of-arms.com",
@@ -80,8 +81,14 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				)
 				symbolism_text += f"{markdown}\n"
 				next_section = next_section.next_sibling
-
-			embed = embeds.GENERIC.create(f"Symbolism for {self.format_armiger(user)}", symbolism_text[:4095], heading = f"GreiiN:{user[0]:04}")
+				
+			symbolism_text = symbolism_text.strip()[:4000]
+			
+			embed = embeds.GENERIC.create(
+				f"Symbolism for {self.format_armiger(user)}",
+				f"{symbolism_text}\n\n[**See more on roll-of-arms.com...**]({url})",
+				heading = f"GreiiN:{user[0]:04}"
+			)
 			embed.set_footer(text = "Textual content from https://roll-of-arms.com by GreiiEquites.")
 
 			await ctx.send(embed = embed)
