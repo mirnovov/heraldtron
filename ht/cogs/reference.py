@@ -139,6 +139,13 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 			await ctx.send(file.read())
 
 	@commands.command(
+		help = "Shows a short blurb about charges",
+	)
+	async def charges(self, ctx):
+		with open("media/prose/charges.md", "r") as file:
+			await ctx.send(file.read())
+
+	@commands.command(
 		help = "Shows a list of commonly used tinctures.",
 		aliases = ("t", "colours", "colors", "metals", "furs", "tincture")
 	)
