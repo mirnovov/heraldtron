@@ -6,7 +6,7 @@ from .. import utils, embeds
 
 class BotTasks(commands.Cog, name = "Bot tasks"):
 	STRIP_SPACES = re.compile(r"\n[\t\s]+")
-	FIND_DATA = re.compile(r"GreiiN:(\d+) - (?:[^\n\r#]+\n)?(.+)#(\d+)[\s\S]+?(Blazon[\s\S]+?)(?=GreiiN|$)")
+	FIND_DATA = re.compile(r"GreiiN:(\d+) - ([^\n]+)[\s\S]+?(Blazon[\s\S]+?)(?=GreiiN|$)")
 
 	STATUSES = (
 		discord.Game("a !challenge"),
@@ -87,7 +87,17 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 
 		text = re.sub(self.STRIP_SPACES, "\n", docx2python("data/book/book.docx").text)
 		results = re.findall(self.FIND_DATA, text[text.find("This document contains"):])
-		return { entry[0]: entry for entry in results }
+		entries = []
+		
+		for entry in results:
+			username = entry[1].split("#", 1)
+			
+			if len(username) > 1:
+				entries.append((int(entry[0]), username[0], int(username[1]), entry[2]))
+			else:
+				entries.append((int(entry[0]), username[0], -1, entry[2]))	
+				
+		return entries	
 
 	@tasks.loop(hours = 10)
 	async def sync_book(self):
@@ -106,21 +116,21 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 
 		await self.bot.dbc.execute(
 			f"DELETE FROM armigers WHERE greii_n NOT IN ({','.join(['?'] * len(book))})",
-			tuple(book.keys())
+			tuple(a[0] for a in book)
 		)
 		await self.bot.dbc.commit()
-
-		for greii_n, entry in book.items():
+		
+		for greii_n, username, discrim, blazon in book:
 			await self.bot.dbc.execute(
 				"INSERT INTO armigers (greii_n, qualified_name, qualified_id, blazon) VALUES"
 				" (?1, ?2, ?3, ?4) ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?2, qualified_id = ?3, blazon = ?4;",
-				(greii_n, entry[1], entry[2], entry[3])
+				(greii_n, username, discrim, blazon)
 			)
 
 			if await self.bot.dbc.execute(
 				"SELECT * FROM armigers WHERE discord_id IS NULL AND greii_n IS ?", (greii_n,)
 			):
-				user = await utils.unqualify_name(self.bot, entry[1], entry[2])
+				user = await utils.unqualify_name(self.bot, username, discrim)
 
 				if user:
 					await self.bot.dbc.execute(
