@@ -81,7 +81,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				symbolism_text += f"{markdown}\n"
 				next_section = next_section.next_sibling
 
-			embed = embeds.GENERIC.create(f"Symbolism for {self.format_armiger(user)}", symbolism_text, heading = f"GreiiN:{user[0]:04}")
+			embed = embeds.GENERIC.create(f"Symbolism for {self.format_armiger(user)}", symbolism_text[:4095], heading = f"GreiiN:{user[0]:04}")
 			embed.set_footer(text = "Textual content from https://roll-of-arms.com by GreiiEquites.")
 
 			await ctx.send(embed = embed)
