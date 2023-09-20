@@ -155,7 +155,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		
 	@commands.command(
 		help = "Shows a short blurb about 'family crests'.",
-		aliases = ("f", "familycrests", "crest", "crests", "inheritance")
+		aliases = ("f", "familycrests", "crest", "crests", "inheritance", "bucket")
 	)
 	async def familycrest(self, ctx):
 		with open("media/prose/familycrests.md", "r") as file:
