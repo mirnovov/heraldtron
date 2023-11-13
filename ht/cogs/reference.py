@@ -171,7 +171,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 			
 	@commands.command(
 		help = "Shows a short blurb about false quartering.",
-		aliases = ("fq")
+		aliases = ("fq",)
 	)
 	async def falsequartering(self, ctx):
 		with open("media/prose/falsequartering.md", "r") as file:
