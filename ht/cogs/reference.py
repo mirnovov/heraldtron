@@ -168,6 +168,14 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 	async def fridge(self, ctx):
 		with open("media/prose/fridgetesting.md", "r") as file:
 			await ctx.send(file.read())
+			
+	@commands.command(
+		help = "Shows a short blurb about false quartering.",
+		aliases = ("fq",)
+	)
+	async def falsequartering(self, ctx):
+		with open("media/prose/falsequartering.md", "r") as file:
+			await ctx.send(file.read())
 
 async def setup(bot):
 	await bot.add_cog(HeraldryReference(bot))
