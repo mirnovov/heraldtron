@@ -22,6 +22,7 @@ class Heraldtron(commands.Bot):
 	}
 
 	HERALDRY_GUILD = 272117928298676225
+	HERALDRY_GUILD_ROLE = 847096449190723656
 
 	def __init__(self, *args, **kwargs):
 		self.conf = self.load_conf()

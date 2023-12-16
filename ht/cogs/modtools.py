@@ -79,6 +79,12 @@ class ModerationTools(utils.ModCog, name = "Tools"):
 			await ctx.send(f":unlock: | **{channel.mention} has been unlocked.**")	
 					
 		else:
+			if ctx.guild.id == self.bot.HERALDRY_GUILD:
+				overwrite = discord.PermissionOverwrite(send_messages = True)
+				bot_role = ctx.guild.get_role(self.bot.HERALDRY_GUILD_ROLE)
+				
+				await channel.set_permissions(bot_role, overwrite = overwrite)		
+			
 			overwrite = discord.PermissionOverwrite(send_messages = not locked)
 			await channel.set_permissions(ctx.guild.default_role, overwrite = overwrite)
 			await ctx.send(f":{action_name}: | **{channel.mention} has been {action_name}ed.**")
