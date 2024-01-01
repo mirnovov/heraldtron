@@ -11,5 +11,4 @@ __version__ = (
 )
 __author__ = "novov"
 __license__ = "MIT"
-__copyright__ = "(c) 2021-2023 novov"
-
+__copyright__ = "(c) 2021-2024 novov"
