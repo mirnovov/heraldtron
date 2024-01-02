@@ -5,6 +5,7 @@ from .. import converters, embeds, utils
 
 class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"):
 	FIND_HTML_TAGS = re.compile(r"<[^>]*>")
+	ROA_FORM = "https://forms.gle/FLVVc8ncQpfhNa7D8"
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -57,8 +58,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 					"Armiger is not on roll-of-arms.com",
 					"The arms of the armiger are not on the https://roll-of-arms.com "
 					"website. If you would like to add your arms and related symbolism "
-					"to the website, please fill out the form pinned in the "
-					"#announcements channel of the Roll of Arms server."
+					f"to the website, please fill out the [form here]({self.ROA_FORM})."
 				)
 			
 			soup = BeautifulSoup(await response.text(), "html.parser")
