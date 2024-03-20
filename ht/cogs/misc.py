@@ -18,15 +18,6 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.command(help = "Retrieves a random piece of advice.\nUses adviceslip.com", aliases = ("ad",))
-	@utils.trigger_typing
-	async def advice(self, ctx):
-		result = await utils.get_json(self.bot.session,f"https://api.adviceslip.com/advice",content_type="text/html")
-
-		embed = embeds.GENERIC.create(result["slip"]["advice"], "", heading = "Random advice")
-		embed.set_footer(text=f"Retrieved using adviceslip.com")
-		await ctx.send(embed = embed)
-
 	@commands.command(
 		help = "Generates a continuously updated countdown post.",
 		aliases = ("time", "cd")
@@ -107,31 +98,6 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	async def sendtext(ctx, channel : typing.Optional[discord.TextChannel] = None, *, message_content):
 		channel = channel or ctx.channel
 		await channel.send(message_content)
-
-	@commands.command(
-		help = "Completes a passage of text using machine learning.\n"
-			   " This uses DeepAI's online model to compute the result.",
-		aliases=("aitext", "tg")
-	)
-	@utils.trigger_typing
-	async def textgen(self, ctx, *, text : str):
-		url = "https://api.deepai.org/api/text-generator"
-		data = {"text": text.strip()}
-		headers = {"api-key": ctx.bot.conf["DEEP_AI"].strip()}
-
-		async with ctx.bot.session.post(url, data = data, headers = headers) as source:
-			if not source.ok:
-				raise utils.CustomCommandError(
-					"Invalid HTTP request",
-					f"Please try again. If problems persist, contact the bot's maintainer."
-				)
-
-			result_json = await source.json()
-
-		result = result_json["output"]
-		newtext = result[result.index(text) + len(text):]
-
-		await ctx.send(f":abcd: | **Text generated!**\n\n*{text}*{newtext}")
 
 	@commands.group(
 		invoke_without_command = True,

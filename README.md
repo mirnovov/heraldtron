@@ -40,7 +40,6 @@ This is adequate for most use cases, but for a few commands, additional informat
 * `AR_DGTNZ`: The key for the [Digital NZ API](https://digitalnz.org/developers).
 * `AR_SMTHS`: The key for the [Smithsonian API](http://edan.si.edu/openaccess/apidocs/), provided by data.gov.
 * `AR_DDBTK`: The key for the German Digital Library/[Deutsche Digitale Bibliothek API](https://labs.deutsche-digitale-bibliothek.de/app/ddbapi/)
-* `DEEP_AI`: The key for `!textgen`, from [DeepAI](https://deepai.org/).
 
 Additionally, there are a number of optional settings that can be specified:
 
