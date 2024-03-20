@@ -1,7 +1,6 @@
-import discord, asyncio, typing, random, os, html
+import discord, asyncio, typing, random, os
 from discord import ui
 from discord.ext import commands
-from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from .. import converters, embeds, services, utils, views
 
@@ -153,42 +152,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				f"Consult `{ctx.clean_prefix}trivia categories` to see the available codes."
 			)
 
-		result = result["results"][0]
-		question = html.unescape(result["question"])
-		info = f"**{html.unescape(result['category'])}** | {result['difficulty'].capitalize()}\n\n"
-		countdown = datetime.now(tz = timezone.utc) + timedelta(minutes = 1)
-		
-		embed = embeds.GENERIC.create(question, info, heading = "Trivia")
-		embed.description += f"The correct answer will appear <t:{countdown.timestamp():.0f}:R>."
-		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
-
-		view = ui.View()
-		users = {}
-		answers = result["incorrect_answers"]
-		correct = random.randrange(0, len(answers) + 1)
-		
-		answers.insert(correct, result["correct_answer"])
-		
-		for answer in answers:
-			view.add_item(views.TriviaButton(answer, users))
-
-		message = await ctx.send(embed = embed, view = view)
-		await asyncio.sleep(60)
-
-		embed.description = f"{info}The correct answer is: **{html.unescape(answers[correct])}**"
-		updated = await message.channel.fetch_message(message.id)
-
-		if updated is None: return #message deleted
-
-		results = defaultdict(list)
-
-		for user, answer in users.items():
-			results[answer].append(user)
-
-		stats = "\n".join(f"- {a}: {','.join(u)} (**{len(u)}**)" for a, u in results.items())
-		if stats: embed.description += f"\n\n**Responses:**\n\u0020{stats}"
-
-		await message.edit(embed = embed, view = None)
+		await services.trivia(ctx, result["results"][0])
 
 	@trivia.command(help = "Lists all categories.")
 	async def categories(self, ctx):

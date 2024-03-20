@@ -1,4 +1,7 @@
-import discord, asyncio, urllib, io, base64, itertools
+import discord, asyncio, base64, html, io, itertools, random, urllib
+from discord import ui
+from collections import defaultdict
+from datetime import datetime, timezone, timedelta
 from xml.etree import ElementTree
 from . import embeds, utils, views
 
@@ -77,18 +80,57 @@ async def commons(session, loop, filename):
 	get_json = lambda text_string, root: ElementTree.fromstring(text_string).find(root)
 
 	return await loop.run_in_executor(None, get_json, result_text, "file")
+	
+async def trivia(ctx, question):
+	TRIVIA_LENGTH = 22
+	
+	name = html.unescape(question["question"])
+	info = f"**{html.unescape(question['category'])}** | {question['difficulty'].capitalize()}\n\n"
+	countdown = datetime.now(tz = timezone.utc) + timedelta(seconds = TRIVIA_LENGTH)
+	
+	embed = embeds.GENERIC.create(name, info, heading = "Trivia")
+	embed.description += f"The correct answer will appear <t:{countdown.timestamp():.0f}:R>."
+	embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
+	
+	view = ui.View()
+	users = {}
+	answers = question["incorrect_answers"]
+	correct = random.randrange(0, len(answers) + 1)
+	
+	answers.insert(correct, question["correct_answer"])
+	
+	for answer in answers:
+		view.add_item(views.TriviaButton(answer, users))
+	
+	message = await ctx.send(embed = embed, view = view)
+	await asyncio.sleep(TRIVIA_LENGTH)
+	
+	embed.description = f"{info}The correct answer is: **{html.unescape(answers[correct])}**"
+	updated = await message.channel.fetch_message(message.id)
+	if updated is None: return #message deleted
+	
+	results = defaultdict(list)
+	stats = ""
+	
+	for user, answer in users.items():
+		results[answer].append(user)
+		
+	for answer, users in results.items():
+		stats += f"- {answer}: {','.join(users)} (**{len(users)}**)"
 
-def is_option_keyword(s):
-	return s.startswith(":") or s.startswith("+")
-
-def parse_options_and_blazon(query):
-	words = query.split()
-	options = list(x.lower() for x in itertools.takewhile(is_option_keyword, words))
-	blazon = " ".join(itertools.dropwhile(is_option_keyword, words))
-	return options, blazon
-
+	if stats: embed.description += f"\n\n**Responses:**\n\u0020{stats}"
+	await message.edit(embed = embed, view = None)
 
 async def heraldicon(session, query):
+	def is_option_keyword(s):
+		return s.startswith(":") or s.startswith("+")
+	
+	def parse_options_and_blazon(query):
+		words = query.split()
+		options = list(x.lower() for x in itertools.takewhile(is_option_keyword, words))
+		blazon = " ".join(itertools.dropwhile(is_option_keyword, words))
+		return options, blazon
+
 	options, blazon = parse_options_and_blazon(query)
 	result = await utils.post_json(session, "https://2f1yb829vl.execute-api.eu-central-1.amazonaws.com/api",
 		{
@@ -140,14 +182,14 @@ Suggestions:
 
 	return embed, None
 
-def add_option_type(embed, source, name):
-	embed.add_field(
-		name = name,
-		value = " ".join(f"`+{x}`" for x in source),
-		inline = False
-	)
-
 async def heraldicon_options(session):
+	def add_option_type(embed, source, name):
+		embed.add_field(
+			name = name,
+			value = " ".join(f"`+{x}`" for x in source),
+			inline = False
+		)
+
 	result = await utils.post_json(
 		session,
 		"https://2f1yb829vl.execute-api.eu-central-1.amazonaws.com/api",
