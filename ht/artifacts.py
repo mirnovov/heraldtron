@@ -1,6 +1,5 @@
 import json, random, functools, re
 from . import services, utils
-from .ext import SlowTCPConnector
 
 class Source():
 	register = {}
@@ -96,16 +95,15 @@ async def digital_nz(bot):
 
 @Source("met", "The Metropolitan Museum of Art, New York")
 async def met_museum(bot):
-	async with SlowTCPConnector.get_slow_session() as slow_session:
-		collection = await utils.get_json(
-			slow_session,
-			"https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=%22coat%20of%20arms%22"
-		)
-		resultid = random.choice(collection["objectIDs"])
-		result = await utils.get_json(
-			slow_session,
-			f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{resultid}"
-		)
+	collection = await utils.get_json(
+		bot.session,
+		"https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=%22coat%20of%20arms%22"
+	)
+	resultid = random.choice(collection["objectIDs"])
+	result = await utils.get_json(
+		bot.session,
+		f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{resultid}"
+	)
 
 	return (
 		result["objectURL"],

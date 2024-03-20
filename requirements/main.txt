@@ -1,5 +1,5 @@
 discord.py >= 2.3.0
-aiohttp >= 3.7.0
+aiohttp >= 3.9.3
 Pillow >= 8.0
 aiosqlite >= 0.17.0
 docx2python >= 1.27.0
