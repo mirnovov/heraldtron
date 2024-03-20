@@ -154,19 +154,23 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 			)
 
 		result = result["results"][0]
-		info = f"**{result['category']}** | {result['difficulty'].capitalize()}\n\n"
-		embed = embeds.GENERIC.create(html.unescape(result["question"]), info, heading = "Trivia")
-		correct = random.randrange(0,2 if result["type"] == "boolean" else 4)
-
-		answers = result["incorrect_answers"]
-		answers.insert(correct, result["correct_answer"])
-
-		embed.description += f"The correct answer will appear in **one minute.**"
+		question = html.unescape(result["question"])
+		info = f"**{html.unescape(result['category'])}** | {result['difficulty'].capitalize()}\n\n"
+		countdown = datetime.now(tz = timezone.utc) + timedelta(minutes = 1)
+		
+		embed = embeds.GENERIC.create(question, info, heading = "Trivia")
+		embed.description += f"The correct answer will appear <t:{countdown.timestamp():.0f}:R>."
 		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
 
 		view = ui.View()
 		users = {}
-		tuple(view.add_item(views.TriviaButton(answer, users)) for answer in answers)
+		answers = result["incorrect_answers"]
+		correct = random.randrange(0, len(answers) + 1)
+		
+		answers.insert(correct, result["correct_answer"])
+		
+		for answer in answers:
+			view.add_item(views.TriviaButton(answer, users))
 
 		message = await ctx.send(embed = embed, view = view)
 		await asyncio.sleep(60)
