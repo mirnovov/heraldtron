@@ -3,7 +3,8 @@ from discord.ext import commands
 from .. import embeds, services, utils
 
 class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldry"):
-	SBW_SUB = re.compile(r"== *(.*) *==|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|\[+[^\[]+?\]+")
+	SBW_SUB = re.compile(r"={2,3}(.*?)={2,3}|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|!?\[+([^\[]+?)\]+|(\n#)")
+	SBW_LINK_NS = ("Category", "File")
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -98,7 +99,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		title = urllib.parse.quote(query.title())
 		response = await utils.get_json(
 			self.bot.session,
-			"https://sourcedblazons.fandom.com/api.php?action=query&titles="
+			"https://sourcedblazons.miraheze.org/w/api.php?action=query&titles="
 			f"{title}&prop=revisions&rvslots=main&rvprop=content&rvlimit=1&format=json"
 		)
 
@@ -108,17 +109,10 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 				f"The term could not be found. Check that it is entered correctly."
 			)
 
-		def wikitext_parse(matchobj):
-			if matchobj.group(1) and "Sources" not in matchobj.group(1):
-				return f"**{matchobj.group(1)}**"
-			elif matchobj.group(2):
-				return matchobj.group(2)
-			else: return ""
-
 		response = list(response["query"]["pages"].values())[0]
 		text = re.sub(
 			self.SBW_SUB,
-			wikitext_parse,
+			self.wikitext_parse,
 			response["revisions"][0]["slots"]["main"]["*"]
 		)
 
@@ -126,7 +120,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 			text = f"{text[:2045]}..."
 
 		embed = embeds.SEARCH_RESULT.create(response["title"], text, heading = "Sourced Blazons Wiki result")
-		embed.url = f"https://sourcedblazons.fandom.com/wiki/{urllib.parse.quote(response['title'])}"
+		embed.url = f"https://sourcedblazons.miraheze.org/wiki/{urllib.parse.quote(response['title'])}"
 
 		await ctx.send(embed = embed)
 
@@ -176,6 +170,30 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 	async def falsequartering(self, ctx):
 		with open("media/prose/falsequartering.md", "r") as file:
 			await ctx.send(file.read())
+	
+	def wikitext_parse(self, matchobj):
+		if matchobj.group(1): #headings
+			return f"**{matchobj.group(1).strip()}**"
+		
+		elif matchobj.group(2): #bold/italics
+			return matchobj.group(2)
+		
+		elif matchobj.group(3): #links
+			if (
+				matchobj.group(3).split(":")[0] in self.SBW_LINK_NS or 
+				matchobj.group(0).startswith("!")
+			):
+				return " "
+			elif " " not in matchobj.group(3):
+				return matchobj.group(3)
+			else:
+				url, name = matchobj.group(3).split(" ", 1)
+				return f"[{name}]({url})"
+		
+		elif matchobj.group(4): #numbered lists
+			return "\n1."
+		
+		else: return ""
 
 async def setup(bot):
 	await bot.add_cog(HeraldryReference(bot))
