@@ -132,7 +132,7 @@ async def heraldicon(session, query):
 		return options, blazon
 
 	options, blazon = parse_options_and_blazon(query)
-	result = await utils.post_json(session, "https://2f1yb829vl.execute-api.eu-central-1.amazonaws.com/api",
+	result = await utils.post_json(session, "https://heraldicon.org/api",
 		{
 			"call": "generate-from-blazon",
 			"data": {
@@ -192,7 +192,7 @@ async def heraldicon_options(session):
 
 	result = await utils.post_json(
 		session,
-		"https://2f1yb829vl.execute-api.eu-central-1.amazonaws.com/api",
+		"https://heraldicon.org/api",
 		{"call": "blazon-options"}
 	)
 	if "success" in result:
