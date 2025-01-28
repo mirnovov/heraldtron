@@ -40,9 +40,9 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		self.sync_book.stop()
 
 	@tasks.loop(hours = 12)
-	async def update_info(self):
+	async def update_info(self, force = False):
 		now = datetime.now().date()
-		last = await self.bot.dbc.store_get("last_avatar")
+		last = "" if force else await self.bot.dbc.store_get("last_avatar")
 
 		if now.month == 6 and now.day in range(8, 12):
 			await self.update_avatar(self.bot, "media/avatars/ihd.png", last)
