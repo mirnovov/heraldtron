@@ -51,14 +51,21 @@ class NvFormatter(Formatter):
 
 	def format(self, record):
 		message = record.getMessage()
+		
+		if record.exc_info:
+			if not record.exc_text:
+				record.exc_text = self.formatException(record.exc_info)
+		
+		if record.exc_text:
+			message += "\n" + record.exc_text
 
 		if "\n" not in message[:self.LINE_WIDTH + 80]:
 			lines = self.wrapper.wrap(message)
 		else:
 			lines = message.splitlines()
 
-		message = f"\n{' ' * 7} | {' ' * 15} | ".join(lines)
-		return f"{record.levelname:7} | {record.name:15} | {message}"
+		message = f"\n{' ' * 7} | {' ' * 17} | ".join(lines)
+		return f"{record.levelname:7} | {record.name:17} | {message}"
 
 class BadMessageResponse(Exception):
 	pass
