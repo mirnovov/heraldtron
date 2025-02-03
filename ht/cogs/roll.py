@@ -24,7 +24,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 		)
 
-		embed = embeds.GENERIC.create(f"{self.format_armiger(user)}", user[4], heading = f"GreiiN:{user[0]:04}")
+		embed = embeds.GENERIC.create(user[2], user[3], heading = f"GreiiN:{user[0]:04}")
 		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
 
 		if user[6]:
@@ -85,7 +85,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			symbolism_text = symbolism_text.strip()[:4000]
 			
 			embed = embeds.GENERIC.create(
-				f"Symbolism for {self.format_armiger(user)}",
+				f"Symbolism for {user[2]}",
 				f"{symbolism_text}\n\n[**See more on roll-of-arms.com...**]({url})",
 				heading = f"GreiiN:{user[0]:04}"
 			)
@@ -180,10 +180,6 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			"To find those of another user, follow the command with their username."
 			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 		)
-	
-	@staticmethod
-	def format_armiger(user):
-		return user[2] if user[3] == -1 else f"{user[2]}#{user[3]:04}"
 
 async def setup(bot):
 	await bot.add_cog(HeraldryRoll(bot))

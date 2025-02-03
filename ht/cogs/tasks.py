@@ -90,15 +90,27 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		entries = []
 		
 		for entry in results:
-			username = entry[1].split("#", 1)
-			
-			if len(username) > 1:
-				entries.append((int(entry[0]), username[0], int(username[1]), entry[2]))
-			else:
-				entries.append((int(entry[0]), username[0], -1, entry[2]))	
+			entries.append((int(entry[0]), entry[1], entry[2]))	
 				
 		return entries	
-
+		
+	async def upgrade_discriminator(self, greii_n, username):
+		result = await self.bot.dbc.execute_fetchone(
+			"SELECT discord_id FROM armigers"
+			" WHERE greii_n == ? AND discrim_upgraded == 0 AND discord_id IS NOT NULL", 
+			(greii_n,)
+		)
+		
+		if not result: return
+		
+		user = discord.utils.get(self.bot.users, id = int(result[0]))
+		if not user: return
+		
+		await self.bot.dbc.execute(
+			"UPDATE armigers SET discrim_upgraded == 1, qualified_name == ?1 WHERE greii_n == ?2", 
+			(user.name, greii_n)
+		)
+		
 	@tasks.loop(hours = 10)
 	async def sync_book(self):
 		response = await utils.get_json(
@@ -120,12 +132,16 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		)
 		await self.bot.dbc.commit()
 		
-		for greii_n, username, discrim, blazon in book:
+		for greii_n, username, blazon in book:
+			await self.upgrade_discriminator(greii_n, username)
+	
 			await self.bot.dbc.execute(
-				"INSERT INTO armigers (greii_n, qualified_name, qualified_id, blazon) VALUES"
-				" (?1, ?2, ?3, ?4) ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?2, qualified_id = ?3, blazon = ?4;",
-				(greii_n, username, discrim, blazon)
+				"INSERT INTO armigers (greii_n, qualified_name, blazon) VALUES (?1, ?2, ?3)"
+				" ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?2, blazon = ?3 WHERE discrim_upgraded IS 0"
+				" ON CONFLICT(greii_n) DO UPDATE SET blazon = ?3 WHERE discrim_upgraded IS 1;",
+				(greii_n, username, blazon)
 			)
+	
 
 			if await self.bot.dbc.execute(
 				"SELECT * FROM armigers WHERE discord_id IS NULL AND greii_n IS ?", (greii_n,)
