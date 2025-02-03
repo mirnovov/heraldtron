@@ -177,7 +177,7 @@ async def heraldicon(session, query):
 Suggestions:
 {', '.join(suggestions)}
 	```"""
-	embed = embeds.DRAW.create("", error_message, heading = "Error")
+	embed = embeds.ERROR.create("Blazon could not be parsed", error_message)
 	embed.add_field(name = "blazon", value = f"*{blazon}*", inline = True)
 
 	return embed, None
