@@ -101,13 +101,6 @@ async def get_guild(bot, guild):
 
 async def get_user(bot, user):
 	return bot.get_user(user) or await bot.fetch_user(user)
-
-async def unqualify_name(bot, name, discriminator):
-	return discord.utils.get(
-		bot.users, name = name, discriminator = discriminator
-	) or discord.utils.get(
-		bot.users, name = name
-	)
 	
 @views.disable_dm_commands
 async def hard_check(ctx, added_check, timeout = 300):

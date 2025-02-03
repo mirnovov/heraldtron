@@ -130,8 +130,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			if await self.bot.dbc.execute(
 				"SELECT * FROM armigers WHERE discord_id IS NULL AND greii_n IS ?", (greii_n,)
 			):
-				user = await utils.unqualify_name(self.bot, username, discrim)
-
+				user = discord.utils.get(self.bot.users, name = username)
 				if user:
 					await self.bot.dbc.execute(
 						"UPDATE armigers SET discord_id = ?1 WHERE greii_n = ?2;",

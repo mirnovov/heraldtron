@@ -101,7 +101,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				"You do not have an emblazon to remove."
 			)
 
-		await self.bot.dbc.execute("UPDATE emblazons SET url = NULLiiWHERE id = ?;", (ctx.author.id,))
+		await self.bot.dbc.execute("UPDATE emblazons SET url = NULL WHERE id = ?;", (ctx.author.id,))
 		await self.bot.dbc.commit()
 
 		await ctx.send(":x: | Emblazon removed.")
