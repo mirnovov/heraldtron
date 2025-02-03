@@ -20,7 +20,7 @@ class Source():
 	def str_list():
 		return "".join(f"- `{name}`: {artifact.desc}\n" for name, artifact in Source.register.items())
 
-SMTHS_IMG = re.compile("\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>")
+SMTHS_IMG = re.compile(r"\<meta name=\"twitter\:image\" content=\"(.+)\" \/\>")
 
 @Source("rijks", "The Rijksmuseum, Amsterdam")
 async def rijksmuseum(bot):

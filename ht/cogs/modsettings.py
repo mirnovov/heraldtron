@@ -5,7 +5,7 @@ from .. import converters, embeds, utils, views
 
 class ModerationSettings(utils.ModCog, name = "Settings"):
 	MAX_FEEDS = 3
-	SR_VAL = re.compile("(r\/|\/|r\/)+")
+	SR_VAL = re.compile(r"(r\/|\/|r\/)+")
 
 	def __init__(self, bot):
 		self.bot = bot
