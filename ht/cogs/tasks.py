@@ -1,4 +1,4 @@
-import discord, urllib, time, re, random, os
+import discord, hashlib, urllib, time, re, random, os
 from docx2python import docx2python
 from datetime import datetime, timezone
 from discord.ext import commands, tasks
@@ -90,26 +90,16 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		entries = []
 		
 		for entry in results:
-			entries.append((int(entry[0]), entry[1], entry[2]))	
+			hasher = hashlib.md5()
+			
+			for hash_data in entry[1:3]:
+				hasher.update(hash_data.encode())
+
+			entries.append((
+				int(entry[0]), entry[1], entry[2], hasher.hexdigest()
+			))	
 				
 		return entries	
-		
-	async def upgrade_discriminator(self, greii_n, username):
-		result = await self.bot.dbc.execute_fetchone(
-			"SELECT discord_id FROM armigers"
-			" WHERE greii_n == ? AND discrim_upgraded == 0 AND discord_id IS NOT NULL", 
-			(greii_n,)
-		)
-		
-		if not result: return
-		
-		user = discord.utils.get(self.bot.users, id = int(result[0]))
-		if not user: return
-		
-		await self.bot.dbc.execute(
-			"UPDATE armigers SET discrim_upgraded == 1, qualified_name == ?1 WHERE greii_n == ?2", 
-			(user.name, greii_n)
-		)
 		
 	@tasks.loop(hours = 10)
 	async def sync_book(self):
@@ -132,20 +122,31 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 		)
 		await self.bot.dbc.commit()
 		
-		for greii_n, username, blazon in book:
-			await self.upgrade_discriminator(greii_n, username)
-	
-			await self.bot.dbc.execute(
-				"INSERT INTO armigers (greii_n, qualified_name, blazon) VALUES (?1, ?2, ?3)"
-				" ON CONFLICT(greii_n) DO UPDATE SET qualified_name = ?2, blazon = ?3 WHERE discrim_upgraded IS 0"
-				" ON CONFLICT(greii_n) DO UPDATE SET blazon = ?3 WHERE discrim_upgraded IS 1;",
-				(greii_n, username, blazon)
+		for greii_n, username, blazon, book_hash in book:
+			data = await self.bot.dbc.execute_fetchone(
+				"SELECT book_hash, discord_id FROM armigers WHERE greii_n = ?;", (greii_n,)
 			)
-	
-
-			if await self.bot.dbc.execute(
-				"SELECT * FROM armigers WHERE discord_id IS NULL AND greii_n IS ?", (greii_n,)
-			):
+			
+			# GreiiN not recorded
+			if not data:
+				await self.bot.dbc.execute(
+					"INSERT INTO armigers (greii_n, qualified_name, blazon, book_hash) VALUES (?1, ?2, ?3, ?4)",
+					(greii_n, username, blazon, book_data)
+				)
+			
+			# GreiiN data needs update
+			elif book_hash != data[0]:
+				if "#" in username and data[1]: 
+					user = discord.utils.get(self.bot.users, id = int(data[1]))
+					if user: username = user.name
+		
+				await self.bot.dbc.execute(
+					"UPDATE armigers SET qualified_name = ?2, blazon = ?3, book_hash = ?4 WHERE greii_n = ?1;",
+					(greii_n, username, blazon, book_hash)
+				)
+				
+			# GreiiN data doesn't have Discord ID linked
+			if not data[1]:
 				user = discord.utils.get(self.bot.users, name = username)
 				if user:
 					await self.bot.dbc.execute(

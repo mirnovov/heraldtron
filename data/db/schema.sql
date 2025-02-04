@@ -2,7 +2,7 @@ CREATE TABLE "armigers" (
 	"greii_n" INTEGER NOT NULL PRIMARY KEY,
 	"discord_id" INTEGER UNIQUE,
 	"qualified_name" TEXT,
-	"discrim_upgraded" INTEGER NOT NULL DEFAULT 0,
+	"book_hash" TEXT NOT NULL DEFAULT "",
 	"blazon" TEXT
 );
 
