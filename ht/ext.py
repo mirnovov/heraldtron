@@ -1,5 +1,7 @@
 import aiohttp, asyncio, functools, io, typing
 from ext.seychelles import seychelles
+from ext.sql import AioSqliteConnectionAdapter
+
 from PIL import Image
 from aiohttp.helpers import BaseTimerContext
 from aiohttp.http_parser import HttpResponseParserPy

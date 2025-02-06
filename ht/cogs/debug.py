@@ -1,6 +1,7 @@
 from jishaku.features.baseclass import Feature
 from jishaku.cog import STANDARD_FEATURES, OPTIONAL_FEATURES
 from .. import utils
+from ..ext import AioSqliteConnectionAdapter
 
 FEATURES = (*OPTIONAL_FEATURES, *STANDARD_FEATURES)
 
@@ -18,6 +19,9 @@ class DebugTools(*FEATURES, utils.MeldedCog, name = "Debug", limit = False):
 	def __init__(self, bot):
 		super().__init__(bot = bot)
 		self.jsk.description = self.jsk.help = "Displays basic Jishaku info."
+		
+	def jsk_find_adapter(self, ctx): 
+		return AioSqliteConnectionAdapter(ctx.bot.dbc), "bot.dbc"
 
 async def setup(bot):
 	await bot.add_cog(DebugTools(bot))
