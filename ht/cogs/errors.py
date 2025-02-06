@@ -13,7 +13,7 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		warn = False
 		
 		match type(error):
-			case commands.CommandNotFound:
+			case commands.DisabledCommand | commands.CommandNotFound:
 				embed.title = "Command not found"
 				embed.description = "The command you entered does not exist. Check your spelling and try again."
 				

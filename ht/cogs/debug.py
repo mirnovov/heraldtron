@@ -18,7 +18,10 @@ for cmd in (c for f in FEATURES for c in f.__dict__.values()):
 class DebugTools(*FEATURES, utils.MeldedCog, name = "Debug", limit = False):
 	def __init__(self, bot):
 		super().__init__(bot = bot)
-		self.jsk.description = self.jsk.help = "Displays basic Jishaku info."
+		
+		self.jsk_hide.enabled = False
+		self.jsk_show.enabled = False
+		self.jsk.enabled = False
 		
 	def jsk_find_adapter(self, ctx): 
 		return AioSqliteConnectionAdapter(ctx.bot.dbc), "bot.dbc"
