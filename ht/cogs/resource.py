@@ -86,13 +86,15 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 	@app_commands.describe(name = "The name of the resource to fetch. A detailed list can be viewed at /resources")
 	async def r(self, interaction, name: str):
 		if name not in self.resources:
-			name, score = process.extractOne(name, list(self.resources.keys()))
+			new_name, score = process.extractOne(name, list(self.resources.keys()))
 			
-			if score < 30:
+			if score < 50:
 				raise utils.CustomCommandError(
 					"Invalid resource",
 					f"The resource `{name}` does not exist. Check that you spelled it correctly."
 				)
+				
+			name = new_name
 			
 		embed = self.resources[name]["embed"]
 		embed.set_footer(text = f"Use /resources to view a list of all resources.")
