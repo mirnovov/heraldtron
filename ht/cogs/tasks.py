@@ -8,25 +8,6 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 	STRIP_SPACES = re.compile(r"\n[\t\s]+")
 	FIND_DATA = re.compile(r"GreiiN:(\d+) - ([^\n]+)[\s\S]+?(Blazon[\s\S]+?)(?=GreiiN|$)")
 
-	STATUSES = (
-		discord.Game("a !challenge"),
-		discord.Game("with a !resource"),
-		discord.Game("with !drawshield"),
-		discord.Game("with fire"),
-		discord.Game("cards"),
-		discord.Game("bingo"),
-		discord.Game("canasta"),
-		discord.Game("Monopoly"),
-		discord.Activity(type = discord.ActivityType.listening, name="for !help"),
-		discord.Activity(type = discord.ActivityType.listening, name="a !motto"),
-		discord.Activity(type = discord.ActivityType.listening, name="the sounds of nature"),
-		discord.Activity(type = discord.ActivityType.watching, name="an !armiger"),
-		discord.Activity(type = discord.ActivityType.watching, name="heraldic documentaries"),
-		discord.Activity(type = discord.ActivityType.watching, name="Manos: The Hands of Fate"),
-		discord.Activity(type = discord.ActivityType.watching, name="Puparia"),
-		discord.Activity(type = discord.ActivityType.competing, name="a !trivia game")
-	)
-
 	def __init__(self, bot):
 		self.bot = bot
 		self.update_info.start()
@@ -66,7 +47,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 
 		else:
 			await self.update_avatar(self.bot, "media/avatars/generic.png", last)
-			await self.bot.change_presence(activity = random.choice(BotTasks.STATUSES))
+			await self.bot.change_presence(activity = discord.Game("with /slash commands"))
 
 	@staticmethod
 	async def update_avatar(bot, path, last):
