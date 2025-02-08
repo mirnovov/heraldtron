@@ -116,7 +116,7 @@ async def trivia(ctx, question):
 		results[answer].append(user)
 		
 	for answer, users in results.items():
-		stats += f"- {answer}: {','.join(users)} (**{len(users)}**)"
+		stats += f"- {answer}: {','.join(users)} (**{len(users)}**)\n"
 
 	if stats: embed.description += f"\n\n**Responses:**\n\u0020{stats}"
 	await message.edit(embed = embed, view = None)

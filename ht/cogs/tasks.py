@@ -128,10 +128,10 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 			)
 			
 			# GreiiN not recorded
-			if not data:
+			if data == None:
 				await self.bot.dbc.execute(
 					"INSERT INTO armigers (greii_n, qualified_name, blazon, book_hash) VALUES (?1, ?2, ?3, ?4)",
-					(greii_n, username, blazon, book_data)
+					(greii_n, username, blazon, book_hash)
 				)
 			
 			# GreiiN data needs update
@@ -146,7 +146,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				)
 				
 			# GreiiN data doesn't have Discord ID linked
-			if not data[1]:
+			if data and not data[1]:
 				user = discord.utils.get(self.bot.users, name = username)
 				if user:
 					await self.bot.dbc.execute(
