@@ -1,5 +1,6 @@
-import aiohttp, asyncio, re, typing
+import discord, aiohttp, asyncio, re, typing
 from bs4 import BeautifulSoup, Comment
+from discord import app_commands
 from discord.ext import commands
 from .. import converters, embeds, utils
 
@@ -10,12 +11,13 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source,"
 			   " and if the user has defined an emblazon using `!setemblazon`, their emblazon.",
-		aliases = ("a", "greiin", "showarms", "arms")
+		aliases = ("armiger", "greiin", "showarms", "arms")
 	)
-	async def armiger(self, ctx, user: converters.Armiger = None):
+	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
+	async def a(self, ctx, user: converters.Armiger = None):
 		user = user or await self.get_author_roll(
 			ctx,
 			"Invalid armiger",
@@ -37,10 +39,11 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
 		await ctx.send(embed = embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Looks up the symbology of a user's coat of arms.\nUses GreiiEquites' https://roll-of-arms.com as a source.",
 		aliases = ("s", "symbols")
 	)
+	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
 	@utils.trigger_typing
 	async def symbolism(self, ctx, user: converters.Armiger = None):
 		user = user or await self.get_author_roll(
@@ -93,7 +96,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 
 			await ctx.send(embed = embed)
 
-	@commands.command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
+	@commands.hybrid_command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
 	async def delemblazon(self, ctx):
 		if not await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id = ?;", (ctx.author.id,)):
 			raise utils.CustomCommandError(
@@ -106,11 +109,12 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 
 		await ctx.send(":x: | Emblazon removed.")
 
-	@commands.command(
-		help = "Looks up a user-defined emblazon of a coat of arms.",
-		aliases = ("e",)
+	@commands.hybrid_command(
+		help = "Looks up an user-defined emblazon of a coat of arms.",
+		aliases = ("emblazon",)
 	)
-	async def emblazon(self, ctx, user : converters.MemberOrUser = None):
+	@app_commands.describe(user = "The user to look up. Defaults to the command sender. To add an emblazon, use /setemblazon.")
+	async def e(self, ctx, user : converters.MemberOrUser = None):
 		user = user or ctx.author
 		emblazon = await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
 
@@ -126,21 +130,15 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			"The user you entered exists, but has not specified an emblazon."
 		)
 
-	@commands.command(
-		help = "Sets the emblazon of your arms shown by `!emblazon`.\n"
+	@commands.hybrid_command(
+		help = "Sets the emblazon of your arms used by this bot.\n"
 			   "This can either be an attachment or image URL; "
 			   "once set, it is associated with your Discord ID.",
 		aliases = ("se",)
 	)
-	async def setemblazon(self, ctx, url : typing.Optional[converters.Url] = None):
-		if not url and len(ctx.message.attachments) > 0:
-			url = ctx.message.attachments[0].url
-		elif not url:
-			raise utils.CustomCommandError(
-				"No emblazon provided",
-				"An image is required to set as the emblazon. "
-				"Either attach one or provide an URL."
-			)
+	@app_commands.describe(image = "The image to use as your emblazon. This can then be looked up via /e.")
+	async def setemblazon(self, ctx, image: discord.Attachment):
+		url = image.url
 
 		await self.bot.dbc.execute(
 			"INSERT INTO emblazons (id, url) VALUES (?1, ?2) ON CONFLICT(id) DO UPDATE SET url = ?2;",

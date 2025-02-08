@@ -1,4 +1,5 @@
 import discord, aiohttp, asyncio, functools, json, io
+from discord import app_commands
 from discord.ext import commands
 from logging import Formatter
 from textwrap import TextWrapper
@@ -70,13 +71,13 @@ class NvFormatter(Formatter):
 class BadMessageResponse(Exception):
 	pass
 
-class CommandCancelled(commands.CommandError):
+class CommandCancelled(commands.CommandError, app_commands.AppCommandError):
 	@classmethod
 	async def create(self, message, ctx):
 		await ctx.send(f":x: | {message}.")
 		return CommandCancelled(message)
 
-class CustomCommandError(commands.CommandError):
+class CustomCommandError(commands.CommandError, app_commands.AppCommandError):
 	def __init__(self, title, desc, *args, **kwargs):
 		self.title = title
 		self.desc = desc

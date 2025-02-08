@@ -1,10 +1,28 @@
-import warnings, csv, re, sys
+import discord, warnings, csv, re, sys
+from discord import app_commands
 from discord.ext import commands
 from datetime import timezone
 from dateutil import parser as duparser
 from . import utils
 
-class Armiger(commands.Converter):
+class Armiger(app_commands.Transformer, commands.Converter):
+	@property
+	def type(self):
+		return discord.AppCommandOptionType.user
+			
+	async def transform(self, interaction, value: discord.Member):
+		result = await interaction.client.dbc.execute_fetchone(
+			"SELECT * FROM armigers_e WHERE discord_id == ?;",
+			(value.id,)
+		)
+		
+		if result: return result
+	
+		raise utils.CustomCommandError(
+			"Invalid armiger",
+			"The armiger you entered does not have arms recorded. Check that you spelled their name correctly."
+		)
+
 	async def convert(self, ctx, argument):
 		result = None
 
@@ -33,25 +51,6 @@ class Armiger(commands.Converter):
 			"The armiger you entered does not have arms recorded. Check that you spelled their name correctly."
 		)
 
-class Range(commands.Converter):
-	def __init__(self, min, max):
-		self.min = min
-		self.max = max
-		self.range = range(min, max)
-
-	async def convert(self, ctx, argument):
-		try:
-			argument = int(argument)
-		except ValueError:
-			raise commands.BadArgument("Argument must be integer")
-
-		if argument not in self.range:
-			raise utils.CustomCommandError(
-				"Number not in range",
-				f"The number you entered must be between {self.min} and {self.max}."
-			)
-		return argument
-
 class Url(commands.Converter):
 	VALID = re.compile(r"\S+\.\S{1,4}\S*")
 
@@ -64,7 +63,14 @@ class Url(commands.Converter):
 				f"The URL entered is not in the correct format."
 			)
 
-class MemberOrUser(commands.Converter):
+class MemberOrUser(app_commands.Transformer, commands.Converter):
+	@property
+	def type(self):
+		return discord.AppCommandOptionType.user
+		
+	async def transform(self, ctx, argument):
+		return argument
+	
 	async def convert(self, ctx, argument):
 		try:
 			return await commands.MemberConverter().convert(ctx, argument)

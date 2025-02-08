@@ -81,7 +81,7 @@ async def commons(session, loop, filename):
 
 	return await loop.run_in_executor(None, get_json, result_text, "file")
 	
-async def trivia(ctx, question):
+async def trivia(ctx, interaction, question):
 	TRIVIA_LENGTH = 22
 	
 	name = html.unescape(question["question"])
@@ -102,12 +102,14 @@ async def trivia(ctx, question):
 	for answer in answers:
 		view.add_item(views.TriviaButton(answer, users))
 	
-	message = await ctx.send(embed = embed, view = view)
+	if ctx:
+		message = await ctx.send(embed = embed, view = view)
+	else:
+		await interaction.response.send_message(embed = embed, view = view)
+		message = interaction.message
+		
 	await asyncio.sleep(TRIVIA_LENGTH)
-	
 	embed.description = f"{info}The correct answer is: **{html.unescape(answers[correct])}**"
-	updated = await message.channel.fetch_message(message.id)
-	if updated is None: return #message deleted
 	
 	results = defaultdict(list)
 	stats = ""
@@ -119,7 +121,14 @@ async def trivia(ctx, question):
 		stats += f"- {answer}: {','.join(users)} (**{len(users)}**)\n"
 
 	if stats: embed.description += f"\n\n**Responses:**\n\u0020{stats}"
-	await message.edit(embed = embed, view = None)
+	
+	try:
+		if ctx:
+			await message.edit(embed = embed, view = None)
+		else:
+			await interaction.edit_original_response(embed = embed, view = None)
+	except discord.NotFound:
+		pass
 
 async def heraldicon(session, query):
 	def is_option_keyword(s):

@@ -7,6 +7,7 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 
 	def __init__(self, bot):
 		self.bot = bot
+		self.bot.tree.on_error = self.on_app_command_error
 	
 	async def respond_to_error(self, error, mention):
 		embed = embeds.ERROR.create("","")
@@ -95,11 +96,20 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 			or isinstance(error, utils.CommandCancelled)
 		):
 			return
+		elif isinstance(error, commands.HybridCommandError):
+			error = error.original
+
 		elif isinstance(error, commands.CommandInvokeError):
 			error = error.original
 			mention = (await self.bot.application_info()).owner.mention
 	
 		await ctx.send(embed = await self.respond_to_error(error, mention))
+
+	async def on_app_command_error(self, interaction, error):
+		if not interaction.response.is_done():
+			await interaction.response.defer()
+	
+		await interaction.followup.send(embed = await self.respond_to_error(error, None))
 
 async def setup(bot):
 	await bot.add_cog(BotErrors(bot))

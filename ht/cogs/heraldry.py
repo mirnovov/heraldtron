@@ -1,4 +1,5 @@
 import discord, csv, json, random, re
+from discord import app_commands
 from discord.ext import commands
 from .. import converters, embeds, services, utils, views
 from ..artifacts import Source
@@ -6,18 +7,30 @@ from ..artifacts import Source
 class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	MOTTO_PARTS = re.compile("([&|!]\\w\\w\\w)")
 	RAND_SUB = re.compile("\n|\t")
-
+	
+	ARTIFACT_CHOICES = [a.choice for a in Source.register.values()]
+	CHALLENGE_CHOICES = [
+		app_commands.Choice(name = "The Book of Public Arms", value = "public"),
+		app_commands.Choice(name = "Wikimedia Commons", value = "wikipedia"),
+		app_commands.Choice(name = "coadb", value = "coadb")
+	]
+	
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Displays a random historical heraldic artifact.\n"
 			"This can be narrowed down to an individual source:\n\n"
 			f"{Source.str_list()}",
 		aliases = ("ar", "relic")
 	)
+	@app_commands.choices(source = ARTIFACT_CHOICES)
+	@app_commands.describe(source = "The source to use for artifacts. By default, all artifacts are used.")
 	@utils.trigger_typing
-	async def artifact(self, ctx, source = "all"):
+	async def artifact(self, ctx, source: app_commands.Choice[str] = "all"):
+		if type(source) == app_commands.Choice:
+			source = source.value
+		
 		if source == "all":
 			museum = Source.random()
 		elif source in Source.register:
@@ -39,11 +52,12 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 
 		await ctx.send(embed = embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		name = "catalog",
 		help = "Looks up a term in DrawShield's repository of charges.\nCode © Karl Wilcox",
 		aliases = ("charge", "ca")
 	)
+	@app_commands.describe(charge = "The heraldic charge to look up.")
 	@utils.trigger_typing
 	async def ds_catalog(self, ctx, *, charge):
 		catalog = await services.ds_catalog(self.bot.session, charge)
@@ -66,16 +80,20 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 
 		await ctx.send(embed=embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		name = "challenge",
-		help = "Displays a random image using the DrawShield API.\nDesigned to serve as an"
-			   " emblazonment challenge using DrawShield. Code © Karl Wilcox; images © coadb,"
+		help = "Displays a random image to emblazon using DrawShield.\nThis uses the DrawShield API. Code © Karl Wilcox; images © coadb,"
 			   " The Book of Public Arms, Wikimedia Commons contributors (individual sources"
-			   " can be selected via *coadb*, *public*, and *wikimedia* respectively).",
+			   " can be selected via *coadb*, *public*, and *wikipedia* respectively).",
 		aliases = ("ch", "cl")
 	)
+	@app_commands.choices(source = CHALLENGE_CHOICES)
+	@app_commands.describe(source = "The source to use for challenges.")
 	@utils.trigger_typing
-	async def ds_challenge(self, ctx, source = "all"):
+	async def ds_challenge(self, ctx, source: app_commands.Choice[str] = "all"):
+		if type(source) == app_commands.Choice:
+			source = source.value
+		
 		url = await utils.get_json(self.bot.session, f"https://drawshield.net/api/challenge/{source}")
 
 		if isinstance(url, dict) and "error" in url:
@@ -98,17 +116,18 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 
 		await ctx.send(embed = embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Illustrates arms using DrawShield.\nNote that DrawShield does not support"
 			   " all possible blazons. Code © Karl Wilcox",
-		aliases = ("ds",)
+		aliases = ("drawshield",)
 	)
+	@app_commands.describe(blazon = "The blazon to illustrate. The language differs slightly from proper blazonry.")
 	@utils.trigger_typing
-	async def drawshield(self, ctx, *, blazon : str):
+	async def ds(self, ctx, *, blazon : str):
 		embed, file = await services.ds(self.bot.session, blazon, "Shield")
 		await ctx.send(embed = embed, file = file)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Generates a coat of arms based on personal details.\n If using in a DM, it is based"
 			   " on your name and birthday; for privacy reasons, it is random otherwise. Based on a"
 			   " chart by Snak and James.",
@@ -188,7 +207,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 
 		await ctx.send(embed = embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Generates a motto randomly.\nThe included functionality has several"
 			   " advancements over previous motto generators.",
 		aliases = ("mt", "mot")
@@ -234,7 +253,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 
 		await ctx.send(embed = embeds.GENERIC.create(f"{motto}", "", heading = "Motto generator"))
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Randomly selects a motto from a list of over 400.\n"
 			   "These include countries, heads of state, and universities",
 		aliases = ("rmot", "rm")
@@ -254,9 +273,9 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 
 		await ctx.send(embed=embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		name = "random",
-		help = "Generates random arms using the DrawShield API.\nCode © Karl Wilcox.",
+		help = "Generates random arms using DrawShield.\nCode © Karl Wilcox.",
 		aliases = ("ra",)
 	)
 	@utils.trigger_typing
@@ -267,21 +286,22 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		embed, file = await services.ds(self.bot.session, blazon, "Random shield")
 		await ctx.send(embed = embed, file = file)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Render arms using Heraldicon.",
-		aliases = ("hd",)
+		aliases = ("heraldicon",)
 	)
+	@app_commands.describe(blazon = "The blazon to illustrate. The language differs slightly from proper blazonry.")
 	@utils.trigger_typing
-	async def heraldicon(self, ctx, *, blazon : str):
+	async def hd(self, ctx, *, blazon : str):
 		embed, file = await services.heraldicon(self.bot.session, blazon)
 		await ctx.send(embed = embed, file = file)
 
-	@commands.command(
-		help = "Rendering options that can be used with Heraldicon.",
-		aliases = ("hd-options",)
+	@commands.hybrid_command(
+		help = "Show rendering options that can be used with Heraldicon.",
+		aliases = ("heraldicon_options",)
 	)
 	@utils.trigger_typing
-	async def heraldicon_options(self, ctx):
+	async def hd_options(self, ctx):
 		embed = await services.heraldicon_options(self.bot.session)
 		await ctx.send(embed = embed)
 

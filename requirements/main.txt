@@ -6,4 +6,5 @@ docx2python >= 1.27.0
 python-dateutil >= 2.8.0
 jishaku >= 2.6.0
 beautifulsoup4 >= 4.12.2
-audioop-lts >= 0.2.1
+audioop-lts >= 0.2.1; python_version>='3.13'
+thefuzz >= 0.22.1

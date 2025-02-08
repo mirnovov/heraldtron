@@ -1,4 +1,5 @@
 import json, random, functools, re
+from discord import app_commands
 from . import services, utils
 
 class Source():
@@ -6,6 +7,8 @@ class Source():
 
 	def __init__(self, name, desc):
 		Source.register[name] = self
+		
+		self.choice = app_commands.Choice(name = desc, value = name)
 		self.desc = desc
 
 	def __call__(self, coroutine):

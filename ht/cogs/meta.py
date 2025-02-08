@@ -12,14 +12,14 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		bot.help_command = MeldedHelpCommand()
 		bot.help_command.cog = self
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Checks the bot's ping to the Discord server.",
 		aliases = ("pn",)
 	)
 	async def ping(self, ctx):
 		await ctx.send(f":stopwatch: | Pong! The message latency was **{(self.bot.latency * 1000):4f} ms**.")
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Displays information about this bot.",
 		aliases = ("ab",)
 	)

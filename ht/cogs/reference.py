@@ -1,4 +1,5 @@
-import urllib, re
+import discord, urllib, re
+from discord import app_commands
 from discord.ext import commands
 from .. import embeds, services, utils
 
@@ -9,18 +10,21 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.command(
+	@commands.hybrid_command(
+		name = "as",
 		help = "Finds the results of `coat of arms [query]` using Google Images.",
-		aliases = ("as",)
+		aliases = ("armssearch",)
 	)
+	@app_commands.describe(query = "The search query to use.")
 	@utils.trigger_typing
 	async def armssearch(self, ctx, *, query):
 		await services.gis(ctx, "coat of arms " + query)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Looks up heraldic terms in the Finto HERO ontological database.",
 		aliases = ("finto", "luh", "ontology", "he")
 	)
+	@app_commands.describe(term = "The heraldic term to look up.")
 	@utils.trigger_typing
 	async def hero(self, ctx, *, term):
 		query = await utils.get_json(
@@ -64,11 +68,12 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		embed.set_footer(text = f"Term retrieved using Finto HERO.")
 		await ctx.send(embed = embed)
 
-	@commands.command(
-		help = "Looks up heraldic terms using the DrawShield API.\nTerms are sourced from"
-			   " Parker's and Elvin's heraldic dictionaries. Code © Karl Wilcox",
+	@commands.hybrid_command(
+		help = "Looks up heraldic terms using Parker's and Elvin's heraldic dictionaries. \nThis uses"
+			   "the DrawShield API. Code © Karl Wilcox",
 		aliases = ("lu", "define", "def")
 	)
+	@app_commands.describe(term = "The heraldic term to look up.")
 	@utils.trigger_typing
 	async def lookup(self, ctx, *, term : str):
 		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
@@ -90,10 +95,11 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 
 		await ctx.send(embed = embed)
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Displays an entry from the Sourced Blazons Wiki.",
 		aliases = ("w",)
 	)
+	@app_commands.describe(query = "The country, subdivision, or municipality to look up.")
 	@utils.trigger_typing
 	async def sbw(self, ctx, *, query):
 		title = urllib.parse.quote(query.title())
@@ -124,22 +130,22 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 
 		await ctx.send(embed = embed)
 
-	@commands.command(
-		help = "Shows a short blurb about using supporters",
+	@commands.hybrid_command(
+		help = "Shows a short blurb about using supporters.",
 		aliases = ("supporter",)
 	)
 	async def supporters(self, ctx):
 		with open("media/prose/supporters.md", "r") as file:
 			await ctx.send(file.read())
 
-	@commands.command(
-		help = "Shows a short blurb about charges",
+	@commands.hybrid_command(
+		help = "Shows a short blurb about charges.",
 	)
 	async def charges(self, ctx):
 		with open("media/prose/charges.md", "r") as file:
 			await ctx.send(file.read())
 
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Shows a list of commonly used tinctures.",
 		aliases = ("t", "colours", "colors", "metals", "furs", "tincture")
 	)
@@ -147,7 +153,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		with open("media/prose/tinctures.md", "r") as file:
 			await ctx.send(file.read())
 		
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Shows a short blurb about 'family crests'.",
 		aliases = ("f", "familycrests", "crest", "crests", "inheritance", "bucket")
 	)
@@ -155,7 +161,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		with open("media/prose/familycrests.md", "r") as file:
 			await ctx.send(file.read())
 			
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Shows a short blurb about fridge testing.",
 		aliases = ("fr", "fridgetest", "fridgetesting")
 	)
@@ -163,7 +169,7 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		with open("media/prose/fridgetesting.md", "r") as file:
 			await ctx.send(file.read())
 			
-	@commands.command(
+	@commands.hybrid_command(
 		help = "Shows a short blurb about false quartering.",
 		aliases = ("fq",)
 	)
