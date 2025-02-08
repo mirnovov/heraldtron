@@ -88,7 +88,7 @@ class MemberOrUser(app_commands.Transformer, commands.Converter):
 			(f"%{argument}%",)
 		)
 		if query:
-			user = await utils.get_user(ctx.bot, query[1])
+			user = await utils.get_user(ctx.bot, query["discord_id"])
 			if user: return user
 
 		raise commands.UserNotFound(argument)

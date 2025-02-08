@@ -13,5 +13,7 @@ class NvConnection(aiosqlite.Connection):
 		await self.execute(f"UPDATE misc_store SET value = ? WHERE key = ?;", (value, key))
 		await self.commit()
 
-def connect(database, *, iter_chunk_size = 64, **kwargs):
-	return NvConnection(lambda: sqlite3.connect(database, **kwargs), iter_chunk_size)
+async def connect(database, *, iter_chunk_size = 64, **kwargs):
+	dbc = await NvConnection(lambda: sqlite3.connect(database, **kwargs), iter_chunk_size)
+	dbc.row_factory = sqlite3.Row
+	return dbc

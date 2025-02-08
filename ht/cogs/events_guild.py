@@ -27,7 +27,9 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 				self.THUMBS_DOWN = "<:a_thumbs_down:961787184489316386>"
 		
 			await self.bot.dbc.execute(
-				"INSERT OR IGNORE INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+				"INSERT OR IGNORE INTO guilds"
+				" (discord_id, name, limit_commands, roll, welcome_users, welcome_text, leave_text, log)" 
+				" VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
 				(guild.id, guild.name, 0, 0, 1, None, None, 0)
 			)
 			await self.bot.dbc.commit()
@@ -35,7 +37,9 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 	@commands.Cog.listener()
 	async def on_guild_join(self, guild):
 		await self.bot.dbc.execute(
-			"INSERT INTO guilds VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+			"INSERT INTO guilds"
+			" (discord_id, name, limit_commands, roll, welcome_users, welcome_text, leave_text, log)" 
+			" VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
 			(guild.id, guild.name, 0, 0, 1, None, None, 0)
 		)
 		await self.bot.dbc.commit()
@@ -68,8 +72,7 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 	
 		title = discord.utils.escape_markdown(title)
 	
-		if channel[2]:
-			#proposal post
+		if channel["proposal"]:
 			await message.add_reaction(self.THUMBS_UP)
 			await message.add_reaction(self.THUMBS_DOWN)
 			await message.add_reaction(self.SHRUG)
@@ -79,8 +82,7 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 			
 			self.bot.proposal_cache[message.id] = (message, time.time())
 	
-		elif not channel[3] or len(message.attachments) < 1:
-			#not oc post or no attachments
+		elif not channel["oc"] or len(message.attachments) < 1:
 			return
 	
 		if len(title) > self.THREAD_MAX:
@@ -110,7 +112,7 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 	@commands.Cog.listener()
 	async def on_raw_message_delete(self, payload):
 		record = self.bot.channel_cache.get(payload.channel_id)
-		if not record or not record[2]: return
+		if not record or not record["proposal"]: return
 	
 		#On proposal deletion
 		message = self.bot.proposal_cache.get(payload.message_id)[0]
@@ -133,7 +135,7 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 		await thread.send(embed = embed)
 		await thread.edit(archived = True)
 	
-		if log_channel := self.bot.guild_cache[payload.guild_id][1][7]:
+		if log_channel := self.bot.guild_cache[payload.guild_id][1]["log"]:
 			log = await utils.get_channel(self.bot, log_channel)
 			await log.send(embed = embed)
 

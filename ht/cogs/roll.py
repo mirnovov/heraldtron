@@ -79,9 +79,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			symbolism_text = symbolism_text.strip()[:4000]
 			
 			embed = embeds.GENERIC.create(
-				f"Symbolism for {user[2]}",
+				f"Symbolism for {user["qualified_name"]}",
 				f"{symbolism_text}\n\n[**See more on roll-of-arms.com...**]({url})",
-				heading = f"GreiiN:{user[0]:04}"
+				heading = f"GreiiN:{user["greii_n"]:04}"
 			)
 			embed.set_footer(text = "Textual content from https://roll-of-arms.com by GreiiEquites.")
 
@@ -129,13 +129,13 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await ctx.send(":white_check_mark: | Emblazon updated.")
 		
 	async def get_arms(self, user, prefix):
-		embed = embeds.GENERIC.create(user[2], user[3], heading = f"GreiiN:{user[0]:04}")
+		embed = embeds.GENERIC.create(user["qualified_name"], user["blazon"], heading = f"GreiiN:{user["greii_n"]:04}")
 		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
 		
 		if user[6]:
-			embed.set_thumbnail(url = user[6])
+			embed.set_thumbnail(url = user["url"])
 			embed.set_footer(text = embed.footer.text + " Image specified by user.")
-		elif user[1] == ctx.author.id:
+		elif user["discord_id"] == ctx.author.id:
 			embed.description += f"\n**To set an image, use `{prefix}setemblazon`.**"
 		
 		await self.add_rolls(embed, "AND personal", user, "User roll")
@@ -146,10 +146,10 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	async def add_rolls(self, embed, query, user, name):
 		records = await self.bot.dbc.execute_fetchall(
 			f"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL {query};",
-			(user[1],)
+			(user["discord_id"],)
 		)
 
-		mentions = ", ".join(f"<#{record[0]}>" for record in records)
+		mentions = ", ".join(f"<#{record["discord_id"]}>" for record in records)
 		if not mentions: return
 
 		embed.add_field(name = name, value = mentions)
@@ -178,10 +178,10 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	async def get_emblazon(self, user):
 		emblazon = await self.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
 		
-		if emblazon and emblazon[1]:
+		if emblazon and emblazon["url"]:
 			embed = embeds.GENERIC.create(user, "", heading = "Emblazon")
 			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
-			embed.set_image(url = emblazon[1])
+			embed.set_image(url = emblazon["url"])
 			
 			return embed
 		

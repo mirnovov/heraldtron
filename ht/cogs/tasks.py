@@ -116,9 +116,9 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				)
 			
 			# GreiiN data needs update
-			elif book_hash != data[0]:
-				if "#" in username and data[1]: 
-					user = discord.utils.get(self.bot.users, id = int(data[1]))
+			elif book_hash != data["book_hash"]:
+				if "#" in username and data["discord_id"]: 
+					user = discord.utils.get(self.bot.users, id = int(data["discord_id"]))
 					if user: username = user.name
 		
 				await self.bot.dbc.execute(
@@ -127,7 +127,7 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 				)
 				
 			# GreiiN data doesn't have Discord ID linked
-			if data and not data[1]:
+			if data and not data["discord_id"]:
 				user = discord.utils.get(self.bot.users, name = username)
 				if user:
 					await self.bot.dbc.execute(

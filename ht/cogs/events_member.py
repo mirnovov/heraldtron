@@ -46,12 +46,12 @@ class MemberEvents(commands.Cog, name = "Member events"):
 	async def post_welcome_message(self, member, leave):
 		guild_db = await self.bot.dbc.execute_fetchone("SELECT * FROM guilds WHERE discord_id == ?;", (member.guild.id,))
 
-		if not guild_db or not guild_db[4]:
+		if not guild_db or not guild_db["welcome_users"]:
 			#if guild not in db (shouldn't happen) or if disabled
 			return
 
-		if leave: message, emoji = guild_db[6], ":outbox_tray:"
-		else: message, emoji = guild_db[5], ":inbox_tray:"
+		if leave: message, emoji = guild_db["leave_text"], ":outbox_tray:"
+		else: message, emoji = guild_db["welcome_text"], ":inbox_tray:"
 
 		if not message:
 			message = f"We're sorry to see you leaving, **MEMBER_NAME**." if leave else f"Welcome to the **GUILD_NAME** server, MENTION."

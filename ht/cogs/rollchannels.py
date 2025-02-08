@@ -27,7 +27,7 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 					await self.bot.dbc.execute(
 						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?1, ?2, ?3, ?4, ?5)"
 						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?2, name = ?5 WHERE ?2 IS NOT NULL;",
-						(channel.id, owner, guild[0], int(personal), channel.name)
+						(channel.id, owner, guild["discord_id"], int(personal), channel.name)
 					)
 					await self.bot.dbc.commit()
 

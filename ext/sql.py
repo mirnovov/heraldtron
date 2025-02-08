@@ -8,9 +8,6 @@ class AioSqliteConnectionAdapter(Adapter):
 	
 	@contextlib.asynccontextmanager
 	async def use(self):
-		if not self.connector.row_factory: 
-			self.connector.row_factory = aiosqlite.Row
-		
 		self.connection = self.connector
 		yield
 	
