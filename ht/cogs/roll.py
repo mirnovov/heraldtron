@@ -10,7 +10,20 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 
 	def __init__(self, bot):
 		self.bot = bot
-
+		self.context_commands = [
+			app_commands.ContextMenu(name = "View arms", callback = self.arms_action),
+			app_commands.ContextMenu(name = "View emblazon", callback = self.emblazon_action)
+		]
+		
+		for c in self.context_commands: 
+			self.bot.tree.add_command(c)
+		
+	async def cog_unload(self):
+		super().cog_unload()
+		
+		for c in self.context_commands: 
+			self.bot.tree.remove_command(c)
+		
 	@commands.hybrid_command(
 		help = "Looks up an user's coat of arms.\nUses GreiiEquites' Book of Arms as a source,"
 			   " and if the user has defined an emblazon using `!setemblazon`, their emblazon.",
@@ -18,27 +31,11 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	)
 	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
 	async def a(self, ctx, user: converters.Armiger = None):
-		user = user or await self.get_author_roll(
-			ctx,
-			"Invalid armiger",
-			"There are no arms associated with your user account. "
-			"To find those of another user, follow the command with their username."
-			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
-		)
-
-		embed = embeds.GENERIC.create(user[2], user[3], heading = f"GreiiN:{user[0]:04}")
-		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
-
-		if user[6]:
-			embed.set_thumbnail(url = user[6])
-			embed.set_footer(text = embed.footer.text + " Image specified by user.")
-		elif user[1] == ctx.author.id:
-			embed.description += f"\n**To set an image, use `{ctx.clean_prefix}setemblazon your_url`.**"
-
-		await self.add_rolls(embed, "AND personal", user, "User roll")
-		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
+		user = user or await self.get_author_roll(ctx.author)
+		embed = await self.get_arms(user, ctx.clean_prefix)
+		
 		await ctx.send(embed = embed)
-
+		
 	@commands.hybrid_command(
 		help = "Looks up the symbology of a user's coat of arms.\nUses GreiiEquites' https://roll-of-arms.com as a source.",
 		aliases = ("s", "symbols")
@@ -46,13 +43,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
 	@utils.trigger_typing
 	async def symbolism(self, ctx, user: converters.Armiger = None):
-		user = user or await self.get_author_roll(
-			ctx,
-			"Invalid armiger",
-			"There are no arms associated with your user account. "
-			"To find those of another user, follow the command with their username."
-			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
-		)
+		user = user or await self.get_author_roll(ctx.author)
 		url = f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}"
 
 		async with self.bot.session.get(url) as response:
@@ -108,7 +99,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await self.bot.dbc.commit()
 
 		await ctx.send(":x: | Emblazon removed.")
-
+		
 	@commands.hybrid_command(
 		help = "Looks up an user-defined emblazon of a coat of arms.",
 		aliases = ("emblazon",)
@@ -116,19 +107,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	@app_commands.describe(user = "The user to look up. Defaults to the command sender. To add an emblazon, use /setemblazon.")
 	async def e(self, ctx, user : converters.MemberOrUser = None):
 		user = user or ctx.author
-		emblazon = await ctx.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
+		embed = await self.get_emblazon(user)
 
-		if emblazon and emblazon[1]:
-			embed = embeds.GENERIC.create(user, "", heading = "Emblazon")
-			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
-
-			embed.set_image(url = emblazon[1])
-
-			await ctx.send(embed = embed)
-		else: raise utils.CustomCommandError(
-			"User does not have emblazon",
-			"The user you entered exists, but has not specified an emblazon."
-		)
+		await ctx.send(embed = embed)
 
 	@commands.hybrid_command(
 		help = "Sets the emblazon of your arms used by this bot.\n"
@@ -146,6 +127,21 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		)
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Emblazon updated.")
+		
+	async def get_arms(self, user, prefix):
+		embed = embeds.GENERIC.create(user[2], user[3], heading = f"GreiiN:{user[0]:04}")
+		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
+		
+		if user[6]:
+			embed.set_thumbnail(url = user[6])
+			embed.set_footer(text = embed.footer.text + " Image specified by user.")
+		elif user[1] == ctx.author.id:
+			embed.description += f"\n**To set an image, use `{prefix}setemblazon`.**"
+		
+		await self.add_rolls(embed, "AND personal", user, "User roll")
+		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
+		
+		return embed
 
 	async def add_rolls(self, embed, query, user, name):
 		records = await self.bot.dbc.execute_fetchall(
@@ -158,16 +154,16 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 
 		embed.add_field(name = name, value = mentions)
 		
-	async def get_author_roll(self, ctx, error_title, error_desc):
-		user = await ctx.bot.dbc.execute_fetchone(
-			"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+	async def get_author_roll(self, author):
+		user = await self.bot.dbc.execute_fetchone(
+			"SELECT * FROM armigers_e WHERE discord_id == ?;", (author.id,)
 		)
 		
 		if not user:
 			await self.bot.get_cog("Bot tasks").sync_book()
 		
-			user = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE discord_id == ?;", (ctx.author.id,)
+			user = await self.bot.dbc.execute_fetchone(
+				"SELECT * FROM armigers_e WHERE discord_id == ?;", (author.id,)
 			)
 			
 		if user: return user
@@ -178,6 +174,34 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			"To find those of another user, follow the command with their username."
 			"If you wish to register your arms, follow the instructions at the Roll of Arms server."
 		)
+				
+	async def get_emblazon(self, user):
+		emblazon = await self.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
+		
+		if emblazon and emblazon[1]:
+			embed = embeds.GENERIC.create(user, "", heading = "Emblazon")
+			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
+			embed.set_image(url = emblazon[1])
+			
+			return embed
+		
+		else: raise utils.CustomCommandError(
+			"User does not have emblazon",
+			"The user you entered exists, but has not specified an emblazon."
+		)
+		
+	async def arms_action(self, interaction, user: discord.Member):
+		interaction.extras["ephemeral_error"] = True
+		
+		armiger = await converters.Armiger().transform(interaction, user)
+		embed = await self.get_arms(armiger, "/")
+		await interaction.response.send_message(embed = embed, ephemeral = True)		
+		
+	async def emblazon_action(self, interaction, user: discord.Member):
+		interaction.extras["ephemeral_error"] = True
+
+		embed = await self.get_emblazon(user)
+		await interaction.response.send_message(embed = embed, ephemeral = True)
 
 async def setup(bot):
 	await bot.add_cog(HeraldryRoll(bot))

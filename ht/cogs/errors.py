@@ -106,10 +106,10 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		await ctx.send(embed = await self.respond_to_error(error, mention))
 
 	async def on_app_command_error(self, interaction, error):
-		if not interaction.response.is_done():
-			await interaction.response.defer()
-	
-		await interaction.followup.send(embed = await self.respond_to_error(error, None))
+		await interaction.response.send_message(
+			embed = await self.respond_to_error(error, None),
+			ephemeral = interaction.extras.get("ephemeral_error", False)
+		)
 
 async def setup(bot):
 	await bot.add_cog(BotErrors(bot))
