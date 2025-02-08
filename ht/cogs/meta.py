@@ -25,11 +25,14 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 	)
 	async def about(self, ctx):
 		embed = embeds.ABOUT.create(
-			"", f"## Heraldtron\n**{__version__}{self.commit}**\n\n{self.bot.description}"
+			"", f"## Heraldtron\n**{__version__} {self.commit}**\n\n{self.bot.description}"
 		)
 		embed.set_thumbnail(
 			url = str(self.bot.user.display_avatar.with_size(512).url)
 		)
+		
+		prefix_command_count = len([*filter(lambda c: not c.extras.get("resource"), self.bot.commands)])
+		api_version = discord.http.INTERNAL_API_VERSION
 		
 		embed.description += (
 			"\n### Running on\n"
@@ -45,21 +48,19 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 			"\n### And special thanks to\n"
 			"Ensix, GreiiEquites, and every "
 			"[contributor](https://github.com/mirnovov/heraldtron/graphs/contributors) to the project"
-		)
-		
-		embed.set_footer(
-			text = f"{__copyright__}. This is an open source project available under the MIT license."
+			f"\n\n-# API version {api_version} \u00B7 {len(self.bot.guilds)} servers \u00B7"
+			f" {len(self.bot.users)} users \u00B7 ≤{self.bot._connection.max_messages} cached messages" 
+			f" \u00B7 {prefix_command_count} prefix commands \u00B7 {len(self.bot.tree.get_commands())} app commands"
+			f"\n-# {__copyright__}. This is an open source project available under the MIT license."
 		)
 
 		view = discord.ui.View()
 		view.add_item(discord.ui.Button(
-			emoji = "\U0001F6E1\uFE0F",
 			label = "Visit the Heraldry Discord",
 			style = discord.ButtonStyle.secondary,
 			url = "https://discord.gg/Wvsz2M36nt"
 		))
 		view.add_item(discord.ui.Button(
-			emoji = "\U0001F4BB",
 			label = "Edit on GitHub",
 			style = discord.ButtonStyle.secondary,
 			url = "https://github.com/mirnovov/heraldtron"

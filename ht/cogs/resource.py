@@ -23,7 +23,8 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 		async def resource_command(ctx):
 			embed.set_footer(text = f"Use {ctx.clean_prefix}resources to view a list of all resources.")
 			await ctx.send(embed = embed)
-
+		
+		resource_command.extras["resource"] = True
 		app_command_id = discord.utils.remove_markdown(data["title"])
 
 		self.resources[app_command_id] = { 

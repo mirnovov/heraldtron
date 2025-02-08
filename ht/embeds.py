@@ -11,7 +11,7 @@ class Theme(Enum):
 	HELP = (0x3365ca, "5/5f/OOjs_UI_icon_info-progressive.svg/240px-OOjs_UI_icon_info-progressive.svg.png", "Command help")
 	SEARCH_RESULT = (0x444850, "8/8c/OOjs_UI_icon_search-ltr-invert.svg/240px-OOjs_UI_icon_search-ltr-invert.svg.png", "Search result")
 	GENERIC = (DEFAULT, "5/5e/VisualEditor_icon_reference-rtl-invert.svg/240px-VisualEditor_icon_reference-invert.svg.png", "Result")
-	ABOUT = (0x02af89, "4/4e/Echo_gratitude.svg/240px-Echo_gratitude.svg.png", "About Heraldtron")
+	ABOUT = (0x8081ff, None, "")
 	FLAG_FACT = (DEFAULT, "1/14/OOjs_UI_icon_flag-ltr-invert.svg/200px-OOjs_UI_icon_flag-ltr-invert.svg.png", "Flag fact")
 	FEED = (DEFAULT, "2/21/OOjs_UI_icon_feedback-ltr-invert.svg/240px-OOjs_UI_icon_feedback-ltr-invert.svg.png", "Reddit post")
 	USER_INFO = (DEFAULT, "d/d4/VisualEditor_icon_profile-invert.svg/240px-VisualEditor_icon_profile-invert.svg.png", "User")
@@ -28,7 +28,9 @@ class Theme(Enum):
 	def create(self, title, desc, heading = None):
 		embed = discord.Embed(title = title, description = desc)
 		embed.colour = self.colour
-		embed.set_author(name = heading or self.heading, icon_url = self.icon_url)
+		
+		if heading or self.heading:
+			embed.set_author(name = heading or self.heading, icon_url = self.icon_url)
 
 		return embed
 
