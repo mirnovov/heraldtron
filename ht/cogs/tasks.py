@@ -27,23 +27,23 @@ class BotTasks(commands.Cog, name = "Bot tasks"):
 
 		if now.month == 6 and now.day in range(8, 12):
 			await self.update_avatar(self.bot, "media/avatars/ihd.png", last)
-			await self.bot.change_presence(activity = discord.Game("\U0001F6E1\uFE0F International Heraldry Day"))
+			await self.bot.change_presence(activity = discord.CustomActivity("\U0001F6E1\uFE0F International Heraldry Day"))
 
 		elif now.month == 6:
 			await self.update_avatar(self.bot, "media/avatars/pride.png", last)
-			await self.bot.change_presence(activity = discord.Game("\U0001F3F3\uFE0F\u200D\U0001F308 Happy Pride Month!"))
+			await self.bot.change_presence(activity = discord.CustomActivity("\U0001F3F3\uFE0F\u200D\U0001F308 Happy Pride Month!"))
 
 		elif now.month == 12:
 			await self.update_avatar(self.bot, "media/avatars/holiday.png", last)
-			await self.bot.change_presence(activity = discord.Game("\U0001F384 Happy Holidays!"))
+			await self.bot.change_presence(activity = discord.CustomActivity("\U0001F384 Happy Holidays!"))
 
 		elif now.month == 4:
 			await self.update_avatar(self.bot, "media/avatars/easter.png", last)
-			await self.bot.change_presence(activity = discord.Game("\U0001F414 Happy Easter!"))
+			await self.bot.change_presence(activity = discord.CustomActivity("\U0001F414 Happy Easter!"))
 
 		elif (now.month == 2 and now.day in range(8, 12)) or (now.month == 11 and now.day in range(12, 22)):
 			await self.update_avatar(self.bot, "media/avatars/trans.png", last)
-			await self.bot.change_presence(activity = discord.Game("\U0001F3F3\uFE0F\u200D\u26A7\uFE0F Trans Rights!"))
+			await self.bot.change_presence(activity = discord.CustomActivity("\U0001F3F3\uFE0F\u200D\u26A7\uFE0F Trans Rights!"))
 
 		else:
 			await self.update_avatar(self.bot, "media/avatars/generic.png", last)
