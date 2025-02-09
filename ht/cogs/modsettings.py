@@ -1,7 +1,7 @@
 import discord, asyncio, typing, re
 from discord import ui
 from discord.ext import commands
-from .. import converters, embeds, utils, views
+from .. import converters, embeds, modals, utils, views
 
 class ModerationSettings(utils.ModCog, name = "Settings"):
 	MAX_FEEDS = 3
@@ -81,8 +81,8 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 			return possible[0]
 
 		choices = tuple(discord.SelectOption(label = a.name) for a in possible)
-		indice = await views.Chooser(ctx, choices, "Execute").run(
-			"**Multiple servers are available.** Select a server to use the command in:",
+		indice = await views.Chooser(ctx, choices, "Select a server to use the command in...").run(
+			"**Multiple servers are available.**"
 		)
 		return possible[indice]
 
@@ -135,19 +135,11 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 			f" is currently not operational. Turn it on with `{ctx.clean_prefix}messages yes`."
 		)
 
-		reset = ui.Button(label = "Reset to default", style = discord.ButtonStyle.secondary)
-		result = await views.RespondOrReact(ctx, additional = (reset,)).run(
-			"Type your message below. To add details, include `GUILD_NAME`,"
-			" `MENTION`, or `MEMBER_NAME` in the message.",
+		modal = modals.MessageModal(leave, ctx.author, guild)
+		await modals.show(
+			ctx, modal, "Set message",
+			f"Use the button below to set the {modal.action_label} message."
 		)
-
-		if result == "Reset to default" or isinstance(result, discord.Message):
-			message_type = "welcome_text" if not leave else "leave_text"
-			new = None if isinstance(result, str) else result.content
-
-			await ctx.bot.dbc.execute(f"UPDATE guilds SET {message_type} = ?1 WHERE discord_id = ?2;", (new, guild.id))
-			await ctx.bot.dbc.commit()
-			await ctx.send(":white_check_mark: | Message changed.")
 
 async def setup(bot):
 	await bot.add_cog(ModerationSettings(bot))

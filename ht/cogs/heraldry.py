@@ -1,7 +1,7 @@
 import discord, csv, json, random, re
 from discord import app_commands
 from discord.ext import commands
-from .. import converters, embeds, services, utils, views
+from .. import converters, embeds, modals, services, utils, views
 from ..artifacts import Source
 
 class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
@@ -128,84 +128,16 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		await ctx.send(embed = embed, file = file)
 
 	@commands.hybrid_command(
-		help = "Generates a coat of arms based on personal details.\n If using in a DM, it is based"
-			   " on your name and birthday; for privacy reasons, it is random otherwise. Based on a"
-			   " chart by Snak and James.",
+		help = "Generates a coat of arms based on personal details. These won't be stored by the bot."
+			   "\nBased on a chart by Snak and James.",
 		aliases = ("gen", "g")
 	)
 	async def generate(self, ctx):
-		with open("data/generator.json") as file:
-			parts = json.load(file)
-
-		results = {}
-		tinctures = ("colour", "metal")
-		result_tinctures = ("field", "background", "foreground")
-
-		if isinstance(ctx.channel, discord.abc.GuildChannel):
-			for category in parts.keys():
-				if category in ("colour", "metal", "fur"): continue
-				results[category] = random.choice(list(parts[category].values()))
-
-			if bool(random.getrandbits(1)):
-				tinctures = tinctures[::-1]
-
-			for i, result in enumerate(result_tinctures):
-				tincture = tinctures[0] if i % 2 else tinctures[1]
-				if tincture == "colour" and random.randrange(10) == 5: tincture = "fur"
-
-				results[result] = random.choice(list(parts[tincture].values()))
-		else:
-			def get_letter_val(letter, category):
-				for letters, value in category.items():
-					if letter.upper() in letters: return value
-				raise utils.BadMessageResponse("Invalid value")
-
-			added_check = lambda m: m.content in parts["charge"].keys()
-			message = await views.RespondOrReact(ctx, added_check = added_check).run(
-				"This command generates a blazon from a few details.\n"
-				"To start with, give me a short name of a **day**, then a **month**, like 8 Apr."
-			)
-			results["charge"] = parts["charge"][message.content]
-
-			await ctx.send("Okay. Now tell me the **first letter** of a **first name**.")
-			message = await utils.hard_check(ctx, lambda m: len(m.content) == 1 and m.content.isalpha())
-			results["ordinary"] = get_letter_val(message.content, parts["ordinary"])
-
-			await ctx.send("Great. Now tell me the **amount** of letters in that person's **last name**.")
-			message = await utils.hard_check(ctx, lambda m: m.content.isnumeric())
-
-			if int(message.content) % 2 == 0:
-				tinctures = tinctures[::-1]
-
-			await ctx.send("Thanks! Now, give me the **first three letters** of that **last name**.")
-			message = await utils.hard_check(ctx, lambda m: len(m.content) == 3 and m.content.isalpha())
-			letters = message.content
-
-			await ctx.send("And finally, give me the **last two letters** of the **first name**.")
-			message = await utils.hard_check(ctx, lambda m: len(m.content) == 2 and m.content.isalpha())
-			letters += message.content
-			pos = -1
-
-			for i, result in enumerate(result_tinctures):
-				pos = 4 if i == 2 else pos + 1
-				tincture = tinctures[0] if i % 2 else tinctures[1]
-
-				if tincture == "colour":
-					adjacent = pos - 1 if pos == 4 else pos + 1
-					if letters[adjacent] == letters[pos]:
-						tincture = "fur"
-						pos = adjacent
-
-				results[result] = get_letter_val(letters[pos], parts[tincture])
-
-		embed = embeds.GENERIC.create("", "", heading = "Generated blazon")
-		embed.set_footer(text = "Generator based on a chart by Snak and James.")
-
-		embed.title = f"*{results['field'].capitalize()}, on {utils.pronounise(results['ordinary'])}"\
-					  f" {results['background']} {utils.pronounise(results['charge'].lower())}"\
-					  f" {results['foreground']}*"
-
-		await ctx.send(embed = embed)
+		await modals.show(
+			ctx, modals.GeneratorModal(), "Generate",
+			f"The `generate` function creates arms based on a [chart](<{modals.GeneratorModal.CHART_URL}>)"
+			" by Snak and James. The details you use won't be stored by this bot."
+		)
 
 	@commands.hybrid_command(
 		help = "Generates a motto randomly.\nThe included functionality has several"

@@ -72,10 +72,7 @@ class BadMessageResponse(Exception):
 	pass
 
 class CommandCancelled(commands.CommandError, app_commands.AppCommandError):
-	@classmethod
-	async def create(self, message, ctx):
-		await ctx.send(f":x: | {message}.")
-		return CommandCancelled(message)
+	pass
 
 class CustomCommandError(commands.CommandError, app_commands.AppCommandError):
 	def __init__(self, title, desc, *args, **kwargs):
@@ -110,18 +107,6 @@ async def get_guild(bot, guild):
 async def get_user(bot, user):
 	return bot.get_user(user) or await bot.fetch_user(user)
 	
-@views.disable_dm_commands
-async def hard_check(ctx, added_check, timeout = 300):
-	#"hard" wait for that raises error on failure
-	try:
-		part = await ctx.bot.wait_for("message", timeout = timeout, check = lambda m: m.author == ctx.author)
-	except asyncio.TimeoutError:
-		raise await utils.CommandCancelled.create("Command timed out", ctx)
-	if not added_check(part):
-		raise utils.BadMessageResponse("Content given internally is of invalid form")
-
-	return part
-
 async def check_is_owner(ctx):
 	if not await ctx.bot.is_owner(ctx.author):
 		raise commands.NotOwner("Owner-only mode is enabled")

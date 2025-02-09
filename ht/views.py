@@ -3,7 +3,24 @@ from discord import ui
 from discord.ext import commands
 from . import utils
 
-LONG_TIMEOUT = 1000
+class NvView(ui.View):
+	async def terminate(self, interaction):
+		for child in self.children:
+			child.disabled = True
+		
+		try:
+			if interaction:
+				await interaction.response.edit_message(view = self)
+			elif getattr(self, "message", None):		
+				await self.message.edit(view = self)
+		
+		except discord.NotFound:
+			pass
+				
+		self.stop()
+
+	async def on_timeout(self):
+		await self.terminate(None)
 
 def disable_dm_commands(func):
 	#Unprefixed commands must be disabled for certain responses
@@ -19,8 +36,8 @@ def disable_dm_commands(func):
 		return result
 
 	return wrapper
-
-class Navigator(ui.View):
+	
+class Navigator(NvView):
 	def __init__(self, ctx, embeds):
 		super().__init__()
 
@@ -61,10 +78,7 @@ class Navigator(ui.View):
 	async def run(self):
 		self.message = await self.ctx.send(embed = self.embeds[0], view = self)
 
-	async def on_timeout(self):
-		await self.message.edit(embed = self.embeds[self.index], view = None)
-
-class HelpSwitcher(ui.View):
+class HelpSwitcher(NvView):
 	def __init__(self, embeds):
 		super().__init__()
 		[self.add_help(name, embed) for name, embed in embeds]
@@ -83,96 +97,47 @@ class HelpSwitcher(ui.View):
 
 		self.add_item(button)
 
-	async def on_timeout(self):
-		if not hasattr(self, "message"): return
-		await self.message.edit(embed = self.message.embeds[0], view = None)
-
-class UserSelector(ui.View):
-	def __init__(self, ctx, **kwargs):
+class Chooser(NvView):
+	def __init__(self, ctx, choices, placeholder, **kwargs):
 		super().__init__(**kwargs)
 		self.ctx = ctx
-		self.chosen = None
-
-		self.add_button(ui.Button(label = "Cancel", style = discord.ButtonStyle.red), -1)
-
-	async def interaction_check(self, interaction):
-		return True if not self.ctx.author else interaction.user == self.ctx.author
-
-	def add_button(self, button, indice):
-		async def primitive(interaction):
-			self.chosen = indice
-			self.stop()
-
-		button.callback = primitive
-		button.row = 2
-		self.add_item(button)
-
-	async def get_choice(self):
-		if self.chosen == -1:
-			raise await utils.CommandCancelled.create("Command cancelled", self.ctx)
-		try:
-			return self.chosen
-		except asyncio.TimeoutError:
-			raise await utils.CommandCancelled.create("Command timed out", self.ctx)
-
+		self.success = False
+		self.select = ui.Select(placeholder = placeholder)
+		
+		for i, choice in enumerate(choices):
+			choice.value = str(i)
+			self.select.append_option(choice)
+		
+		self.select.callback = self.select_callback
+		self.add_item(self.select)
+		
+		cancel = ui.Button(label = "Cancel", style = discord.ButtonStyle.red)
+		cancel.callback = self.cancel
+		cancel.row = 2
+		self.add_item(cancel)
+	
+	async def select_callback(self, interaction):
+		await self.terminate(interaction)
+	
 	@disable_dm_commands
 	async def run(self, info):
 		self.message = await self.ctx.send(info, view = self)
 		await self.wait()
-		await self.message.edit(view = None)
-		return await self.get_choice()
-
-class Chooser(UserSelector):
-	def __init__(self, ctx, choices, action, style = discord.ButtonStyle.success, **kwargs):
-		super().__init__(ctx, **kwargs)
-		self.chosen = 0
-
-		self.select = ui.Select()
-		self.add_item(self.select)
-
-		for i, choice in enumerate(choices):
-			choice.value = str(i)
-			choice.default = i == 0
-			self.select.append_option(choice)
-
-		confirm = ui.Button(label = action, style = style)
-		confirm.callback = self.choose
-		confirm.row = 2
-		self.add_item(confirm)
-
-	async def choose(self, interaction):
-		if self.select.values:
-			self.chosen = int(self.select.values[0])
-
-		self.stop()
-
-class RespondOrReact(UserSelector):
-	def __init__(self, ctx, additional = tuple(), added_check = None, **kwargs):
-		super().__init__(ctx, **kwargs)
-
-		self.added_check = added_check
-		tuple(self.add_button(item, item.label) for item in additional)
-
-	@disable_dm_commands
-	async def run(self, info):
-		def check_message(message):
-			if self.ctx.author != message.author: return False
-			elif self.added_check: return self.added_check(message)
-			return True
-
-		message = await self.ctx.send(info, view = self)
 		
-		t_wait = asyncio.create_task(self.wait())
-		t_message = asyncio.create_task(
-			self.ctx.bot.wait_for("message", check = check_message, timeout = self.timeout)
-		)
-		done, pending = await asyncio.wait((t_wait, t_message), return_when = asyncio.FIRST_COMPLETED)
-
-		for future in pending: future.cancel()	#ignore anything else
-		for future in done: future.exception() #retrieve and ignore any other completed future's exception
-
-		await message.edit(view = None)
-		return await self.get_choice() or done.pop().result()
+		if self.select.values:
+			return int(self.select.values[0])
+		
+		raise utils.CommandCancelled()
+			
+	async def cancel(self, interaction):
+		await self.terminate(interaction)
+	
+	async def interaction_check(self, interaction):
+		return True if not self.ctx.author else interaction.user == self.ctx.author
+	
+	async def on_timeout(self):
+		self.chosen = -1
+		await self.terminate(None)
 
 class TriviaButton(ui.Button):
 	def __init__(self, label, users):

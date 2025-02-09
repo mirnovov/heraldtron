@@ -2,7 +2,7 @@ import discord, asyncio, typing, random, os
 from discord import app_commands, ui
 from discord.ext import commands
 from datetime import datetime, timezone, timedelta
-from .. import converters, embeds, services, utils, views
+from .. import converters, embeds, modals, services, utils, views
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
 	TRIVIA_CHOICES = [
@@ -61,50 +61,17 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				"The date that you entered is in the past."
 			)
 
-		desc = (await views.RespondOrReact(ctx).run(
-			f"Your countdown will expire <t:{elapsed.timestamp():.0f}:R>."
-			" Give it a name by responding below."
-		)).content
-
-		embed.description = desc
-		message = await ctx.send(embed = embed)
+		await ctx.send(embed = embed)
 
 	@commands.hybrid_command(
-		help = "Generates a competition distribution.\n If no number is specified, asks for a list of names.",
+		help = "Generates a competition distribution. This won't be visible to other users.",
 		aliases = ("dt", "dist")
 	)
-	@app_commands.describe(size = "The number of contestants. If no size is specified, the bot will ask for a list of names.")
-	async def distribute(self, ctx, size : commands.Range[int, 3, 50] = None):
-		if not size:
-			message = await views.RespondOrReact(ctx, timeout = views.LONG_TIMEOUT).run(
-				"Enter a list of contestants separated by line breaks (\u21E7\u23CE on desktop)",
-			)
-			names = dict(enumerate(message.content.split("\n"), start = 1))
-			size = await commands.Range[int, 3, 50].convert(ctx, len(names))
-		else: names = None
-
-		def distribution(keysize):
-			vals = list(range(1, keysize))
-			candidates = {i: None for i in range(1, keysize)}
-
-			for c in candidates:
-				same = c in vals
-
-				if len(vals) == 1 and same: #try again, no valid option
-					candidates = distribution(keysize)
-					break
-				elif same: vals.remove(c)
-
-				candidates[c] = vals.pop(random.randrange(0, len(vals)))
-				if same: vals.append(c)
-
-			return candidates
-
-		dist = distribution(size + 1)
-		display = lambda e: f"**{e}**: {names[e]}" if names else f"**{e}**"
-		output = "".join(f"{display(k)} \U0001F86A {display(v)}\n" for k, v in dist.items())
-
-		await ctx.send(output)
+	async def distribute(self, ctx):
+		await modals.show(
+			ctx, modals.DistributionModal(), "Generate",
+			f"The `distribute` function generates a competition distribution."
+		)
 
 	@commands.hybrid_command(help = "Conducts a search using Google Images.", aliases = ("img", "gi"))
 	@app_commands.describe(query = "The search query to use.")
