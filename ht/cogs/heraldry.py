@@ -27,7 +27,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	@app_commands.choices(source = ARTIFACT_CHOICES)
 	@app_commands.describe(source = "The source to use for artifacts. By default, all artifacts are used.")
 	@utils.trigger_typing
-	async def artifact(self, ctx, source: app_commands.Choice[str] = "all"):
+	async def artifact(self, ctx, source: str = "all"):
 		if type(source) == app_commands.Choice:
 			source = source.value
 		
