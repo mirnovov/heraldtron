@@ -1,4 +1,6 @@
 aiodns >= 2.0.0
 orjson>=3.5.4
+aiodns>=1.1; sys_platform != 'win32'
 Brotli
 git+https://github.com/PyYoshi/cChardet@bd1cc39#egg=cchardet
+zstandard>=0.23.0
