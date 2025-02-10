@@ -1,4 +1,5 @@
 import discord, typing, re
+from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
 from .. import embeds, utils, views
@@ -24,38 +25,41 @@ class ModerationTools(utils.ModCog, name = "Tools"):
 		await message.channel.edit(locked = True, archived = True)
 	
 	@commands.guild_only()	
-	@commands.command(
-		help = "Displays a moderator message in a channel.\n By default, this is"
-		" the channel the command is invoked in, but it can be specified beforehand.",
-		aliases = ("m",)
+	@commands.hybrid_command(
+		help = "Displays a moderator message in a channel.\n",
+		aliases = ("modmessage",)
 	)
-	async def modmessage(self, ctx, *, message_content):
-		if len(message_content) < self.SHORT_MESSAGE and not re.search(self.HAS_MARKDOWN, message_content):
-			embed = embeds.MOD_MESSAGE.create(message_content, "")
+	@app_commands.describe(message = "The message to display.")
+	async def m(self, ctx, *, message):
+		if len(message) < self.SHORT_MESSAGE and not re.search(self.HAS_MARKDOWN, message):
+			embed = embeds.MOD_MESSAGE.create(message, "")
 		else:
-			embed = embeds.MOD_MESSAGE.create("", message_content)
-
-		embed.set_footer(
-			text = f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
-			icon_url = ctx.author.display_avatar.with_size(256).url
-		)
-
-		await ctx.channel.send(embed = embed)
+			embed = embeds.MOD_MESSAGE.create("", message)
 		
-		if isinstance(ctx.channel, discord.Thread) and ctx.channel.archived:
-			await ctx.channel.edit(locked = False, archived = False)
-			await ctx.message.delete()
-			await ctx.channel.edit(locked = True, archived = True)
+		if not ctx.interaction:
+			embed.set_footer(
+				text = f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
+				icon_url = ctx.author.display_avatar.with_size(256).url
+			)
+
+			await ctx.send(embed = embed)
+		
+			if isinstance(ctx.channel, discord.Thread) and ctx.channel.archived:
+				await ctx.channel.edit(locked = False, archived = False)
+				await ctx.message.delete()
+				await ctx.channel.edit(locked = True, archived = True)
+			else:
+				await ctx.message.delete()
 		else:
-			await ctx.message.delete()
+			await ctx.send(embed = embed)
 
 	@commands.guild_only()
-	@commands.command(help = "Locks a channel, disabling the ability to send messages from it.", aliases = ("l",))
+	@commands.hybrid_command(help = "Locks a channel, disabling the ability to send messages from it.", aliases = ("l",))
 	async def lock(self, ctx):
 		await self.change_locking(ctx, ctx.channel, locked = True)
 
 	@commands.guild_only()
-	@commands.command(help = "Unlocks a channel, restoring the ability to send messages from it.", aliases = ("ul",))
+	@commands.hybrid_command(help = "Unlocks a channel, restoring the ability to send messages from it.", aliases = ("ul",))
 	async def unlock(self, ctx):
 		await self.change_locking(ctx, ctx.channel, locked = False)
 		

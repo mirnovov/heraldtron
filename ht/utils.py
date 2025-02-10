@@ -25,6 +25,11 @@ class ModCog(MeldedCog, limit = False):
 	def __init_subclass__(self, *args, **kwargs):
 		super().__init_subclass__(category = "Moderation", limit = False)
 
+	async def cog_load(self):
+		for command in self.get_commands():
+			if type(command) != commands.HybridCommand: continue
+			command.app_command.default_permissions = discord.Permissions(ban_members = True)
+
 	async def cog_check(self, ctx):
 		if await ctx.bot.is_owner(ctx.author):
 			return True
