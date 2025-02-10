@@ -138,3 +138,19 @@ class Date(commands.Converter):
 			)
 
 		return date.astimezone(timezone.utc)
+
+class ArchivedThread(app_commands.Transformer):
+	@property
+	def type(self):
+		return discord.AppCommandOptionType.channel
+	
+	async def transform(self, interaction, value: int):
+		thread = await interaction.client.fetch_channel(value.id)
+
+		if not thread:
+			raise utils.CustomCommandError(
+				"Invalid thread",
+				"The thread is invalid."
+			)
+			
+		return thread

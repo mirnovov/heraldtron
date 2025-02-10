@@ -106,8 +106,14 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 		await ctx.send(embed = await self.respond_to_error(error, mention))
 
 	async def on_app_command_error(self, interaction, error):
+		embed = await self.respond_to_error(error, None)
+		
+		if interaction.response.is_done():
+			await interaction.followup.send(embed = embed)
+			return
+		
 		await interaction.response.send_message(
-			embed = await self.respond_to_error(error, None),
+			embed = embed,
 			ephemeral = interaction.extras.get("ephemeral_error", False)
 		)
 

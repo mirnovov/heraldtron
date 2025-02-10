@@ -92,6 +92,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		await message.edit(content=f":game_die: | The dice landed on... **{result}**!")
 
 	@commands.hybrid_command(help = "Sends a post as the bot user. Handy for jokes and such.", aliases = ("st",), hidden = True)
+	@app_commands.default_permissions(create_events = True) #bit of a hack lol
 	@app_commands.describe(message_content = "The message to send.")
 	@commands.is_owner()
 	async def sendtext(ctx, channel : typing.Optional[discord.TextChannel] = None, *, message_content):
