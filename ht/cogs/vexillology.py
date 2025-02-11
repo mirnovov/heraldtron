@@ -41,7 +41,7 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 			next(file)
 			facts = list(csv.reader(file, delimiter = ";"))
 
-			if fid > len(facts):
+			if factid > len(facts):
 				raise utils.CustomCommandError(
 					"Flag fact is nonexistent",
 					"The number you entered is too high. Currently, there"

@@ -32,7 +32,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
 	async def a(self, ctx, user: converters.Armiger = None):
 		user = user or await self.get_author_roll(ctx.author)
-		embed = await self.get_arms(user, ctx.clean_prefix)
+		embed = await self.get_arms(user, ctx.clean_prefix, ctx.author)
 		
 		await ctx.send(embed = embed)
 		
@@ -128,14 +128,14 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await self.bot.dbc.commit()
 		await ctx.send(":white_check_mark: | Emblazon updated.")
 		
-	async def get_arms(self, user, prefix):
+	async def get_arms(self, user, prefix, author):
 		embed = embeds.GENERIC.create(user["qualified_name"], user["blazon"], heading = f"GreiiN:{user["greii_n"]:04}")
 		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
 		
 		if user[6]:
 			embed.set_thumbnail(url = user["url"])
 			embed.set_footer(text = embed.footer.text + " Image specified by user.")
-		elif user["discord_id"] == ctx.author.id:
+		elif user["discord_id"] == author.id:
 			embed.description += f"\n**To set an image, use `{prefix}setemblazon`.**"
 		
 		await self.add_rolls(embed, "AND personal", user, "User roll")
@@ -194,7 +194,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		interaction.extras["ephemeral_error"] = True
 		
 		armiger = await converters.Armiger().transform(interaction, user)
-		embed = await self.get_arms(armiger, "/")
+		embed = await self.get_arms(armiger, "/", interaction.user)
 		await interaction.response.send_message(embed = embed, ephemeral = True)		
 		
 	async def emblazon_action(self, interaction, user: discord.Member):
