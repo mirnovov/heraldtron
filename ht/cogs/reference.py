@@ -1,9 +1,10 @@
-import discord, urllib, re
+import discord, re, urllib
 from discord import app_commands
 from discord.ext import commands
 from .. import embeds, services, utils
 
 class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldry"):
+	DS_URL = re.compile(r"https://drawshield\.net/reference/(.*)/./(.*)\.html")
 	SBW_SUB = re.compile(r"={2,3}(.*?)={2,3}|'{2,4}([^']*)'{2,4}|<ref>.+?</ref>|<[^<]+?>|!?\[+([^\[]+?)\]+|(\n#)")
 	SBW_LINK_NS = ("Category", "File")
 
@@ -21,79 +22,42 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 		await services.gis(ctx, "coat of arms " + query)
 
 	@commands.hybrid_command(
-		help = "Looks up heraldic terms in the Finto HERO ontological database.",
-		aliases = ("finto", "luh", "ontology", "he")
+		help = "Looks up terms in Finto HERO and Parker's or Elvin's heraldic dictionaries.",
+		aliases = ("finto", "hero", "luh", "ontology", "he", "lu", "define", "def")
 	)
 	@app_commands.describe(term = "The heraldic term to look up.")
 	@utils.trigger_typing
-	async def hero(self, ctx, *, term):
-		query = await utils.get_json(
-			self.bot.session,
-			f"http://api.finto.fi/rest/v1/search?vocab=hero&query={urllib.parse.quote(term)}&lang=en"
-		)
+	async def lookup(self, ctx, *, term):
+		embed = embeds.SEARCH_RESULT.create("", "", heading = "Search results")
+		embed.set_footer(text = f"Term retrieved using Finto HERO and DrawShield; the latter © Karl Wilcox ")
 
-		if len(query["results"]) == 0:
+		hero_desc, hero_image = await services.hero(self.bot.session, term)
+		
+		if hero_desc:
+			embed.description += hero_desc
+		
+		if hero_image:
+			embed.set_thumbnail(url = f"attachment://{hero_image.filename}")
+		
+		ds_term = urllib.parse.quote(term.replace(" ", ""))
+		ds_results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{ds_term}")
+
+		if "error" not in ds_results:
+			match = self.DS_URL.fullmatch(ds_results["URL"])
+			embed.description += (
+				f"### {match[1].capitalize()}'s dictionary result\n"
+				f"[**{match[2]}**]({ds_results['URL']})\n" +
+				ds_results["content"]
+			)
+		
+		if embed.description == "":
 			raise utils.CustomCommandError(
-				"Invalid HERO term",
-				"The term could not be found. Check that it is entered correctly, or try other sources."
+				"Invalid lookup term",
+				"The term could not be found in Finto HERO, Parker's dictionary, or Elvin's dictionary. " 
+				"Check that it is entered correctly, or try other sources."
 			)
 
-		uri = query["results"][0]["uri"]
-
-		results = await utils.get_json(
-			self.bot.session,
-			f"http://api.finto.fi/rest/v1/hero/data?format=application%2Fjson&uri={urllib.parse.quote(uri)}&lang=en"
-		)
-		results = results["graph"]
-		embed = embeds.SEARCH_RESULT.create(f"Results for \"{term}\"", f"", heading = "HERO results")
-
-		for result in results:
-			if result["uri"] == "http://www.yso.fi/onto/hero/": continue
-			elif result["uri"] == uri: result_type = "**Primary**:"
-			elif result.get("narrower"): result_type = "Broader:"
-			elif result.get("broader"): result_type = "Narrower:"
-			else: result_type = "Related:"
-
-			result_name = "(unknown)"
-
-			if result.get("prefLabel"):
-				for lang_label in result.get("prefLabel"):
-					if lang_label["lang"] != "en": continue
-					result_name = lang_label["value"]
-					break
-
-			en_uri = result["uri"].replace("http://www.yso.fi/onto/hero/","http://finto.fi/hero/en/page/")
-			embed.description += f"- {result_type} [{result_name}]({en_uri})\n"
-
-		embed.set_footer(text = f"Term retrieved using Finto HERO.")
-		await ctx.send(embed = embed)
-
-	@commands.hybrid_command(
-		help = "Looks up heraldic terms using Parker's and Elvin's heraldic dictionaries. \nThis uses"
-			   "the DrawShield API. Code © Karl Wilcox",
-		aliases = ("lu", "define", "def")
-	)
-	@app_commands.describe(term = "The heraldic term to look up.")
-	@utils.trigger_typing
-	async def lookup(self, ctx, *, term : str):
-		results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{urllib.parse.quote(term)}")
-
-		if "error" in results:
-			raise utils.CustomCommandError(
-				"Invalid DrawShield term",
-				"The term could not be found. Check that it is entered correctly, or try other sources."
-			)
-
-		embed = embeds.SEARCH_RESULT.create(
-			f"Results for \"{term}\"",
-			f"{results['content']}\n\u200b\n[View original entry]({results['URL']})",
-		)
-		embed.set_footer(text=f"Term retrieved using DrawShield; © Karl Wilcox. ")
-
-		thumb = await services.ds_catalog(self.bot.session, term)
-		if thumb: embed.set_thumbnail(url = thumb[0])
-
-		await ctx.send(embed = embed)
+		await ctx.send(embed = embed, file = hero_image)
 
 	@commands.hybrid_command(
 		help = "Displays an entry from the Sourced Blazons Wiki.",

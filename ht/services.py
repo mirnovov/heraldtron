@@ -1,4 +1,4 @@
-import discord, asyncio, base64, html, io, itertools, random, urllib
+import discord, asyncio, base64, collections, html, io, itertools, random, urllib
 from discord import ui
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
@@ -227,3 +227,88 @@ async def heraldicon_options(session):
 		"Cannot retrieve Heraldicon options",
 		"An unknown error occurred while trying to retrieve the Heraldicon options."
 	)
+	
+async def hero(session, term):
+	async def get_image(session, url):
+		image_url = url.removeprefix("http://www.yso.fi/onto/hero/p") + ".png"
+		full_url =  "https://heraldica.narc.fi/img/hero/thumb/" + image_url
+		
+		async with session.get(full_url, ssl = False) as source:
+			image = await source.read()
+			bytes = io.BytesIO(image)
+		
+		image = discord.File(bytes, filename = image_url)
+		
+		return image
+
+	def get_labels(result, key):
+		#Annoyingly, lists of one item are represented as just the item, so this solves that
+		a = result.get(key, [])
+		if type(a) == dict: return [a]
+		return a
+	
+	def sort_results(item):
+		if item == "**Primary**": return -999
+		elif item == "Other names": return 998
+		elif item == "Other languages": return 999
+		
+		return ord(item[0])
+
+	query = await utils.get_json(session,
+		f"http://api.finto.fi/rest/v1/search?vocab=hero&query={urllib.parse.quote(term)}&lang=en"
+	)
+	
+	if len(query["results"]) == 0:
+		return None, None
+	
+	uri = query["results"][0]["uri"]
+	
+	results = (await utils.get_json(session,
+		f"http://api.finto.fi/rest/v1/hero/data?format=application%2Fjson&uri={urllib.parse.quote(uri)}&lang=en"
+	))["graph"]
+	
+	description_text = "### HERO ontology\n"
+	descriptions = collections.defaultdict(list)
+	image = None
+	
+	for result in results:
+		if result["uri"] == "http://www.yso.fi/onto/hero/": continue
+		elif result["uri"] == uri: result_type = "**Primary**"
+		elif result.get("narrower"): result_type = "Broader"
+		elif result.get("broader"): result_type = "Narrower"
+		else: result_type = "Related"
+	
+		result_name = "(unknown)"
+		pref_labels = get_labels(result, "prefLabel")
+	
+		if pref_labels:
+			en_labels = [a for a in pref_labels if a["lang"] == "en"]
+			
+			if en_labels:
+				result_name = en_labels[0]["value"]
+			else:
+				label = pref_labels[0]
+				result_name = f"*{label['value']}* ({label['lang']})"
+		
+		en_uri = result["uri"].replace("http://www.yso.fi/onto/hero/", "http://finto.fi/hero/en/page/")
+
+		if result_type == "**Primary**":
+			image = await get_image(session, uri)
+			result_name = f"**{result_name}**"
+			
+			descriptions["Other names"] = [a["value"] for a in get_labels(result, "altLabel") if a["lang"] == "en"]
+			descriptions["Other languages"] = [
+				f"*{a['value']}* ({a['lang']})" 
+				for a in sorted(pref_labels, key = lambda a: a["lang"]) 
+				if a["lang"] != "en"
+			]
+		
+		descriptions[result_type].append(f"[{result_name}]({en_uri})")
+	
+	for result_type in sorted(descriptions, key = sort_results):
+		results = descriptions[result_type]
+		if not results: continue
+		
+		description_text += f"- {result_type}: {' \u00B7 '.join(results)}\n"
+
+	return description_text, image
