@@ -1,4 +1,4 @@
-discord.py >= 2.3.0
+discord.py >= 2.5.0
 aiohttp >= 3.9.3
 Pillow >= 8.0
 aiosqlite >= 0.17.0
@@ -6,5 +6,4 @@ docx2python >= 1.27.0
 python-dateutil >= 2.8.0
 jishaku >= 2.6.0
 beautifulsoup4 >= 4.12.2
-audioop-lts >= 0.2.1; python_version>='3.13'
 thefuzz >= 0.22.1

@@ -14,7 +14,6 @@ A heraldry-related bot, designed for the [Heraldry Community](https://twitter.co
 * [docx2python](https://pypi.org/project/docx2python/)
 * [python-dateutil](https://pypi.org/project/python-dateutil/)
 * [jishaku](https://github.com/Gorialis/jishaku)
-* [audioop-lts](https://pypi.org/project/audioop-lts/)
 * [thefuzz](https://pypi.org/project/thefuzz/)
 
 * Developer credentials (see below)
