@@ -6,7 +6,7 @@ from ..artifacts import Source
 
 class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	MOTTO_PARTS = re.compile("([&|!]\\w\\w\\w)")
-	RAND_SUB = re.compile("\n|\t")
+	RAND_SUB = re.compile("\n|\t| {2,}")
 	
 	ARTIFACT_CHOICES = [a.choice for a in Source.register.values()]
 	CHALLENGE_CHOICES = [
@@ -213,7 +213,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	@utils.trigger_typing
 	async def ds_random(self, ctx):
 		blazon = await utils.get_text(self.bot.session, "https://drawshield.net/include/randomblazon.php")
-		blazon = re.sub(self.RAND_SUB, " ", blazon.removesuffix("created by Drawshield.net/random\n")).strip()
+		blazon = re.sub(self.RAND_SUB, " ", blazon.removesuffix("// created by Drawshield.net/random\n")).strip()
 
 		embed, file = await services.ds(self.bot.session, blazon, "Random shield")
 		await ctx.send(embed = embed, file = file)
