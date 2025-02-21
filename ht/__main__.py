@@ -57,6 +57,8 @@ class Heraldtron(commands.Bot):
 			**kwargs
 		)
 		
+		self.tree.interaction_check = self.interaction_check
+		
 		with open("media/ascii_art", "r") as file:
 			self.logger.info(f"Bot initialisation complete.\n{file.read()}")
 		
@@ -138,6 +140,15 @@ class Heraldtron(commands.Bot):
 
 		self.ready_flag.set()
 		self.logger.info("Successfully cached data.")
+		
+	async def interaction_check(self, interaction):
+		if (
+			interaction.type == discord.InteractionType.application_command
+			and utils.get_special_channel(interaction.client, interaction.channel.id)
+		):
+			return False
+			
+		return True
 
 	async def add_cog(self, cog):
 		await super().add_cog(cog)
@@ -165,7 +176,9 @@ class Heraldtron(commands.Bot):
 
 	async def on_message(self, message):
 		await self.ready_flag.wait()
-		await self.process_commands(message)
+		
+		if not utils.get_special_channel(self, message.channel.id):
+			await self.process_commands(message)
 
 	async def close(self):
 		self.reset_cache()

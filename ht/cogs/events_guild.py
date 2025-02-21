@@ -53,12 +53,10 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 			
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		if message.channel.id not in self.bot.channel_cache: return
-	
-		channel = self.bot.channel_cache[message.channel.id]
+		channel = utils.get_special_channel(self.bot, message.channel.id)
+		if not channel: return
+
 		title = message.content
-		
-		if not (channel["proposal"] or channel["oc"]): return
 	
 		for match in re.findall(self.FIND_MENTIONS, message.content):
 			#replace mentions and emojis
@@ -85,18 +83,21 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 			self.bot.proposal_cache[message.id] = (message, time.time())
 	
 		elif len(message.attachments) + len(message.embeds) < 1:
-			await message.author.send(
-				f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
-				" All discussion about an artistic work should go in the thread attached to its original post."
-				" This is to make browsing easier and discussion more organised.\n\n"
-			)
 			await message.delete()
+
+			if not message.author.bot:
+				await message.author.send(
+					f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
+					" All discussion about an artistic work should go in the thread attached to its original post."
+					" This is to make browsing easier and discussion more organised.\n\n"
+				)
+
 			return
 	
 		if len(title) > self.THREAD_MAX:
 			title = title[:self.THREAD_MAX] + "..."
 		elif not title:
-			creation = message.created_at.strftime("%d %B %Y")
+			creation = utils.stddate(message.created_at)
 			title = f"{message.author.name} on {creation}"
 	
 		await message.create_thread(name = title)

@@ -144,6 +144,14 @@ def pluralise(word, count):
 def stddate(value):
 	return f"{value.day} {value:%B} {value.year}"
 
+def get_special_channel(bot, channel_id):
+	channel = bot.channel_cache.get(channel_id)
+	
+	if channel and (channel["oc"] or channel["proposals"]):
+		return channel
+		
+	return None
+
 async def _typing(self, ctx):
 	await ctx.typing()
 

@@ -38,7 +38,7 @@ class ModerationTools(utils.ModCog, name = "Tools"):
 		
 		if not ctx.interaction:
 			embed.set_footer(
-				text = f"Sent by {ctx.author.display_name} on {(datetime.now()).strftime('%d %B %Y')}",
+				text = f"Sent by {ctx.author.display_name} on {utils.stddate(datetime.now())}",
 				icon_url = ctx.author.display_avatar.with_size(256).url
 			)
 

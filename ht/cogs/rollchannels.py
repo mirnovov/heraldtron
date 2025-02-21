@@ -162,7 +162,7 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 		embed = discord.Embed(description = message.content[:1880])
 		embed.set_footer(text = 
 			f"{message.author.global_name}"
-			f" on {message.created_at.strftime('%d %b %y')}"
+			f" on {utils.stddate(message.created_at)}"
 		)
 		picture = None
 		
