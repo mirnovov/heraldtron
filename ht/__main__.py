@@ -114,7 +114,7 @@ class Heraldtron(commands.Bot):
 		record = await self.dbc.execute_fetchone(
 			"SELECT * FROM guilds WHERE discord_id = ?", (guild_id,)
 		)
-		guild = await utils.get_guild(self, record[0])
+		guild = await utils.get_guild(self, guild_id)
 
 		if not guild or not record: return
 		self.guild_cache[guild_id] = (guild, record)
@@ -123,16 +123,16 @@ class Heraldtron(commands.Bot):
 		await self.wait_until_ready()
 
 		async for record in await self.dbc.execute("SELECT * FROM guilds"):
-			guild = await utils.get_guild(self, record[0])
+			guild = await utils.get_guild(self, record["discord_id"])
 
 			if not guild or not record: continue
-			self.guild_cache[record[0]] = (guild, record)
+			self.guild_cache[record["discord_id"]] = (guild, record)
 
 		async for record in await self.dbc.execute("SELECT * FROM channels"):
-			self.channel_cache[record[0]] = record
+			self.channel_cache[record["discord_id"]] = record
 
-			if not record[2]: continue
-			channel = await utils.get_channel(self, record[0])
+			if not record["proposal"]: continue
+			channel = await utils.get_channel(self, record["discord_id"])
 
 			async for message in channel.history():
 				if not message.flags.has_thread: continue

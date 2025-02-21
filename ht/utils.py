@@ -121,7 +121,7 @@ async def check_is_owner(ctx):
 async def check_limited(ctx):
 	if not ctx.guild: return True
 
-	if ctx.bot.guild_cache[ctx.guild.id][1][2]:
+	if ctx.bot.guild_cache[ctx.guild.id][1]["limit_commands"]:
 		raise CustomCommandError(
 			"Command prohibited",
 			"This command is not allowed on this server."
