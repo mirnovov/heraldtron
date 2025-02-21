@@ -57,6 +57,8 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 	
 		channel = self.bot.channel_cache[message.channel.id]
 		title = message.content
+		
+		if not (channel["proposal"] or channel["oc"]): return
 	
 		for match in re.findall(self.FIND_MENTIONS, message.content):
 			#replace mentions and emojis
@@ -82,7 +84,13 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 			
 			self.bot.proposal_cache[message.id] = (message, time.time())
 	
-		elif not channel["oc"] or len(message.attachments) < 1:
+		elif len(message.attachments) + len(message.embeds) < 1:
+			await message.author.send(
+				f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
+				" All discussion about an artistic work should go in the thread attached to its original post."
+				" This is to make browsing easier and discussion more organised.\n\n"
+			)
+			await message.delete()
 			return
 	
 		if len(title) > self.THREAD_MAX:
