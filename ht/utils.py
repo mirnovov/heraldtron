@@ -34,19 +34,14 @@ class ModCog(MeldedCog, limit = False):
 		if await ctx.bot.is_owner(ctx.author):
 			return True
 		elif isinstance(ctx.channel, discord.abc.GuildChannel):
-			if self.is_mod(ctx.author.guild_permissions):
+			if is_mod(ctx.author.guild_permissions):
 				return True
 		else:
 			for guild in ctx.author.mutual_guilds:
-				perms = guild.get_member(ctx.author.id).guild_permissions
-				if self.is_mod(perms): return True
+				perms = guild.get_member(ctx.author.id)
+				if is_mod(perms): return True
 
 		raise commands.MissingRole("admin")
-
-	@staticmethod
-	def is_mod(perms):
-		return perms.ban_members or perms.administrator
-
 
 class NvFormatter(Formatter):
 	LINE_WIDTH = 100
@@ -143,14 +138,20 @@ def pluralise(word, count):
 @functools.cache
 def stddate(value):
 	return f"{value.day} {value:%B} {value.year}"
-
-def get_special_channel(bot, channel_id):
-	channel = bot.channel_cache.get(channel_id)
+	
+def get_special_channel(bot, channel):
+	channel = bot.channel_cache.get(channel.id)
 	
 	if channel and (channel["oc"] or channel["proposals"]):
 		return channel
 		
 	return None
+	
+def is_mod(member):
+	perms = getattr(member, "guild_permissions", None)
+	if not perms: return True
+	
+	return perms.ban_members or perms.administrator
 
 async def _typing(self, ctx):
 	await ctx.typing()
