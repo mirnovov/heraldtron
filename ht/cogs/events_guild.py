@@ -53,8 +53,8 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 			
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		channel = utils.get_special_channel(self.bot, message.channel.id)
-		if not channel: return
+		channel = utils.get_special_channel(self.bot, message.channel)
+		if not channel or message.author.bot: return
 
 		title = message.content
 	
@@ -83,14 +83,15 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 			self.bot.proposal_cache[message.id] = (message, time.time())
 	
 		elif len(message.attachments) + len(message.embeds) < 1:
+			if utils.is_mod(message.author):
+				return
+			
 			await message.delete()
-
-			if not message.author.bot:
-				await message.author.send(
-					f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
-					" All discussion about an artistic work should go in the thread attached to its original post."
-					" This is to make browsing easier and discussion more organised.\n\n"
-				)
+			await message.author.send(
+				f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
+				" All discussion about an artistic work should go in the thread attached to its original post."
+				" This is to make browsing easier and discussion more organised.\n\n"
+			)
 
 			return
 	

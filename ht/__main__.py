@@ -140,15 +140,12 @@ class Heraldtron(commands.Bot):
 
 		self.ready_flag.set()
 		self.logger.info("Successfully cached data.")
-		
+
 	async def interaction_check(self, interaction):
-		if (
-			interaction.type == discord.InteractionType.application_command
-			and utils.get_special_channel(interaction.client, interaction.channel.id)
-		):
+		if interaction.type != discord.InteractionType.application_command:
 			return False
 			
-		return True
+		return utils.is_mod(interaction.user) or not utils.get_special_channel(self, interaction.channel)
 
 	async def add_cog(self, cog):
 		await super().add_cog(cog)
@@ -177,7 +174,7 @@ class Heraldtron(commands.Bot):
 	async def on_message(self, message):
 		await self.ready_flag.wait()
 		
-		if not utils.get_special_channel(self, message.channel.id):
+		if utils.is_mod(message.author) or not utils.get_special_channel(self, message.channel):
 			await self.process_commands(message)
 
 	async def close(self):
