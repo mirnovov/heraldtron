@@ -87,11 +87,14 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 				return
 			
 			await message.delete()
-			await message.author.send(
-				f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
-				" All discussion about an artistic work should go in the thread attached to its original post."
-				" This is to make browsing easier and discussion more organised.\n\n"
-			)
+			
+			try:
+				await message.author.send(
+					f":thread: | Your post in {message.channel.mention} has been deleted, as it doesn't have media attached."
+					" All discussion about an artistic work should go in the thread attached to its original post."
+					" This is to make browsing easier and discussion more organised.\n\n"
+				)
+			except discord.Forbidden: pass
 
 			return
 	
