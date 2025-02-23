@@ -63,6 +63,14 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 				embed.title = "Could not decode server response"
 				embed.description = "The server has returned content of the incorrect type. An error report has been sent."\
 								  	f" If the problem persists, contact {mention}."
+									  
+			case discord.Forbidden:
+				warn = True
+				embed.title = "Permission error"
+				embed.description = "The bot does not have permission to perform the action requested, or Discord"\
+								    " has forbidden it from performing this action for another reason. Ensure that"\
+									" permissions for this server are configured correctly."
+
 			case utils.BadMessageResponse:
 				embed.title = "Message response contains incorrect content"
 				embed.description = "The bot message you are responding to does not accept this content."\
