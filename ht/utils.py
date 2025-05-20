@@ -34,7 +34,7 @@ class ModCog(MeldedCog, limit = False):
 		if await ctx.bot.is_owner(ctx.author):
 			return True
 		elif isinstance(ctx.channel, discord.abc.GuildChannel):
-			if is_mod(ctx.author.guild_permissions):
+			if is_mod(ctx.author):
 				return True
 		else:
 			for guild in ctx.author.mutual_guilds:
