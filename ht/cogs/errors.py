@@ -30,6 +30,10 @@ class BotErrors(commands.Cog, name = "Bot Errors"):
 				embed.title = "Command is missing argument"
 				embed.description = f"The command you entered requires you to enter `{error.param.name}`. Check that it is entered correctly and try again."
 				
+			case commands.MissingRequiredAttachment:
+				embed.title = "Command is missing image"
+				embed.description = f"The command you entered requires you to attach an image. Attach an image and try again."
+				
 			case commands.UserNotFound:
 				embed.title = "Command could not locate user"
 				embed.description = "The command you entered requires a valid user. Check that their name is mentioned correctly and try again."
