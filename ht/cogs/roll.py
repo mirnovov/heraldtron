@@ -144,21 +144,18 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			f"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;",
 			(user["discord_id"],)
 		)
+		links = [f"- <#{record["discord_id"]}>" for record in records]
+		wiki_url = f"https://{self.WIKI_URL}/wiki/GreiiN:{user['greii_n']}"
 		
-		mentions = ", ".join(f"<#{record["discord_id"]}>" for record in records)
+		if user["greii_n"] == self.NOVOV_GREII_N:
+			links.append("- **[novov.me \u2197\uFE0E](https://novov.me/projects/heraldry)**")
 		
-		if mentions:
-			embed.add_field(name = "User roll", value = mentions)
-			
-		url = f"https://{self.WIKI_URL}/wiki/GreiiN:{user['greii_n']}"
-		link = f"**[{self.WIKI_URL} \u2197\uFE0E]({url})**"
+		async with self.bot.session.get(wiki_url) as response:
+			if response.status == 200: 
+				links.append(f"- **[{self.WIKI_URL} \u2197\uFE0E]({wiki_url})**")
 		
-		async with self.bot.session.get(url) as response:
-			if user["greii_n"] == self.NOVOV_GREII_N:
-				link = "\n".join(["**[novov.me \u2197\uFE0E](https://novov.me/projects/heraldry)**", link])
-
-			if response.status == 200:
-				embed.add_field(name = "External sites", value = link)
+		if links:
+			embed.add_field(name = "External links", value = "\n".join(links))
 		
 		return embed
 
