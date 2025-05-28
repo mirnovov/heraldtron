@@ -7,6 +7,8 @@ from .. import converters, embeds, utils
 class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"):
 	FIND_HTML_TAGS = re.compile(r"<[^>]*>")
 	ROA_FORM = "https://forms.gle/FLVVc8ncQpfhNa7D8"
+	NOVOV_GREII_N = 129
+	WIKI_URL = "rollofarms.miraheze.org"
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -37,20 +39,20 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await ctx.send(embed = embed)
 		
 	@commands.hybrid_command(
-		help = "Looks up the symbology of a user's coat of arms.\nUses GreiiEquites' https://roll-of-arms.com as a source.",
+		help = f"Looks up the symbology of a user's coat of arms.\nUses GreiiEquites' https://{WIKI_URL} as a source.",
 		aliases = ("s", "symbols")
 	)
 	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
 	@utils.trigger_typing
 	async def symbolism(self, ctx, user: converters.Armiger = None):
 		user = user or await self.get_author_roll(ctx.author)
-		url = f"https://roll-of-arms.com/wiki/GreiiN:{user[0]}"
+		url = f"https://{self.WIKI_URL}/wiki/GreiiN:{user['greii_n']}"
 
 		async with self.bot.session.get(url) as response:
 			if response.status == 404:
 				raise utils.CustomCommandError(
-					"Armiger is not on roll-of-arms.com",
-					"The arms of the armiger are not on the https://roll-of-arms.com "
+					f"Armiger is not on {self.WIKI_URL}",
+					f"The arms of the armiger are not on the https://{self.WIKI_URL} "
 					"website. If you would like to add your arms and related symbolism "
 					f"to the website, please fill out the [form here]({self.ROA_FORM})."
 				)
@@ -60,9 +62,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			
 			if not values:
 				raise utils.CustomCommandError(
-					"Armiger doesn't have symbolism on roll-of-arms.com",
+					f"Armiger doesn't have symbolism on {self.WIKI_URL}",
 					"The armiger has opted not to include symbolism on the "
-					"https://roll-of-arms.com website."
+					f"https://{self.WIKI_URL} website."
 				)
 			
 			next_section = values[0].next_sibling
@@ -80,10 +82,10 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			
 			embed = embeds.GENERIC.create(
 				f"Symbolism for {user["qualified_name"]}",
-				f"{symbolism_text}\n\n[**See more on roll-of-arms.com...**]({url})",
+				f"{symbolism_text}\n\n[**See more on {self.WIKI_URL}...**]({url})",
 				heading = f"GreiiN:{user["greii_n"]:04}"
 			)
-			embed.set_footer(text = "Textual content from https://roll-of-arms.com by GreiiEquites.")
+			embed.set_footer(text = f"Textual content from https://{self.WIKI_URL} by GreiiEquites.")
 
 			await ctx.send(embed = embed)
 
@@ -147,6 +149,16 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		
 		if mentions:
 			embed.add_field(name = "User roll", value = mentions)
+			
+		url = f"https://{self.WIKI_URL}/wiki/GreiiN:{user['greii_n']}"
+		link = f"**[{self.WIKI_URL} \u2197\uFE0E]({url})**"
+		
+		async with self.bot.session.get(url) as response:
+			if user["greii_n"] == self.NOVOV_GREII_N:
+				link = "\n".join(["**[novov.me \u2197\uFE0E](https://novov.me/projects/heraldry)**", link])
+
+			if response.status == 200:
+				embed.add_field(name = "External sites", value = link)
 		
 		return embed
 
