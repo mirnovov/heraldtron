@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from .. import converters, utils
 
 class RollChannels(commands.Cog, name = "Roll Channels"):
-	VARIANTS = ["market", "artist", "roll of arms"]
+	CATEGORY_NAME = "roll of arms"
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -21,14 +21,13 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 
 			for category in reified.categories:
 				if not self.valid_category(category): continue
-				personal = self.is_personal(category)
 
 				for channel in category.channels:
 					owner = await self.get_owner(channel)
 					await self.bot.dbc.execute(
 						"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?1, ?2, ?3, ?4, ?5)"
 						" ON CONFLICT(discord_id) DO UPDATE SET user_id = ?2, name = ?5 WHERE ?2 IS NOT NULL;",
-						(channel.id, owner, guild["discord_id"], int(personal), channel.name)
+						(channel.id, owner, guild["discord_id"], 1, channel.name)
 					)
 					await self.bot.dbc.commit()
 
@@ -56,7 +55,7 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 
 		await self.bot.dbc.execute(
 			"INSERT INTO roll_channels (discord_id, user_id, guild_id, personal, name) VALUES (?1, ?2, ?3, ?4, ?5);",
-			(channel.id, await self.get_owner(channel), channel.guild.id, self.is_personal(channel.category), channel.name)
+			(channel.id, await self.get_owner(channel), channel.guild.id, 1, channel.name)
 		)
 		await self.bot.dbc.commit()
 
@@ -96,16 +95,8 @@ class RollChannels(commands.Cog, name = "Roll Channels"):
 		]:
 			return False
 
-		name = category.name.lower()
+		return CATEGORY_NAME in category.name.lower()
 
-		for v in RollChannels.VARIANTS:
-			if v in name: return True
-
-		return False
-
-	def is_personal(self, category):
-		return self.VARIANTS[2] in category.name.lower()
-	
 	@app_commands.describe(
 		origin = "The channel to be transferred.", 
 		target = "The target channel. A thread will be created with the original channel's name."

@@ -138,22 +138,18 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		elif user["discord_id"] == author.id:
 			embed.description += f"\n**To set an image, use `{prefix}setemblazon`.**"
 		
-		await self.add_rolls(embed, "AND personal", user, "User roll")
-		await self.add_rolls(embed, "AND NOT personal", user, "Artist gallery")
+		records = await self.bot.dbc.execute_fetchall(
+			f"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;",
+			(user["discord_id"],)
+		)
+		
+		mentions = ", ".join(f"<#{record["discord_id"]}>" for record in records)
+		
+		if mentions:
+			embed.add_field(name = "User roll", value = mentions)
 		
 		return embed
 
-	async def add_rolls(self, embed, query, user, name):
-		records = await self.bot.dbc.execute_fetchall(
-			f"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL {query};",
-			(user["discord_id"],)
-		)
-
-		mentions = ", ".join(f"<#{record["discord_id"]}>" for record in records)
-		if not mentions: return
-
-		embed.add_field(name = name, value = mentions)
-		
 	async def get_author_roll(self, author):
 		user = await self.bot.dbc.execute_fetchone(
 			"SELECT * FROM armigers_e WHERE discord_id == ?;", (author.id,)
