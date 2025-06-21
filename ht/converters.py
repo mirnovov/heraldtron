@@ -27,9 +27,12 @@ class Armiger(app_commands.Transformer, commands.Converter):
 		result = None
 
 		if argument.isdecimal():
+			number = int(argument)
+			query = "greii_n" if number < 10000 else "discord_id"
+			
 			result = await ctx.bot.dbc.execute_fetchone(
-				"SELECT * FROM armigers_e WHERE greii_n == ?;",
-				(int(argument),)
+				f"SELECT * FROM armigers_e WHERE {query} == ?;",
+				(number,)
 			)
 		elif argument.startswith("<"):
 			try:
