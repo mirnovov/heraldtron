@@ -1,6 +1,7 @@
 import discord, aiohttp, aiosqlite, platform, os, re
+from discord import ui
 from discord.ext import commands
-from .. import utils, views, embeds, __copyright__, __version__
+from .. import utils, views, __copyright__, __version__
 
 class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = False):
 	RNAMES = re.compile("(?m)^(?:NAME|VERSION_ID)=\"?(.+?)\"?\n")
@@ -24,49 +25,51 @@ class MetaTools(utils.MeldedCog, name = "Meta", category = "Other", limit = Fals
 		aliases = ("ab",)
 	)
 	async def about(self, ctx):
-		embed = embeds.ABOUT.create(
-			"", f"## Heraldtron\n**{__version__} {self.commit}**\n\n{self.bot.description}"
-		)
-		embed.set_thumbnail(
-			url = str(self.bot.user.display_avatar.with_size(512).url)
-		)
-		
 		prefix_command_count = len([*filter(lambda c: not c.extras.get("resource"), self.bot.commands)])
 		api_version = discord.http.INTERNAL_API_VERSION
+		view = ui.LayoutView()
 		
-		embed.description += (
-			"\n### Running on\n"
+		top = ui.Section(
+			ui.TextDisplay(f"## Heraldtron\n**{__version__} {self.commit}**\n\n{self.bot.description}"),
+			accessory = ui.Thumbnail(media = str(self.bot.user.display_avatar.with_size(512).url))
+		)
+
+		info = ui.TextDisplay(
+			f"\n### Running on\n"
 			f"**Python {platform.python_version()}**\t"
 			f"`{platform.python_implementation()} ({platform.python_build()[0]}"
 			f" {platform.python_build()[1].replace('  ',' ')})`\n"
 			f"**{self.get_os_name()}**\t`{self.get_os_details()}`"
-			"\n### Made with the help of\n"
+			f"\n### Made with the help of\n"
 			f"**[discord.py](https://pypi.org/project/discord.py/) {discord.__version__}**\n"
 			f"**[aiohttp](https://pypi.org/project/aiohttp/) {aiohttp.__version__}**\n"
 			f"**[aiosqlite](https://pypi.org/project/aiosqlite/) {aiosqlite.__version__}**"
-			" and the [SQLite](https://www.sqlite.org/) library"
-			"\n### And special thanks to\n"
-			"Ensix, GreiiEquites, and every "
-			"[contributor](https://github.com/mirnovov/heraldtron/graphs/contributors) to the project"
+			f" and the [SQLite](https://www.sqlite.org/) library"
+			f"\n### And special thanks to\n"
+			f"Ensix, GreiiEquites, and every "
+			f"[contributor](https://github.com/mirnovov/heraldtron/graphs/contributors) to the project"
 			f"\n\n-# API version {api_version} \u00B7 {len(self.bot.guilds)} servers \u00B7"
 			f" {len(self.bot.users)} users \u00B7 ≤{self.bot._connection.max_messages} cached messages" 
 			f" \u00B7 {prefix_command_count} prefix commands \u00B7 {len(self.bot.tree.get_commands())} app commands"
 			f"\n-# {__copyright__}. This is an open source project available under the MIT license."
 		)
+		
+		actionrow = ui.ActionRow(
+			ui.Button(
+				label = "Visit the Heraldry Discord",
+				style = discord.ButtonStyle.secondary,
+				url = "https://discord.gg/Wvsz2M36nt"
+			), 
+			ui.Button(
+				label = "Edit on GitHub",
+				style = discord.ButtonStyle.secondary,
+				url = "https://github.com/mirnovov/heraldtron"
+			)
+		)
+		
+		view.add_item(ui.Container(top, info, actionrow))
 
-		view = discord.ui.View()
-		view.add_item(discord.ui.Button(
-			label = "Visit the Heraldry Discord",
-			style = discord.ButtonStyle.secondary,
-			url = "https://discord.gg/Wvsz2M36nt"
-		))
-		view.add_item(discord.ui.Button(
-			label = "Edit on GitHub",
-			style = discord.ButtonStyle.secondary,
-			url = "https://github.com/mirnovov/heraldtron"
-		))
-
-		await ctx.send(embed = embed, view = view)
+		await ctx.send(view = view)
 
 	def get_os_name(self):
 		if os.path.exists("/etc/os-release"):
@@ -107,16 +110,16 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 
 		for key in sorted(self.context.bot.melded_cogs, key = self.sort_melded_cogs):
 			page = self.context.bot.melded_cogs[key]
-			embed, valid = await self.send_melded_cog_help(key, page)
-			if valid: pages.append((key, embed))
+			text, valid = await self.send_melded_cog_help(key, page)
+			if valid: pages.append((key, text))
 
 		view = views.HelpSwitcher(pages)
-		message = await self.context.send(embed = pages[0][1], view = view)
+		message = await self.context.send(view = view)
 
 		view.message = message
 
 	async def send_melded_cog_help(self, title, cogs):
-		embed = embeds.HELP.create(f"{title} commands", "")
+		text = f"## {title} commands\n"
 		valid = {}
 
 		for cog in cogs:
@@ -127,40 +130,37 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 			valid[cog.qualified_name] = f"{value}{self.add_indented_commands(commands, heading = None)}"
 
 		if len(valid) == 1:
-			embed.description += next(iter(valid.values()))
+			text += next(iter(valid.values()))
 		else:
 			for name, desc in valid.items():
-				embed.add_field(name = name, value = desc, inline = False)
+				text += f"### {name}\n{desc}"
 
-		if note := self.get_ending_note():
-			embed.set_footer(text = note)
-
-		return embed, valid
+		return text, valid
 
 	async def send_cog_help(self, cog):
-		embed, _ = await self.send_melded_cog_help(cog.qualified_name, [cog])
-		await self.get_destination().send(embed = embed)
+		text, _ = await self.send_melded_cog_help(cog.qualified_name, [cog])
+		view = views.Generic("", text, heading = views.HelpSwitcher.HEADING)
+		view.add_footer(views.HelpSwitcher.FOOTER)
+		await self.get_destination().send(view = view)
 
 	async def send_command_help(self, command):
-		embed = embeds.HELP.create(command.name, command.description or "")
-		embed.description += self.add_command_formatting(command)
-		await self.get_destination().send(embed = embed)
+		view = views.Generic(command.name, command.description or "", heading = views.HelpSwitcher.HEADING)
+		view.add_text(self.add_command_formatting(command))
+		await self.get_destination().send(view = view)
 
 	async def send_group_help(self, group):
-		embed = embeds.HELP.create(group.name, group.description or "")
-		embed.description += self.add_command_formatting(group) + "\n"
+		view = views.Generic(group.name, group.description or "", heading = views.HelpSwitcher.HEADING)
+		view.add_text(self.add_command_formatting(group) + "\n")
 
 		teeth = await self.filter_commands(group.commands, sort = self.sort_commands)
-		embed.description += self.add_indented_commands(teeth, heading = "Subcommands")
+		view.add_text(self.add_indented_commands(teeth, heading = "Subcommands"))
+		view.add_footer(views.HelpSwitcher.FOOTER)
 
-		if note := self.get_ending_note():
-			embed.set_footer(text = note)
-
-		await self.get_destination().send(embed = embed)
+		await self.get_destination().send(view = view)
 
 	async def send_error_message(self, error):
-		await self.get_destination().send(embed = embeds.ERROR.create(
-			"Invalid help entry", error
+		await self.get_destination().send(view = views.Generic(
+			"Invalid help entry", error, heading = f"{views.ERROR_EMOJI} An error has been encountered"
 		))
 
 	def add_command_formatting(self, command):
@@ -223,7 +223,7 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 		return " ".join(result)
 
 	def add_indented_commands(self, commands, *, heading):
-		desc = f"\u200b\n**{heading}**\n" if heading else ""
+		desc = f"**{heading}**\n" if heading else ""
 
 		if not commands: desc += f"No commands available right now."
 		for command in commands:

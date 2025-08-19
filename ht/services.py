@@ -50,21 +50,23 @@ async def ds(session, blazon, drawn_kind):
 	results = await utils.get_json(session, f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
 	image = discord.File(io.BytesIO(base64.b64decode(results["image"])), filename = "ds.png")
 
-	embed = embeds.DRAW.create("", f"*{blazon}*", heading = f"{drawn_kind} drawn!")
-	embed.set_image(url = "attachment://ds.png")
-	embed.set_footer(
-		icon_url = "https://drawshield.net/img/shop-logo.png",
-		text = f"Not all blazons can be illustrated with this command.\nDrawn using DrawShield; © Karl Wilcox."
-	)
+	view = views.Generic("", f"*{blazon}*", heading = f":pencil2: {drawn_kind} drawn!")
+	view.add_image("attachment://ds.png")
+	view.add_footer("Not all blazons can be illustrated with this command.\n-# Drawn using DrawShield; © Karl Wilcox.")
+
+	errors = []
 
 	for message in results["messages"]:
-		if message["category"] != "blazon": continue
+		if not message["category"] in ["parser", "blazon"]: continue
 		elif "linerange" in message:
-			embed.add_field(name = f"Error {message['linerange'].strip()}", value = message["content"], inline = False)
-		elif "context" in message:
-			embed.add_field(name = "Error", value = f"{message['content']} {message['context']}", inline = False)
+			errors.append(f"{message['linerange'].strip()}: {message['content']}")
+		elif "content" in message:
+			errors.append(message['content'])
+			
+	if errors:
+		view.add_text(f"\n\n-# {views.ERROR_EMOJI} **Errors have been encountered**\n{'\n'.join(errors)}")
 
-	return embed, image
+	return view, image
 
 async def ds_catalog(session, charge):
 	catalog = await utils.get_json(session, f"https://drawshield.net/api/catalog/{urllib.parse.quote(charge)}")

@@ -2,11 +2,11 @@ import discord, typing, re
 from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
-from .. import embeds, utils, views
+from .. import utils, views
 
 class ModerationTools(utils.ModCog, name = "Tools"):
-	HAS_MARKDOWN = re.compile(r"<@!?|<#|<&|\*{1,2}\w")
 	SHORT_MESSAGE = 200
+	HEADING = ":warning: Official moderator message"
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -31,18 +31,17 @@ class ModerationTools(utils.ModCog, name = "Tools"):
 	)
 	@app_commands.describe(message = "The message to display.")
 	async def m(self, ctx, *, message):
-		if len(message) < self.SHORT_MESSAGE and not re.search(self.HAS_MARKDOWN, message):
-			embed = embeds.MOD_MESSAGE.create(message, "")
+		if len(message) < self.SHORT_MESSAGE and not "\n" in message:
+			view = views.Generic(message, "", heading = self.HEADING)
 		else:
-			embed = embeds.MOD_MESSAGE.create("", message)
-		
+			view = views.Generic("", message, heading = self.HEADING)
+			
 		if not ctx.interaction:
-			embed.set_footer(
-				text = f"Sent by {ctx.author.display_name} on {utils.stddate(datetime.now())}",
-				icon_url = ctx.author.display_avatar.with_size(256).url
+			view.add_footer(
+				f"Sent by {ctx.author.display_name} on {utils.stddate(datetime.now())}"
 			)
 
-			await ctx.send(embed = embed)
+			await ctx.send(view = view)
 		
 			if isinstance(ctx.channel, discord.Thread) and ctx.channel.archived:
 				await ctx.channel.edit(locked = False, archived = False)
@@ -51,7 +50,7 @@ class ModerationTools(utils.ModCog, name = "Tools"):
 			else:
 				await ctx.message.delete()
 		else:
-			await ctx.send(embed = embed)
+			await ctx.send(view = view)
 
 	@commands.guild_only()
 	@commands.hybrid_command(help = "Locks a channel, disabling the ability to send messages from it.", aliases = ("l",))

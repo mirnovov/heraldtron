@@ -3,9 +3,11 @@ from discord import ui
 from discord.ext import commands
 from . import utils
 
-class NvView(ui.View):
+ERROR_EMOJI = "<:error:1407259518470983710>"
+
+class NvViewBase():
 	async def terminate(self, interaction):
-		for child in self.children:
+		for child in self.walk_children():
 			child.disabled = True
 		
 		try:
@@ -19,6 +21,11 @@ class NvView(ui.View):
 				
 		self.stop()
 
+class NvView(NvViewBase, ui.View):
+	async def on_timeout(self):
+		await self.terminate(None)
+		
+class NvLayoutView(NvViewBase, ui.LayoutView):
 	async def on_timeout(self):
 		await self.terminate(None)
 
@@ -78,24 +85,40 @@ class Navigator(NvView):
 	async def run(self):
 		self.message = await self.ctx.send(embed = self.embeds[0], view = self)
 
-class HelpSwitcher(NvView):
-	def __init__(self, embeds):
+class HelpSwitcher(NvLayoutView):
+	HEADING = ":information_source: Command help"
+	FOOTER = "Type !help [command] for more info on a command, including aliases."
+	
+	def __init__(self, pages):
 		super().__init__()
-		[self.add_help(name, embed) for name, embed in embeds]
+		
+		self.container = ui.Container()
+		self.actionrow = ui.ActionRow()
+		self.text = ui.TextDisplay(pages[0][1] + "\u200b")
 
-		self.children[0].disabled = True
+		[self.add_help(name, v) for name, v in pages]
 
-	def add_help(self, name, embed):
+		self.actionrow.children[0].disabled = True
+		
+		self.container.add_item(ui.TextDisplay(f"-# **{self.HEADING}**"))
+		self.container.add_item(self.text)
+		self.container.add_item(self.actionrow)
+		self.container.add_item(ui.TextDisplay(f"-# {self.FOOTER}"))
+
+		self.add_item(self.container)
+
+	def add_help(self, name, page):
 		async def switch(interaction):
-			for child in self.children:
+			for child in self.actionrow.children:
 				child.disabled = child.label == name
-
-			await interaction.response.edit_message(embed = embed, view = self)
+			
+			self.text.content = page + "\u200b"
+			await interaction.response.edit_message(view = self)
 
 		button = ui.Button(label = name, style = discord.ButtonStyle.primary)
 		button.callback = switch
 
-		self.add_item(button)
+		self.actionrow.add_item(button)
 
 class Chooser(NvView):
 	def __init__(self, ctx, choices, placeholder, **kwargs):
@@ -167,3 +190,44 @@ class TriviaButton(ui.Button):
 		await interaction.response.edit_message(
 			content = ":leftwards_arrow_with_hook: | Your response has been undone.", view = None
 		)
+		
+class Generic(ui.LayoutView):
+	def __init__(self, title, description, heading = None, thumbnail = None):
+		super().__init__()
+		
+		self.container = ui.Container()
+		text = ""
+		
+		if heading:
+			self.container.add_item(ui.TextDisplay(f"-# **{heading}**\n"))
+			
+		if title:
+			text += f"## {title}"
+			
+		if description:
+			if title: text += "\n"
+			text += description
+			
+		if text:
+			self.text = ui.TextDisplay(text)
+		
+			if thumbnail:
+				self.container.add_item(ui.Section(
+					self.text,
+					accessory = ui.Thumbnail(thumbnail)
+				))
+			else:
+				self.container.add_item(self.text)
+		
+		self.add_item(self.container)
+		
+	def add_image(self, url):
+		gallery = ui.MediaGallery()
+		gallery.add_item(media = url)
+		self.container.add_item(gallery)
+		
+	def add_text(self, text):
+		self.text.content += text
+	
+	def add_footer(self, text):
+		self.container.add_item(ui.TextDisplay(f"-# {text}"))

@@ -1,6 +1,6 @@
 import discord, re, sqlite3, time
 from discord.ext import commands, tasks
-from .. import embeds, utils
+from .. import views, utils
 
 class GuildEvents(commands.Cog, name = "Guild events"):
 	FIND_MENTIONS = re.compile(r"(?m)(<(#|@|:\w+:)(\d+)>)")
@@ -139,18 +139,15 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 	
 		reactions = "\u3000".join(f"{reaction.emoji} {reaction.count}" for reaction in message.reactions)
 		quote = message.content[:400].replace("\n", "\n> ")
-		embed = embeds.PROPOSAL.create("", f"> {quote}\n\n{reactions}")
-		embed.set_footer(
-			text = f"Original post by {message.author}",
-			icon_url = message.author.display_avatar.with_size(256).url
-		)
+		view = views.Generic("", f"> {quote}\n\n{reactions}", heading = ":door: Proposal closed")
+		view.add_footer(f"Original post by {message.author}")
 	
-		await thread.send(embed = embed)
+		await thread.send(view = view)
 		await thread.edit(archived = True)
 	
 		if log_channel := self.bot.guild_cache[payload.guild_id][1]["log"]:
 			log = await utils.get_channel(self.bot, log_channel)
-			await log.send(embed = embed)
+			await log.send(view = view)
 
 	
 async def setup(bot):

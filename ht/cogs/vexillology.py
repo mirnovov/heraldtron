@@ -1,8 +1,8 @@
 import discord, asyncio, csv, random
-from discord import app_commands
+from discord import app_commands, ui
 from discord.ext import commands
 from ..ext import OnlineSeych
-from .. import embeds, services, utils, views
+from .. import services, utils, views
 
 class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 	def __init__(self, bot):
@@ -26,8 +26,8 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 	@app_commands.describe(blazon = "The blazon to illustrate. The language differs slightly from proper blazonry.")
 	@utils.trigger_typing
 	async def df(self, ctx, *, blazon : str):
-		embed, file = await services.ds(self.bot.session, blazon + " in flag shape", "Flag")
-		await ctx.send(embed = embed, file = file)
+		view, file = await services.ds(self.bot.session, blazon + " in flag shape", "Flag")
+		await ctx.send(view = view, file = file)
 
 	@commands.hybrid_command(
 		help = "Displays a random flag fact from a list of 38 facts.\n"
@@ -49,16 +49,16 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 				)
 
 		fact = random.choice(facts) if factid < 0 else facts[factid]
-		embed = embeds.FLAG_FACT.create(f"{fact[1]}", "", heading = f"Flag fact #{fact[0]}")
+		view = views.Generic(f"{fact[1]}", "", heading = f":triangular_flag_on_post: Flag fact #{fact[0]}")
 
-		await ctx.send(embed=embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(help="Displays a guide to various flag ratios.")
 	async def ratios(self, ctx):
-		embed = embeds.GENERIC.create("", "", heading = "Flag ratios")
-		embed.set_image(url = "https://i.imgur.com/qMGrKqs.png")
-		embed.set_footer(text = "Infographic by /u/greatpaperwolf")
-		await ctx.send(embed = embed)
+		view = views.Generic("", "", heading = ":triangular_ruler: Flag ratios")
+		view.add_image("https://i.imgur.com/qMGrKqs.png")
+		view.add_footer("Infographic by /u/greatpaperwolf")
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		help = "Seychelles-ises a flag.\nUses Akshay Chitale's Seychelles Flag Generator script.",
@@ -72,10 +72,10 @@ class VexStuff(utils.MeldedCog, name = "Vexillology", category = "Vexillology"):
 		image = await self.bot.loop.run_in_executor(None, OnlineSeych.generate, image_url, image_content)
 		file = discord.File(image, filename = "seychelles.png")
 
-		embed = embeds.GENERIC.create("Result", "", heading = "Seychelles-izer")
-		embed.set_image(url = "attachment://seychelles.png")
-		embed.set_footer(text = "Original script by Akshay Chitale")
-		await ctx.send(embed = embed, file = file)
+		view = views.Generic("Result", "", heading = ":flag_sc: Seychelles-izer")
+		view.add_image("attachment://seychelles.png")
+		view.add_footer("Original script by Akshay Chitale")
+		await ctx.send(view = view, file = file)
 
 async def setup(bot):
 	await bot.add_cog(VexStuff(bot))

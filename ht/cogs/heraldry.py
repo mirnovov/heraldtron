@@ -1,7 +1,7 @@
 import discord, csv, json, random, re
 from discord import app_commands
 from discord.ext import commands
-from .. import converters, embeds, modals, services, utils, views
+from .. import converters, modals, services, utils, views
 from ..artifacts import Source
 
 class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
@@ -42,15 +42,15 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 			)
 
 		result = await museum.retrieve(ctx.bot)
-		title = discord.utils.escape_markdown(result[1])
+		title = f"[{discord.utils.escape_markdown(result[1])}]({result[0]})"
 
-		embed = embeds.SEARCH_RESULT.create(title, result[2], heading = "Random artifact")
-		embed.url = result[0]
-		embed.set_footer(text = f"{result[4]} via {museum.desc}" if result[4] else museum.desc)
+		view = views.Generic(title, result[2], heading = ":amphora: Random artifact")
 
-		if result[3]: embed.set_image(url = result[3])
+		if result[3]: view.add_image(url = result[3])
+		
+		view.add_footer(text = f"{result[4]} via {museum.desc}" if result[4] else museum.desc)
 
-		await ctx.send(embed = embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		name = "catalog",
@@ -67,18 +67,15 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 			"Check your spelling and try again."
 		)
 
-		embed = embeds.SEARCH_RESULT.create(
+		view = views.Generic(
 			f"Catalog entry for \"{charge}\"",
 			catalog[1] if len(catalog) > 1 else "",
-			heading = "DrawShield catalog"
+			heading = ":book: DrawShield catalog"
 		)
-		embed.set_image(url = catalog[0])
-		embed.set_footer(
-			icon_url = "https://drawshield.net/img/shop-logo.png",
-			text = f"Retrieved using DrawShield; © Karl Wilcox. "
-		)
+		view.add_image(url = catalog[0])
+		view.add_footer("Retrieved using DrawShield; © Karl Wilcox.")
 
-		await ctx.send(embed=embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		name = "challenge",
@@ -102,19 +99,19 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 				f"Type `{ctx.clean_prefix}help challenge` to see the available categories."
 			)
 
-		embed = embeds.GENERIC.create("", "Try emblazoning this using DrawShield!", heading = "Random image")
-		embed.url = url
-		embed.set_footer(text = "Retrieved using DrawShield; © Karl Wilcox. ")
+		view = views.Generic("", "Try emblazoning this using DrawShield!", heading = ":game_die: Random image")
 
 		if url.startswith("https://commons.wikimedia.org"):
 			result = await services.commons(
 				self.bot.session, self.bot.loop, url.removeprefix("https://commons.wikimedia.org//wiki/")
 			)
-			embed.set_image(url = result.find("urls").find("thumbnail").text)
+			view.add_image(result.find("urls").find("thumbnail").text)
 
-		else: embed.set_image(url = url)
+		else: view.add_image(url)
+		
+		view.add_footer(text = "Retrieved using DrawShield; © Karl Wilcox. ")
 
-		await ctx.send(embed = embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		help = "Illustrates arms using DrawShield.\nNote that DrawShield does not support"
@@ -124,8 +121,8 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	@app_commands.describe(blazon = "The blazon to illustrate. The language differs slightly from proper blazonry.")
 	@utils.trigger_typing
 	async def ds(self, ctx, *, blazon : str):
-		embed, file = await services.ds(self.bot.session, blazon, "Shield")
-		await ctx.send(embed = embed, file = file)
+		view, file = await services.ds(self.bot.session, blazon, "Shield")
+		await ctx.send(view = view, file = file)
 
 	@commands.hybrid_command(
 		help = "Generates a coat of arms based on personal details. These won't be stored by the bot."
@@ -183,7 +180,7 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		template = random.choice(partlist)
 		motto = re.sub(self.MOTTO_PARTS, chooseTerm, template).capitalize()
 
-		await ctx.send(embed = embeds.GENERIC.create(f"{motto}", "", heading = "Motto generator"))
+		await ctx.send(view = views.Generic(motto, "", heading = ":scroll: Motto generator"))
 
 	@commands.hybrid_command(
 		help = "Randomly selects a motto from a list of over 400.\n"
@@ -194,16 +191,16 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		with open("data/mottoes.csv") as file:
 			row = random.choice(list(csv.reader(file, delimiter=";")))
 
-		embed = embeds.SEARCH_RESULT.create(
+		view = views.Generic(
 			f"{row[1]}",
 			f"**{row[0]}**",
-			heading = "Random motto"
+			heading = ":scroll: Random motto"
 		)
 
 		if row[2].strip(" ") != "English":
-			embed.description += f"\n*{row[3].strip(' ')}* ({row[2].strip(' ')})"
+			view.add_text(f"\n*{row[3].strip(' ')}* ({row[2].strip(' ')})")
 
-		await ctx.send(embed=embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		name = "random",
@@ -215,8 +212,8 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 		blazon = await utils.get_text(self.bot.session, "https://drawshield.net/include/randomblazon.php")
 		blazon = re.sub(self.RAND_SUB, " ", blazon.removesuffix("// created by Drawshield.net/random\n")).strip()
 
-		embed, file = await services.ds(self.bot.session, blazon, "Random shield")
-		await ctx.send(embed = embed, file = file)
+		view, file = await services.ds(self.bot.session, blazon, "Random shield")
+		await ctx.send(view = view, file = file)
 
 	@commands.hybrid_command(
 		help = "Render arms using Heraldicon.",

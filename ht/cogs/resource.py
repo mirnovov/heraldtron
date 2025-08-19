@@ -14,21 +14,22 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 
 	def add_resource(self, data):
 		image = data.get("image", False)
-		embed = embeds.GENERIC.create(data["title"], data["desc"], heading = "Resource")
+		title = f"[{data['title']}]({data['href']})" if not image else data["title"]
 		
-		if not image: embed.url = data["href"]
-		else: embed.set_image(url = data["href"])
+		view = views.Generic(title, data["desc"], heading = ":page_facing_up: Resource")
+		
+		if image: view.add_image(data["href"])
 
 		@commands.command(name = data["id"], help = data["desc"], cog = self, hidden = True)
 		async def resource_command(ctx):
-			embed.set_footer(text = f"Use {ctx.clean_prefix}resources to view a list of all resources.")
-			await ctx.send(embed = embed)
+			view.add_footer(text = f"Use {ctx.clean_prefix}resources to view a list of all resources.")
+			await ctx.send(view = view)
 		
 		resource_command.extras["resource"] = True
 		app_command_id = discord.utils.remove_markdown(data["title"])
 
 		self.resources[app_command_id] = { 
-			**data, "app_command_id": app_command_id, "command": resource_command, "embed": embed 
+			**data, "app_command_id": app_command_id, "command": resource_command, "view": view 
 		}
 		self.bot.add_command(resource_command)
 
@@ -97,10 +98,10 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 				
 			name = new_name
 			
-		embed = self.resources[name]["embed"]
-		embed.set_footer(text = f"Use /resources to view a list of all resources.")
+		view = self.resources[name]["view"]
+		view.add_footer(text = f"Use /resources to view a list of all resources.")
 		
-		await interaction.response.send_message(embed = embed) 
+		await interaction.response.send_message(view = view) 
 	
 	@r.autocomplete("name")
 	async def r_autocomplete(self, interaction, current): 

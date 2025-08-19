@@ -2,7 +2,7 @@ import discord, aiohttp, asyncio, re, typing
 from bs4 import BeautifulSoup, Comment
 from discord import app_commands
 from discord.ext import commands
-from .. import converters, embeds, utils
+from .. import converters, views, utils
 
 class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"):
 	FIND_HTML_TAGS = re.compile(r"<[^>]*>")
@@ -21,7 +21,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			self.bot.tree.add_command(c)
 		
 	async def cog_unload(self):
-		super().cog_unload()
+		await super().cog_unload()
 		
 		for c in self.context_commands: 
 			self.bot.tree.remove_command(c)
@@ -34,9 +34,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	@app_commands.describe(user = "The armiger to look up. Defaults to the command sender.")
 	async def a(self, ctx, user: converters.Armiger = None):
 		user = user or await self.get_author_roll(ctx.author)
-		embed = await self.get_arms(user, ctx.clean_prefix, ctx.author)
+		view = await self.get_arms(user, ctx.clean_prefix, ctx.author)
 		
-		await ctx.send(embed = embed)
+		await ctx.send(view = view)
 		
 	@commands.hybrid_command(
 		help = f"Looks up the symbology of a user's coat of arms.\nUses GreiiEquites' https://{WIKI_URL} as a source.",
@@ -80,14 +80,14 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				
 			symbolism_text = symbolism_text.strip()[:4000]
 			
-			embed = embeds.GENERIC.create(
-				f"Symbolism for {user["qualified_name"]}",
+			view = views.Generic(
+				self.format_name(user),
 				f"{symbolism_text}\n\n[**See more on {self.WIKI_URL}...**]({url})",
-				heading = f"GreiiN:{user["greii_n"]:04}"
+				heading = f":symbols: Symbolism "
 			)
-			embed.set_footer(text = f"Textual content from https://{self.WIKI_URL} by GreiiEquites.")
+			view.add_footer(f"Textual content from https://{self.WIKI_URL} by GreiiEquites.")
 
-			await ctx.send(embed = embed)
+			await ctx.send(view = view)
 
 	@commands.hybrid_command(help = "Deletes any extant emblazon that you have set.", aliases = ("de",))
 	async def delemblazon(self, ctx):
@@ -109,9 +109,9 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 	@app_commands.describe(user = "The user to look up. Defaults to the command sender. To add an emblazon, use /setemblazon.")
 	async def e(self, ctx, user : converters.MemberOrUser = None):
 		user = user or ctx.author
-		embed = await self.get_emblazon(user)
+		view = await self.get_emblazon(user)
 
-		await ctx.send(embed = embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		help = "Sets the emblazon of your arms used by this bot.\n"
@@ -131,15 +131,16 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		await ctx.send(":white_check_mark: | Emblazon updated.")
 		
 	async def get_arms(self, user, prefix, author):
-		embed = embeds.GENERIC.create(user["qualified_name"], user["blazon"], heading = f"GreiiN:{user["greii_n"]:04}")
-		embed.set_footer(text = "Textual content from the Book of Arms by GreiiEquites.")
+		view = views.Generic(
+			self.format_name(user), 
+			user["blazon"],
+			heading = f":shield: Arms",
+			thumbnail = user["url"]
+		)
 		
-		if user[6]:
-			embed.set_thumbnail(url = user["url"])
-			embed.set_footer(text = embed.footer.text + " Image specified by user.")
-		elif user["discord_id"] == author.id:
-			embed.description += f"\n**To set an image, use `{prefix}setemblazon`.**"
-		
+		if not user["url"] and user["discord_id"] == author.id:
+			view.add_text(f"\n**To set an image, use `{prefix}setemblazon`.**")
+ 
 		records = await self.bot.dbc.execute_fetchall(
 			f"SELECT * FROM roll_channels WHERE user_id == ? AND user_id IS NOT NULL;",
 			(user["discord_id"],)
@@ -155,9 +156,14 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				links.append(f"- **[{self.WIKI_URL} \u2197\uFE0E]({wiki_url})**")
 		
 		if links:
-			embed.add_field(name = "External links", value = "\n".join(links))
+			view.add_text(f"### External links\n{'\n'.join(links)}")
 		
-		return embed
+		footer_text = "Textual content from the Book of Arms by GreiiEquites."
+		if user[6]: footer_text += " Image specified by user."
+		
+		view.add_footer(footer_text)
+		
+		return view
 
 	async def get_author_roll(self, author):
 		user = await self.bot.dbc.execute_fetchone(
@@ -184,11 +190,11 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		emblazon = await self.bot.dbc.execute_fetchone("SELECT * FROM emblazons WHERE id == ?;", (user.id,))
 		
 		if emblazon and emblazon["url"]:
-			embed = embeds.GENERIC.create(user, "", heading = "Emblazon")
-			embed.set_footer(text = "Design and emblazon respectively the property of the armiger and artist.")
-			embed.set_image(url = emblazon["url"])
+			view = views.Generic(user, "", heading = ":art: Emblazon")
+			view.add_image(emblazon["url"])
+			view.add_footer("Design and emblazon respectively the property of the armiger and artist.")
 			
-			return embed
+			return view
 		
 		else: raise utils.CustomCommandError(
 			"User does not have emblazon",
@@ -199,14 +205,18 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 		interaction.extras["ephemeral_error"] = True
 		
 		armiger = await converters.Armiger().transform(interaction, user)
-		embed = await self.get_arms(armiger, "/", interaction.user)
-		await interaction.response.send_message(embed = embed, ephemeral = True)		
+		view = await self.get_arms(armiger, "/", interaction.user)
+		await interaction.response.send_message(view = view, ephemeral = True)		
 		
 	async def emblazon_action(self, interaction, user: discord.Member):
 		interaction.extras["ephemeral_error"] = True
 
-		embed = await self.get_emblazon(user)
-		await interaction.response.send_message(embed = embed, ephemeral = True)
+		view = await self.get_emblazon(user)
+		await interaction.response.send_message(view = view, ephemeral = True)
+		
+	@staticmethod
+	def format_name(user):
+		return f"{user['qualified_name']}\n-# **GreiiN:{user['greii_n']:04}**"
 
 async def setup(bot):
 	await bot.add_cog(HeraldryRoll(bot))

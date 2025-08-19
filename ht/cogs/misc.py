@@ -2,7 +2,7 @@ import discord, asyncio, typing, random, os
 from discord import app_commands, ui
 from discord.ext import commands
 from datetime import datetime, timezone, timedelta
-from .. import converters, embeds, modals, services, utils, views
+from .. import converters, modals, services, utils, views
 
 class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", limit = True):
 	TRIVIA_CHOICES = [
@@ -52,8 +52,11 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	@app_commands.describe(elapsed = "The date to count down to.")
 	async def countdown(self, ctx, *, elapsed : converters.Date):
 		delta = (elapsed - datetime.now(tz = timezone.utc)) + timedelta(minutes = 1)
-		embed = embeds.COUNTDOWN.create(f"<t:{elapsed.timestamp():.0f}:R>", "")
-		embed.add_field(name = "End time", value = f"<t:{elapsed.timestamp():.0f}:F>")
+		view = views.Generic(
+			f"<t:{elapsed.timestamp():.0f}:R>", 
+			f"**Ends at** <t:{elapsed.timestamp():.0f}:F>",
+			heading = ":clock4: Countdown"
+		)
 
 		if delta.total_seconds() < 0:
 			raise utils.CustomCommandError(
@@ -61,7 +64,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 				"The date that you entered is in the past."
 			)
 
-		await ctx.send(embed = embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		help = "Generates a competition distribution. This won't be visible to other users.",
@@ -124,15 +127,15 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 	@legacy_trivia.command(help = "Lists all categories.")
 	async def categories(self, ctx):
 		result = await utils.get_json(self.bot.session, f"https://opentdb.com/api_category.php")
-		embed = embeds.GENERIC.create(
-			"Trivia categories", "To choose a category, specify its numeric ID.", heading = "Trivia"
+		view = views.Generic(
+			"Trivia categories", "To choose a category, specify its numeric ID.\n", heading = ":interrobang: Trivia"
 		)
 
 		for category in result["trivia_categories"]:
-			embed.add_field(name = category["name"], value=category["id"], inline=True)
+			view.add_text(f"\n**{category['name']}** {category['id']}")
 	
-		embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
-		await ctx.send(embed = embed)
+		view.add_footer("Courtesy of the Open Trivia Database.")
+		await ctx.send(view = view)
 	
 	@app_commands.command(description = "Asks a trivia question that users can guess.")
 	@app_commands.choices(category = TRIVIA_CHOICES)
@@ -153,29 +156,34 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		if not isinstance(user, discord.Member) and ctx.guild:
 			user = ctx.guild.get_member(user.id) or user
 
-		embed = embeds.USER_INFO.create(user, f"{user.mention}")
-		if user.bot:
-			embed.description += " | **Bot**"
-
-		embed.set_thumbnail(url = user.display_avatar.with_size(512).url)
-		embed.add_field(name = "Created", value = utils.stddate(user.created_at), inline = True)
-		embed.description += "\n\u200b"
-
+		text = f"{user.mention}"
+		if user.bot: text += " | **Bot**"
+		
 		if isinstance(user, discord.Member):
-			embed.colour = user.colour if user.colour.value != 0 else embeds.DEFAULT
-
 			for activity in user.activities:
 				preface = activity.emoji or "" if hasattr(activity, "emoji") else f"**{self.ACTIVITIES[int(activity.type)]}**"
-				embed.description += f"\n{preface} {activity.name}"
-
-			embed.add_field(name = "Joined", value = utils.stddate(user.joined_at), inline = True)
-			embed.add_field(name = "Status", value = f"Currently **{user.raw_status}**", inline = True)
-
+				text += f"\n{preface} {activity.name}"
+		
+		text += f"\n\u200b\n**Created** {utils.stddate(user.created_at)}"
+		
+		if isinstance(user, discord.Member):
+			text += f"\n**Joined** {utils.stddate(user.joined_at)}"
+			text += f"\n**Status** Currently **{user.raw_status}**"
+		
 			if isinstance(ctx.channel, discord.abc.GuildChannel):
 				roles = (str(role.mention) for role in user.roles[1:])
-				embed.add_field(name = "Roles", value = ", ".join(("@everyone ", *roles)), inline = False)
+				formatted = ", ".join(("@everyone ", *roles))
+				text+= f"\n**Roles** {formatted}"
 
-		await ctx.send(embed = embed)
+		view = views.Generic(
+			str(user), 
+			text, 
+			heading = ":slight_smile: User info", 
+			thumbnail = user.display_avatar.with_size(512).url
+		)
+
+
+		await ctx.send(view = view)
 
 async def setup(bot):
 	await bot.add_cog(MiscStuff(bot))

@@ -1,7 +1,7 @@
 import discord, asyncio, typing, re
 from discord import app_commands, ui
 from discord.ext import commands
-from .. import converters, embeds, modals, utils, views
+from .. import converters, modals, utils, views
 
 class ModerationSettings(utils.ModCog, name = "Settings"):
 	MAX_FEEDS = 3

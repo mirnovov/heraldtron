@@ -142,7 +142,7 @@ def stddate(value):
 def get_special_channel(bot, channel):
 	channel = bot.channel_cache.get(channel.id)
 	
-	if channel and (channel["oc"] or channel["proposals"]):
+	if channel and (channel["oc"] or channel["proposal"]):
 		return channel
 		
 	return None
