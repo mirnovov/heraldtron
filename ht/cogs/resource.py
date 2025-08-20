@@ -1,11 +1,11 @@
 import discord, asyncio, json, random, re
 from thefuzz import process
-from discord import app_commands
+from discord import app_commands, ui
 from discord.ext import commands
-from .. import embeds, utils, views
+from .. import utils, views
 
 class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldry"):
-	PAGE_SIZE = 8
+	PAGE_SIZE = 1500
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -56,33 +56,30 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 		aliases = ("re", "source", "resource", "r")
 	)
 	async def resources(self, ctx):
+		lead = "-# Use the commands listed here to fetch resources individually for quick reference."
 		pages = []
-		current_size = self.PAGE_SIZE + 1
+		text = ui.TextDisplay(lead)
 
 		for resource in self.resources.values():
-			if current_size > self.PAGE_SIZE:
-				embed = embeds.GENERIC.create(
-					"All resources", "", heading = "Heraldic resources collection"
-				)
-				embed.set_footer(
-					text = "Use the commands listed here to fetch resources individually for quick reference."
-				)
-				
-				pages.append(embed)
-				current_size = 0
+			if len(text.content) > self.PAGE_SIZE:
+				pages.append([text])
+				text = ui.TextDisplay(lead)
 				
 			if ctx.interaction: full_command = f"`/r name: {resource['app_command_id']}`\n"
 			else: full_command = f"`{ctx.clean_prefix}{resource['id']}` - "
 
-			embed.add_field(
-				name = resource["title"],
-				value = f"{full_command}{resource['desc']} [**View**]({resource['href']})",
-				inline = False
+			text.content += (
+				f"\n### [{resource['title']}]({resource['href']})\n"
+				f"{full_command}{resource['desc']}"
 			)
 			
-			current_size += 1
+		pages.append([text])
 
-		await views.Navigator(ctx, pages).run()
+		await views.Navigator(
+			ctx, 
+			pages,
+			header = ":page_facing_up: Heraldic resources collection"
+		).run()
 		
 	@app_commands.command(description = "Fetches a heraldic resource.")
 	@app_commands.describe(name = "The name of the resource to fetch. A detailed list can be viewed at /resources")

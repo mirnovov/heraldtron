@@ -1,7 +1,7 @@
 import discord, re, urllib
-from discord import app_commands
+from discord import app_commands, ui
 from discord.ext import commands
-from .. import embeds, services, utils
+from .. import services, views, utils
 
 class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldry"):
 	DS_URL = re.compile(r"https://drawshield\.net/reference/(.*)/./(.*)\.html")
@@ -28,36 +28,44 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 	@app_commands.describe(term = "The heraldic term to look up.")
 	@utils.trigger_typing
 	async def lookup(self, ctx, *, term):
-		embed = embeds.SEARCH_RESULT.create("", "", heading = "Search results")
-		embed.set_footer(text = f"Term retrieved using Finto HERO and DrawShield; the latter © Karl Wilcox ")
-
+		view = views.Generic("", "", heading = ":mag_right: Search results")
 		hero_desc, hero_image = await services.hero(self.bot.session, term)
 		
-		if hero_desc:
-			embed.description += hero_desc
-		
 		if hero_image:
-			embed.set_thumbnail(url = f"attachment://{hero_image.filename}")
+			view.container.add_item(ui.Section(
+				ui.TextDisplay(hero_desc),
+				accessory = ui.Thumbnail(f"attachment://{hero_image.filename}")
+			))
+		elif hero_desc:
+			view.container.add_item(ui.TextDisplay(hero_desc))
 		
 		ds_term = urllib.parse.quote(term.replace(" ", ""))
 		ds_results = await utils.get_json(self.bot.session, f"https://drawshield.net/api/define/{ds_term}")
 
 		if "error" not in ds_results:
+			catalog = await services.ds_catalog(self.bot.session, term)
 			match = self.DS_URL.fullmatch(ds_results["URL"])
-			embed.description += (
+			text = ui.TextDisplay(
 				f"### {match[1].capitalize()}'s dictionary result\n"
 				f"[**{match[2]}**]({ds_results['URL']})\n" +
 				ds_results["content"]
 			)
+
+			if catalog != None:
+				view.container.add_item(ui.Section(text, accessory = ui.Thumbnail(catalog[0])))
+			else: 
+				view.container.add_item(text)
 		
-		if embed.description == "":
+		if len(view.container.children) == 1:
 			raise utils.CustomCommandError(
 				"Invalid lookup term",
 				"The term could not be found in Finto HERO, Parker's dictionary, or Elvin's dictionary. " 
 				"Check that it is entered correctly, or try other sources."
 			)
+			
+		view.add_footer(f"Term retrieved using Finto HERO and DrawShield; the latter © Karl Wilcox ")
 
-		await ctx.send(embed = embed, file = hero_image)
+		await ctx.send(view = view, file = hero_image)
 
 	@commands.hybrid_command(
 		help = "Displays an entry from the Sourced Blazons Wiki.",
@@ -88,11 +96,11 @@ class HeraldryReference(utils.MeldedCog, name = "Reference", category = "Heraldr
 
 		if len(text) > 2048:
 			text = f"{text[:2045]}..."
+		
+		title = f"[{response['title']}](https://sourcedblazons.miraheze.org/wiki/{urllib.parse.quote(response['title'])})"
+		view = views.Generic(title, text, heading = ":scroll: Sourced Blazons Wiki result")
 
-		embed = embeds.SEARCH_RESULT.create(response["title"], text, heading = "Sourced Blazons Wiki result")
-		embed.url = f"https://sourcedblazons.miraheze.org/wiki/{urllib.parse.quote(response['title'])}"
-
-		await ctx.send(embed = embed)
+		await ctx.send(view = view)
 
 	@commands.hybrid_command(
 		help = "Shows a short blurb about using supporters.",

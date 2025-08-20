@@ -44,57 +44,74 @@ def disable_dm_commands(func):
 
 	return wrapper
 	
-class Navigator(NvView):
-	def __init__(self, ctx, embeds):
+class Navigator(NvLayoutView):
+	def __init__(self, ctx, pages, *, header):
 		super().__init__()
 
-		for i, embed in enumerate(embeds, start = 1):
-			embed.set_author(
-				name = f"{embed.author.name} ({i}/{len(embeds)})",
-				icon_url = embed.author.icon_url
-			)
-
 		self.ctx = ctx
+		self.header_text = header
 		self.index = 0
-		self.embeds = embeds
-
+		self.pages = pages
+		
+		self.container = ui.Container()
+		self.actionrow = ui.ActionRow()
+		
 		self.add_nav("<:first:859371978612015136>", lambda: 0, disabled = True)
 		self.add_nav("<:prev:859371979035377694>", lambda: self.index - 1, disabled = True)
 		self.add_nav("<:random:859371979093442580>", lambda: random.randrange(0, len(self.embeds)), False)
 		self.add_nav("<:next:859371979026071582>", lambda: self.index + 1)
 		self.add_nav("<:last:859371979026464778>", lambda: len(self.embeds) - 1)
+		
+		self.set_content()
+		self.add_item(self.container)
+	
+	def set_content(self):
+		self.container.clear_items()
+		self.container.add_item(ui.TextDisplay(
+			f"-# **{self.header_text} ({self.index + 1}/{len(self.pages)})**")
+		)
+		
+		for item in self.pages[self.index]:
+			self.container.add_item(item)
+			
+		self.container.add_item(ui.TextDisplay("\u200b"))
+		self.container.add_item(self.actionrow)
+		
+	def get_header(self):
+		return 
 
 	def add_nav(self, emoji, index, primary = True, **kwargs):
 		async def switch(interaction):
 			self.index = index()
 
-			for child in self.children[:2]:
+			for child in self.actionrow.children[:2]:
 				child.disabled = self.index == 0
 
-			for child in self.children[-2:]:
-				child.disabled = self.index == len(self.embeds) - 1
+			for child in self.actionrow.children[-2:]:
+				child.disabled = self.index == len(self.pages) - 1
 
-			await interaction.response.edit_message(embed = self.embeds[self.index], view = self)
+			self.set_content()
+			await interaction.response.edit_message(view = self)
 
 		style = discord.ButtonStyle.primary if primary else discord.ButtonStyle.secondary
 		button = ui.Button(emoji = emoji, style = style, **kwargs)
 		button.callback = switch
 
-		self.add_item(button)
+		self.actionrow.add_item(button)
 
 	async def run(self):
-		self.message = await self.ctx.send(embed = self.embeds[0], view = self)
+		self.message = await self.ctx.send(view = self)
 
 class HelpSwitcher(NvLayoutView):
 	HEADING = ":information_source: Command help"
-	FOOTER = "Type !help [command] for more info on a command, including aliases."
+	INFO = "Type !help [command] for more info on a command, including aliases."
 	
 	def __init__(self, pages):
 		super().__init__()
 		
 		self.container = ui.Container()
 		self.actionrow = ui.ActionRow()
-		self.text = ui.TextDisplay(pages[0][1] + "\u200b")
+		self.text = ui.TextDisplay("")
 
 		[self.add_help(name, v) for name, v in pages]
 
@@ -103,16 +120,19 @@ class HelpSwitcher(NvLayoutView):
 		self.container.add_item(ui.TextDisplay(f"-# **{self.HEADING}**"))
 		self.container.add_item(self.text)
 		self.container.add_item(self.actionrow)
-		self.container.add_item(ui.TextDisplay(f"-# {self.FOOTER}"))
-
+		
+		self.format_content(pages[0][1])
 		self.add_item(self.container)
+		
+	def format_content(self, content):
+		self.text.content = f"-# {self.INFO}\n{content}\u200b"
 
 	def add_help(self, name, page):
 		async def switch(interaction):
 			for child in self.actionrow.children:
 				child.disabled = child.label == name
 			
-			self.text.content = page + "\u200b"
+			self.format_content(page)
 			await interaction.response.edit_message(view = self)
 
 		button = ui.Button(label = name, style = discord.ButtonStyle.primary)

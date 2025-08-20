@@ -222,8 +222,8 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	@app_commands.describe(blazon = "The blazon to illustrate. The language differs slightly from proper blazonry.")
 	@utils.trigger_typing
 	async def hd(self, ctx, *, blazon : str):
-		embed, file = await services.heraldicon(self.bot.session, blazon)
-		await ctx.send(embed = embed, file = file)
+		view, file = await services.heraldicon(self.bot.session, blazon)
+		await ctx.send(view = view, file = file)
 
 	@commands.hybrid_command(
 		help = "Show rendering options that can be used with Heraldicon.",
@@ -231,8 +231,8 @@ class HeraldryMisc(utils.MeldedCog, name = "General", category = "Heraldry"):
 	)
 	@utils.trigger_typing
 	async def hd_options(self, ctx):
-		embed = await services.heraldicon_options(self.bot.session)
-		await ctx.send(embed = embed)
+		view = await services.heraldicon_options(self.bot.session)
+		await ctx.send(view = view)
 
 
 async def setup(bot):

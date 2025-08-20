@@ -1,7 +1,7 @@
 import discord, json, random
 from discord import ui
 from discord.ext import commands
-from . import embeds, utils, views
+from . import utils, views
 
 class NvModal(ui.Modal):
 	BUTTON_TEXT = "Generate"
@@ -83,14 +83,15 @@ class GeneratorModal(NvModal, title = "Generate arms"):
 					
 			results[tinct_area] = self.get_letter_val(source[pos], parts[tinct_type])
 		
-		embed = embeds.GENERIC.create(
-			"", f"-# Generator based on a [chart]({self.CHART_URL}) by Snak and James", heading = "Generated blazon"
+		view = views.Generic(
+ 			f"*{results['field'].capitalize()}, on {utils.pronounise(results['ordinary'])}"
+			f" {results['background']} {utils.pronounise(results['charge'].lower())}"
+			f" {results['foreground']}*",
+			f"-# Generator based on a [chart]({self.CHART_URL}) by Snak and James", 
+			heading = ":gear: Generated blazon"
 		)
-		embed.title = f"*{results['field'].capitalize()}, on {utils.pronounise(results['ordinary'])}"\
-					  f" {results['background']} {utils.pronounise(results['charge'].lower())}"\
-					  f" {results['foreground']}*"
 		
-		await interaction.response.send_message(embed = embed)
+		await interaction.response.send_message(view = view)
 
 class DistributionModal(NvModal, title = "Enter competitors"):
 	names = None

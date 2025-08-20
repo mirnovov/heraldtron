@@ -2,7 +2,7 @@ import discord, hashlib, urllib, time, re, random, os
 from docx2python import docx2python
 from datetime import datetime, timezone
 from discord.ext import commands, tasks
-from .. import utils, embeds
+from .. import utils
 
 class BotTasks(commands.Cog, name = "Bot tasks"):
 	STRIP_SPACES = re.compile(r"\n[\t\s]+")

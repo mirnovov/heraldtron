@@ -3,7 +3,7 @@ from discord import ui
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from xml.etree import ElementTree
-from . import embeds, utils, views
+from . import utils, views
 
 async def gis(ctx, query):
 	IMAGE_NUM = 10
@@ -30,27 +30,31 @@ async def gis(ctx, query):
 
 	def image_result(item):
 		url = discord.utils.escape_markdown(item["image"]["contextLink"])
-		embed = embeds.SEARCH_RESULT.create(
-			f"Results for \"{query}\"",
-			f"[{item['title']}]({url})",
-			heading = "Google image search"
-		)
-		embed.set_image(url = item["link"])
-		embed.set_footer(
-			text = "Search conducted using the Google Custom Search API "
-				  f"in {search['searchInformation']['formattedSearchTime']}s."
-		)
-		return embed
+		gallery = ui.MediaGallery()
+		gallery.add_item(media = item["link"])
+		
+		items = [
+			ui.TextDisplay(
+				f"### Results for \"{query}\"\n"
+				f"[{item['title']}]({url})"
+			),
+			gallery
+		]
+		return items
 
 	pages = tuple(image_result(page) for page in search["items"])
-	await views.Navigator(ctx, pages).run()
+	await views.Navigator(
+		ctx, 
+		pages,
+		header = f":frame_photo: Google image search",
+	).run()
 
 async def ds(session, blazon, drawn_kind):
 	blazon_out = urllib.parse.quote(blazon)
 	results = await utils.get_json(session, f"https://drawshield.net/include/drawshield.php?blazon={blazon_out}&outputformat=json")
 	image = discord.File(io.BytesIO(base64.b64decode(results["image"])), filename = "ds.png")
 
-	view = views.Generic("", f"*{blazon}*", heading = f":pencil2: {drawn_kind} drawn!")
+	view = views.Generic("", f"### *{blazon}*", heading = f":pencil2: {drawn_kind} drawn!")
 	view.add_image("attachment://ds.png")
 	view.add_footer("Not all blazons can be illustrated with this command.\n-# Drawn using DrawShield; © Karl Wilcox.")
 
@@ -87,14 +91,17 @@ async def trivia(ctx, interaction, question):
 	TRIVIA_LENGTH = 22
 	
 	name = html.unescape(question["question"])
-	info = f"**{html.unescape(question['category'])}** | {question['difficulty'].capitalize()}\n\n"
+	info = f"-# **{html.unescape(question['category'])}** \n-# {question['difficulty'].capitalize()}\n\u200b"
 	countdown = datetime.now(tz = timezone.utc) + timedelta(seconds = TRIVIA_LENGTH)
 	
-	embed = embeds.GENERIC.create(name, info, heading = "Trivia")
-	embed.description += f"The correct answer will appear <t:{countdown.timestamp():.0f}:R>."
-	embed.set_footer(text = f"Courtesy of the Open Trivia Database.")
+	view = views.Generic(name, info, heading = ":interrobang: Trivia")
+	actionrow = ui.ActionRow()
+	display = ui.TextDisplay(f"The correct answer will appear <t:{countdown.timestamp():.0f}:R>.\n\u200b")
 	
-	view = ui.View()
+	view.container.add_item(actionrow)
+	view.container.add_item(display)
+	view.add_footer(text = f"Courtesy of the [Open Trivia Database](https://opentdb.com).")
+	
 	users = {}
 	answers = question["incorrect_answers"]
 	correct = random.randrange(0, len(answers) + 1)
@@ -102,16 +109,18 @@ async def trivia(ctx, interaction, question):
 	answers.insert(correct, question["correct_answer"])
 	
 	for answer in answers:
-		view.add_item(views.TriviaButton(answer, users))
+		actionrow.add_item(views.TriviaButton(answer, users))
 	
 	if ctx:
-		message = await ctx.send(embed = embed, view = view)
+		message = await ctx.send(view = view)
 	else:
-		await interaction.response.send_message(embed = embed, view = view)
+		await interaction.response.send_message(view = view)
 		message = interaction.message
 		
 	await asyncio.sleep(TRIVIA_LENGTH)
-	embed.description = f"{info}The correct answer is: **{html.unescape(answers[correct])}**"
+	
+	view.container.remove_item(actionrow)
+	display.content = f"\n\u2000The correct answer is: **{html.unescape(answers[correct])}**"
 	
 	results = defaultdict(list)
 	stats = ""
@@ -122,13 +131,13 @@ async def trivia(ctx, interaction, question):
 	for answer, users in results.items():
 		stats += f"- {answer}: {','.join(users)} (**{len(users)}**)\n"
 
-	if stats: embed.description += f"\n\n**Responses:**\n\u0020{stats}"
+	if stats: display.content += f"\n### Responses\n{stats}"
 	
 	try:
 		if ctx:
-			await message.edit(embed = embed, view = None)
+			await message.edit(view = view)
 		else:
-			await interaction.edit_original_response(embed = embed, view = None)
+			await interaction.edit_original_response(view = view)
 	except discord.NotFound:
 		pass
 
@@ -155,17 +164,28 @@ async def heraldicon(session, query):
 	success = result.get("success")
 	if success:
 		png_url = success["png-url"]
-		edit_link = f"[Edit on Heraldicon]({success['edit-url']})"
-		embed = embeds.DRAW.create("", edit_link, heading = "Shield created!")
+		view = views.Generic(
+			"", 
+			f"### *{blazon}*", 
+			heading = ":pencil2: Shield created!"
+		)
+		
 		image_data = await utils.get_bytes(session, png_url)
 		image = discord.File(image_data, filename = "heraldicon-arms.png")
-		embed.set_image(url = "attachment://heraldicon-arms.png")
-		embed.add_field(name = "Blazon", value = f"*{blazon}*", inline = True)
-		embed.set_footer(
-			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo-discord.png",
-			text = "Drawn using Heraldicon; licensed under CC BY-SA 4.0 (attribution on https://heraldicon.org)"
+		
+		view.add_image("attachment://heraldicon-arms.png")
+
+		view.add_footer(
+			"Drawn using Heraldicon; licensed under CC BY-SA 4.0\n"
+			"-# Attribution on [heraldicon.org](https://heraldicon.org)"
 		)
-		return embed, image
+		
+		view.container.add_item(ui.ActionRow(ui.Button(
+			label = "Edit on Heraldicon",
+			url = success["edit-url"]
+		)))
+		
+		return view, image
 
 	index = result["error"]["data"]["index"]
 	blazon = result["error"]["data"]["blazon"]
@@ -188,17 +208,16 @@ async def heraldicon(session, query):
 Suggestions:
 {', '.join(suggestions)}
 	```"""
-	embed = embeds.ERROR.create("Blazon could not be parsed", error_message)
-	embed.add_field(name = "blazon", value = f"*{blazon}*", inline = True)
-
-	return embed, None
+	raise utils.CustomCommandError(
+		"Blazon could not be parsed",
+		f"{error_message}\n### Blazon\n*{blazon}*"
+	)
 
 async def heraldicon_options(session):
-	def add_option_type(embed, source, name):
-		embed.add_field(
-			name = name,
-			value = " ".join(f"`+{x}`" for x in source),
-			inline = False
+	def add_option_type(view, source, name):
+		view.add_text(
+			f"\n### {name}\n" +
+			" ".join(f"`+{x}`" for x in source)
 		)
 
 	result = await utils.post_json(
@@ -207,23 +226,20 @@ async def heraldicon_options(session):
 		{"call": "blazon-options"}
 	)
 	if "success" in result:
-		embed = embeds.DRAW.create(
+		view = views.Generic(
 			"",
-			"Put any of these options as first words before the blazon.",
-			heading = "Heraldicon rendering options"
+			"-# Put any of these options as first words before the blazon. "
+			"For more info, see [heraldicon.org](https://heraldicon.org).",
+			heading = ":pencil2: Heraldicon rendering options"
 		)
 
-		add_option_type(embed, result["success"]["options"]["miscellaneous"], "General")
-		add_option_type(embed, result["success"]["options"]["mode"], "Mode")
-		add_option_type(embed, result["success"]["options"]["escutcheon"], "Escutcheons")
-		add_option_type(embed, result["success"]["options"]["theme"], "Themes")
-		add_option_type(embed, result["success"]["options"]["texture"], "Textures")
+		add_option_type(view, result["success"]["options"]["miscellaneous"], "General")
+		add_option_type(view, result["success"]["options"]["mode"], "Mode")
+		add_option_type(view, result["success"]["options"]["escutcheon"], "Escutcheons")
+		add_option_type(view, result["success"]["options"]["theme"], "Themes")
+		add_option_type(view, result["success"]["options"]["texture"], "Textures")
 
-		embed.set_footer(
-			icon_url = "https://cdn.heraldicon.org/img/heraldicon-logo-discord.png",
-			text = "For more info, see https://heraldicon.org"
-		)
-		return embed
+		return view
 
 	raise utils.CustomCommandError(
 		"Cannot retrieve Heraldicon options",
@@ -236,6 +252,8 @@ async def hero(session, term):
 		full_url =  "https://heraldica.narc.fi/img/hero/thumb/" + image_url
 		
 		async with session.get(full_url, ssl = False) as source:
+			if str(source.status)[0] != "2": return None 
+			
 			image = await source.read()
 			bytes = io.BytesIO(image)
 		

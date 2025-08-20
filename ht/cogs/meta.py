@@ -119,7 +119,7 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 		view.message = message
 
 	async def send_melded_cog_help(self, title, cogs):
-		text = f"## {title} commands\n"
+		text = ""
 		valid = {}
 
 		for cog in cogs:
@@ -130,7 +130,7 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 			valid[cog.qualified_name] = f"{value}{self.add_indented_commands(commands, heading = None)}"
 
 		if len(valid) == 1:
-			text += next(iter(valid.values()))
+			text += f"### {title}\n" + next(iter(valid.values()))
 		else:
 			for name, desc in valid.items():
 				text += f"### {name}\n{desc}"
@@ -139,8 +139,11 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 
 	async def send_cog_help(self, cog):
 		text, _ = await self.send_melded_cog_help(cog.qualified_name, [cog])
-		view = views.Generic("", text, heading = views.HelpSwitcher.HEADING)
-		view.add_footer(views.HelpSwitcher.FOOTER)
+		view = views.Generic("", 
+			f"-# {views.HelpSwitcher.INFO}\n" +
+			text, 
+			heading = views.HelpSwitcher.HEADING
+		)
 		await self.get_destination().send(view = view)
 
 	async def send_command_help(self, command):
@@ -149,12 +152,15 @@ class MeldedHelpCommand(commands.DefaultHelpCommand):
 		await self.get_destination().send(view = view)
 
 	async def send_group_help(self, group):
-		view = views.Generic(group.name, group.description or "", heading = views.HelpSwitcher.HEADING)
+		view = views.Generic(
+			group.name,
+			group.description or "", 
+			heading = views.HelpSwitcher.HEADING
+		)
 		view.add_text(self.add_command_formatting(group) + "\n")
 
 		teeth = await self.filter_commands(group.commands, sort = self.sort_commands)
 		view.add_text(self.add_indented_commands(teeth, heading = "Subcommands"))
-		view.add_footer(views.HelpSwitcher.FOOTER)
 
 		await self.get_destination().send(view = view)
 
