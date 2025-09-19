@@ -156,7 +156,7 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 		if not isinstance(user, discord.Member) and ctx.guild:
 			user = ctx.guild.get_member(user.id) or user
 
-		text = f"{user.mention}"
+		text = f"\u005c@{user.display_name}"
 		if user.bot: text += " | **Bot**"
 		
 		if isinstance(user, discord.Member):
@@ -171,9 +171,9 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 			text += f"\n**Status** Currently **{user.raw_status}**"
 		
 			if isinstance(ctx.channel, discord.abc.GuildChannel):
-				roles = (str(role.mention) for role in user.roles[1:])
-				formatted = ", ".join(("@everyone ", *roles))
-				text+= f"\n**Roles** {formatted}"
+				roles = (f"\u005c@{role.name}" for role in user.roles[1:])
+				formatted = ", ".join(("\u005c@everyone", *roles))
+				text += f"\n**Roles** {formatted}"
 
 		view = views.Generic(
 			str(user), 
@@ -181,7 +181,14 @@ class MiscStuff(utils.MeldedCog, name = "Miscellaneous", category = "Other", lim
 			heading = ":slight_smile: User info", 
 			thumbnail = user.display_avatar.with_size(512).url
 		)
-
+		
+		view.container.add_item(ui.ActionRow(
+			ui.Button(
+				label = "View profile",
+				style = discord.ButtonStyle.secondary,
+				url = f"discord://-/users/{user.id}"
+			)
+		))
 
 		await ctx.send(view = view)
 
