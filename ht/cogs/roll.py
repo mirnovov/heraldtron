@@ -58,7 +58,7 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 				)
 			
 			soup = BeautifulSoup(await response.text(), "html.parser")
-			values = soup.select("h2:has(#Symbolism)")
+			values = soup.select(".mw-heading:has(h2#Symbolism)")
 			
 			if not values:
 				raise utils.CustomCommandError(
@@ -69,7 +69,15 @@ class HeraldryRoll(utils.MeldedCog, name = "Roll of Arms", category = "Heraldry"
 			
 			next_section = values[0].next_sibling
 			symbolism_text = ""
-			while next_section is not None and not isinstance(next_section, Comment) and not str(next_section).startswith("<h"):
+			
+			while next_section is not None:
+				if next_section.name is None:
+					next_section = next_section.next_sibling
+					continue
+				
+				elif next_section.name == "div" and "mw-heading2" in next_section["class"]:
+					break
+				
 				markdown = re.sub(
 					self.FIND_HTML_TAGS,
 					"",
