@@ -28,9 +28,9 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 		
 			await self.bot.dbc.execute(
 				"INSERT OR IGNORE INTO guilds"
-				" (discord_id, name, limit_commands, roll, welcome_users, welcome_text, leave_text, log)" 
+				" (discord_id, name, limit_commands, roll, message_channel, welcome_text, leave_text, log)" 
 				" VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-				(guild.id, guild.name, 0, 0, 1, None, None, 0)
+				(guild.id, guild.name, 0, 0, 0, None, None, 0)
 			)
 			await self.bot.dbc.commit()
 			
@@ -38,9 +38,9 @@ class GuildEvents(commands.Cog, name = "Guild events"):
 	async def on_guild_join(self, guild):
 		await self.bot.dbc.execute(
 			"INSERT INTO guilds"
-			" (discord_id, name, limit_commands, roll, welcome_users, welcome_text, leave_text, log)" 
+			" (discord_id, name, limit_commands, roll, message_channel, welcome_text, leave_text, log)" 
 			" VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-			(guild.id, guild.name, 0, 0, 1, None, None, 0)
+			(guild.id, guild.name, 0, 0, 0, None, None, 0)
 		)
 		await self.bot.dbc.commit()
 		await self.bot.refresh_cache_guild(guild.id)

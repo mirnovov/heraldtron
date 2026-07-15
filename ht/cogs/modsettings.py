@@ -43,10 +43,22 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	async def limitmessages(self, ctx, enabled : bool):
 		await self.set_flag(ctx, enabled, "limit_commands", ":stop_sign:", "Command limits have")
 
-	@commands.hybrid_command(help = "Enables/disables welcome and leave messages for a server.", aliases = ("wl", "welcome", "ms", "message"))
-	@app_commands.describe(enabled = "Whether to enable or disable welcome and leave messages.")
-	async def messages(self, ctx, enabled : bool):
-		await self.set_flag(ctx, enabled, "welcome_users", ":envelope_with_arrow:", "Welcome and leave messages have")
+	@commands.hybrid_command(help = "Sets the channel used for welcome and leave messages in a server.", aliases = ("wl", "welcome", "ms", "message"))
+	@app_commands.describe(channel = "The channel to use.")
+	async def messages(self, ctx, channel : discord.TextChannel):
+		guild = await ModerationSettings.choose_guild(ctx)
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET message_channel = ?1 WHERE discord_id = ?2", (channel.id, guild.id))
+		await ctx.bot.dbc.commit()
+		await ctx.send(f":envelope_with_arrow: | Welcome and leave messages have been enabled in {channel.mention} for this server.")
+		await ctx.bot.refresh_cache_guild(guild.id)
+		
+	@commands.hybrid_command(help = "Disables welcome and leave messages.", aliases = ("dmessage",))
+	async def delmessages(self, ctx):
+		guild = await ModerationSettings.choose_guild(ctx)
+		await ctx.bot.dbc.execute(f"UPDATE guilds SET message_channel = 0 WHERE discord_id = ?", (guild.id,))
+		await ctx.bot.dbc.commit()
+		await ctx.send(f":envelope_with_arrow: | Welcome and leave messages have been disabled for this server.")
+		await ctx.bot.refresh_cache_guild(guild.id)
 
 	@commands.hybrid_command(help = "Enables/disables roll functionality for this server.", aliases = ("rl",))
 	@app_commands.describe(enabled = "Whether to enable or disable roll functionality.")
@@ -136,12 +148,12 @@ class ModerationSettings(utils.ModCog, name = "Settings"):
 	@staticmethod
 	async def set_message(ctx, leave):
 		guild = await ModerationSettings.choose_guild(ctx)
-		enabled = await ctx.bot.dbc.execute("SELECT welcome_users FROM guilds WHERE discord_id == ?1;", (guild.id,))
+		enabled = await ctx.bot.dbc.execute("SELECT message_channel FROM guilds WHERE discord_id == ?1;", (guild.id,))
 
 		if enabled == 0: raise utils.CustomCommandError(
 			"Welcome and leave messages disabled",
 			"Your message cannot be set, as the welcome and leave message functionality"
-			f" is currently not operational. Turn it on with `{ctx.clean_prefix}messages yes`."
+			f" is currently not operational. Turn it on by setting a channel with `{ctx.clean_prefix}messages`."
 		)
 
 		modal = modals.MessageModal(leave, ctx.author, guild)

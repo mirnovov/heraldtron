@@ -23,7 +23,7 @@ CREATE TABLE "guilds" (
 	"name" TEXT NOT NULL,
 	"limit_commands" INTEGER DEFAULT 0 NOT NULL,
 	"roll" INTEGER DEFAULT 0 NOT NULL,
-	"welcome_users" INTEGER DEFAULT 0 NOT NULL,
+	"message_channel" INTEGER DEFAULT 0 NOT NULL,
 	"welcome_text" TEXT,
 	"leave_text" TEXT,
 	"log" INTEGER DEFAULT 0 NOT NULL

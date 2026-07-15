@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from .. import utils
 
 class MemberEvents(commands.Cog, name = "Member events"):
 	TIMEOUT_ROLE_ID = 1003513794909184001
@@ -46,7 +47,7 @@ class MemberEvents(commands.Cog, name = "Member events"):
 	async def post_welcome_message(self, member, leave):
 		guild_db = await self.bot.dbc.execute_fetchone("SELECT * FROM guilds WHERE discord_id == ?;", (member.guild.id,))
 
-		if not guild_db or not guild_db["welcome_users"]:
+		if not guild_db or guild_db["message_channel"] == 0:
 			#if guild not in db (shouldn't happen) or if disabled
 			return
 
@@ -57,8 +58,9 @@ class MemberEvents(commands.Cog, name = "Member events"):
 			message = f"We're sorry to see you leaving, **MEMBER_NAME**." if leave else f"Welcome to the **GUILD_NAME** server, MENTION."
 
 		formatted = self.welcome_fmt(member, message)
-
-		await member.guild.system_channel.send(f"{emoji} | {formatted}")
+		channel = await utils.get_channel(self.bot, guild_db["message_channel"])
+		
+		await channel.send(f"{emoji} | {formatted}")
 
 	def welcome_fmt(self, member, subst_text):
 		if not subst_text: return None
