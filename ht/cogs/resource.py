@@ -45,7 +45,7 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 		
 	@commands.hybrid_command(
 		help = "Displays a random heraldic resource.",
-		aliases = ("rr", "randomresource")
+		aliases = ("rre", "randomresource")
 	)
 	async def randresource(self, ctx):
 		command = random.choice(self.resource_commands)
@@ -53,7 +53,7 @@ class HeraldryResources(utils.MeldedCog, name = "Resources", category = "Heraldr
 
 	@commands.hybrid_command(
 		help = "Lists all resource commands.",
-		aliases = ("re", "source", "resource", "r")
+		aliases = ("res", "source", "resource", "r")
 	)
 	async def resources(self, ctx):
 		lead = "-# Use the commands listed here to fetch resources individually for quick reference."
